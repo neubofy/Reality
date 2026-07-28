@@ -90,7 +90,7 @@ object GoogleAuthManager {
         "profile"
     )
     
-    val BASIC_SCOPES = listOf("email", "profile")
+    val BASIC_SCOPES = listOf("email")
 
     private fun getPrefs(context: Context) = 
         com.neubofy.reality.utils.SecurePreferences.get(context, PREF_NAME)
@@ -385,7 +385,7 @@ object GoogleAuthManager {
                 val json = JSONObject(response)
 
                 val email = json.optString("email", "")
-                val name = json.optString("name", "")
+                val name = json.optString("name", context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE).getString("user_name", "User"))
                 val picture = json.optString("picture", "")
 
                 getPrefs(context).edit().apply {
