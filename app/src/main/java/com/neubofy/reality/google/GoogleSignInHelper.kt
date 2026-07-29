@@ -1,11 +1,15 @@
 package com.neubofy.reality.google
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.neubofy.reality.R
 import com.neubofy.reality.utils.SecurePreferences
@@ -17,29 +21,42 @@ import java.net.URLDecoder
 
 object GoogleSignInHelper {
 
+    const val ACTION_FIREBASE_AUTH_SUCCESS = "com.neubofy.reality.FIREBASE_AUTH_SUCCESS"
+
     fun startSignInFlow(activity: AppCompatActivity, isAllConnected: Boolean = false, forceBasicScope: Boolean? = null, skipDialog: Boolean = false, onSuccess: () -> Unit) {
-        // As per new requirements, completely bypass the "Sign In Option" dialog and scope selection.
-        // If forceBasicScope is true (Elite page), use basic scopes. 
-        // If forceBasicScope is false or null (Profile page), use full scopes.
         val fullScopes = (forceBasicScope != true)
-        performSignIn(activity, fullScopes, onSuccess)
+
+        if (GoogleAuthManager.hasCloudCredentials(activity)) {
+            performSignIn(activity, fullScopes, onSuccess)
+        } else {
+            performFirebaseSignIn(activity, fullScopes, onSuccess)
+        }
+    }
+
+    private fun performFirebaseSignIn(activity: AppCompatActivity, fullScopes: Boolean, onSuccess: () -> Unit) {
+
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                LocalBroadcastManager.getInstance(activity).unregisterReceiver(this)
+                val success = intent?.getBooleanExtra("success", false) == true
+                if (success) onSuccess()
+            }
+        }
+        LocalBroadcastManager.getInstance(activity).registerReceiver(receiver, IntentFilter(ACTION_FIREBASE_AUTH_SUCCESS))
+        activity.lifecycle.addObserver(object : androidx.lifecycle.DefaultLifecycleObserver {
+            override fun onDestroy(owner: androidx.lifecycle.LifecycleOwner) {
+                LocalBroadcastManager.getInstance(activity).unregisterReceiver(receiver)
+            }
+        })
+
+
+        val intent = Intent(activity, FirebaseAuthProxyActivity::class.java)
+        intent.putExtra("fullScopes", fullScopes)
+        activity.startActivity(intent)
     }
 
     fun showCloudKeySettings(activity: AppCompatActivity) {
         showCustomKeyDialog(activity, null) {}
-    }
-
-    private fun showScopeSelectionDialog(activity: AppCompatActivity, onSuccess: () -> Unit, defaultFullScope: Boolean) {
-        MaterialAlertDialogBuilder(activity)
-            .setTitle("Sign-In Scope")
-            .setMessage("Do you want to sign in only for verifying user identity to get user ID, or sign in with full connections for Google Workspace?")
-            .setPositiveButton("Verify Identity") { _, _ ->
-                performSignIn(activity, fullScopes = false, onSuccess)
-            }
-            .setNegativeButton("Full Connection") { _, _ ->
-                performSignIn(activity, fullScopes = true, onSuccess)
-            }
-            .show()
     }
 
     private fun showCustomKeyDialog(activity: AppCompatActivity, forceBasicScope: Boolean?, onSuccess: () -> Unit) {
@@ -54,18 +71,12 @@ object GoogleSignInHelper {
             etClientId.setText(customId)
         } else {
             etClientId.setText("")
-            if (GoogleAuthManager.getClientId(activity) != null) {
-                etClientId.hint = "Developer Default Key In Use"
-            }
         }
 
         if (!customSecret.isNullOrBlank()) {
             etClientSecret.setText(customSecret)
         } else {
             etClientSecret.setText("")
-            if (GoogleAuthManager.getClientSecret(activity) != null) {
-                etClientSecret.hint = "Developer Default Key In Use"
-            }
         }
 
         MaterialAlertDialogBuilder(activity)

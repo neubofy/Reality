@@ -68,7 +68,7 @@ export default function PrivacyPolicy() {
               <ul className="list-disc pl-6 space-y-2 text-sm text-gray-400">
                 <li><strong className="text-white">Direct Client Authentication:</strong> The app utilizes credentials you configure in your own Google Cloud project. It requests tokens straight from Google using an on-device socket redirect listener.</li>
                 <li><strong className="text-white">Drive & Docs Storage:</strong> Document logs, backup files, and journals are created inside your personal Google Drive space. Neubofy does not have access credentials to view or read these assets.</li>
-                <li><strong className="text-white">Permission Scope:</strong> Google Profile scopes (name, profile picture, email address) are retrieved strictly to map active synchronization identities inside your local profile console.</li>
+                <li><strong className="text-white">Permission Scope:</strong> Google Profile scopes (name, profile picture, email address) are retrieved strictly to map active synchronization identities inside your local profile console. If you use custom GCP credentials, we do not collect or store this data. If you use the Firebase Auth fallback, a standard Firebase user record is created, but it remains entirely isolated from our subscription database (which never stores names, emails, or tokens).</li>
               </ul>
             </section>
 
