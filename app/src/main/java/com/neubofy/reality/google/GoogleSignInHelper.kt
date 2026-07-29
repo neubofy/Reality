@@ -37,12 +37,9 @@ object GoogleSignInHelper {
         var fullScopes: Boolean = false
         var onSuccess: (() -> Unit)? = null
 
-        override fun onCreateView(
-            inflater: android.view.LayoutInflater,
-            container: android.view.ViewGroup?,
-            savedInstanceState: android.os.Bundle?
-        ): android.view.View? {
-            return inflater.inflate(com.neubofy.reality.R.layout.fragment_auth_loading, container, false)
+        override fun onCreate(savedInstanceState: android.os.Bundle?) {
+            super.onCreate(savedInstanceState)
+            (activity as? com.neubofy.reality.ui.base.BaseActivity)?.showLoading("Authenticating...")
         }
 
         private val launcher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
@@ -111,7 +108,10 @@ object GoogleSignInHelper {
 
         private fun finishAuth(success: Boolean) {
             if (success) {
+                (activity as? com.neubofy.reality.ui.base.BaseActivity)?.showLoading("Syncing Identity...")
                 onSuccess?.invoke()
+            } else {
+                (activity as? com.neubofy.reality.ui.base.BaseActivity)?.hideLoading()
             }
             parentFragmentManager.beginTransaction().remove(this).commitAllowingStateLoss()
         }

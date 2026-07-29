@@ -1,15 +1,21 @@
 package com.neubofy.reality.ui.base
 
+import android.app.Dialog
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.neubofy.reality.R
 import com.neubofy.reality.utils.ThemeManager
 
 /**
  * Base Activity to apply global personalization (Theming, Backgrounds, Glassmorphism).
  */
 open class BaseActivity : AppCompatActivity() {
+
+    private var loadingDialog: Dialog? = null
 
     override fun attachBaseContext(newBase: android.content.Context) {
         val scale = ThemeManager.getFontSizeScale(newBase)
@@ -40,6 +46,7 @@ open class BaseActivity : AppCompatActivity() {
         override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
             if (intent == null || isFinishing || isDestroyed) return
             
+            hideLoading()
             onIdentityUpdated()
         }
     }
@@ -94,6 +101,32 @@ open class BaseActivity : AppCompatActivity() {
         val rootView = findViewById<View>(android.R.id.content)
         if (rootView != null) {
             ThemeManager.applyGlobalPersonalization(rootView)
+        }
+    }
+
+    fun showLoading(message: String = "Loading...") {
+        if (isFinishing || isDestroyed) return
+        
+        if (loadingDialog == null) {
+            loadingDialog = Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen).apply {
+                requestWindowFeature(Window.FEATURE_NO_TITLE)
+                setContentView(R.layout.fragment_auth_loading)
+                window?.setBackgroundDrawableResource(android.R.color.transparent)
+                setCancelable(false)
+            }
+        }
+        
+        loadingDialog?.findViewById<TextView>(R.id.tv_loading_message)?.text = message
+        
+        if (loadingDialog?.isShowing == false) {
+            loadingDialog?.show()
+        }
+    }
+
+    fun hideLoading() {
+        if (isFinishing || isDestroyed) return
+        if (loadingDialog?.isShowing == true) {
+            loadingDialog?.dismiss()
         }
     }
 }
