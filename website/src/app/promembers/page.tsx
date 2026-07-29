@@ -218,7 +218,7 @@ export default async function ProMembersPage({ searchParams }: PageProps) {
                 These are the people who contributed to Reality. Thanks to them, we are able to maintain this source-available project and provide proper updates and patches on a regular basis.
               </p>
               <p className="text-xs text-gray-500 font-mono leading-relaxed bg-black/30 p-3 rounded-lg border border-gray-800/50">
-                <strong className="text-gray-400">Privacy Notice:</strong> We do not collect or store your name, email, or any personal details. The identifiers shown below are generated hashed User IDs used strictly for anonymous Pro verification.
+                <strong className="text-gray-400">Privacy Notice:</strong> When using your own GCP credentials, we do not collect or store your name, email, or any personal details. If you use the Firebase Auth fallback, Firebase generates an active user list, but this is completely separate from our Cloudflare subscription database where no emails, names, or tokens are ever stored. The identifiers below are purely hashed User IDs for anonymous verification.
               </p>
             </div>
           </div>

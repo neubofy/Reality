@@ -54,7 +54,15 @@ class FirebaseAuthProxyActivity : AppCompatActivity() {
         fullScopes = intent.getBooleanExtra("fullScopes", false)
 
 
-        val defaultWebClientId = getString(resources.getIdentifier("default_web_client_id", "string", packageName))
+
+        val defaultWebClientIdRes = resources.getIdentifier("default_web_client_id", "string", packageName)
+        if (defaultWebClientIdRes == 0) {
+            Toast.makeText(this, "Firebase configuration missing (default_web_client_id)", Toast.LENGTH_LONG).show()
+            finishAuth(false)
+            return
+        }
+        val defaultWebClientId = getString(defaultWebClientIdRes)
+
 
         val gsoBuilder = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(defaultWebClientId)

@@ -352,7 +352,7 @@ export default function ShareCertificateModal({ isOpen, onClose, preVerifiedMemb
                   
                   <div className="mb-4 p-3 bg-blue-950/20 border border-blue-900/30 rounded-xl text-left">
                      <p className="text-xs text-blue-300/80 leading-relaxed">
-                        You can use your original name and own photo. This is completely client-side. We don't even know who generated the card. We only verify and send details to the website if the User ID is found in our DB, which we collect during subscription. We don't have your name, email, or personal details. The User ID is irreversible, meaning no one can get your email or generate the same User ID from your email.
+                        You can use your original name and own photo. This is completely client-side. We don't even know who generated the card. We only verify and send details to the website if the User ID is found in our DB, which we collect during subscription. We do not store your name, email, or personal details in our subscription database. (Note: using Firebase Auth fallback creates a standard Firebase user record, but it remains isolated from this database). The User ID is irreversible, meaning no one can get your email or generate the same User ID from your email.
                      </p>
                   </div>
 

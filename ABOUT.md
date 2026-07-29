@@ -43,4 +43,4 @@ Reality works completely without developer servers, syncing directly to your own
   3. Enter the generated **Client ID** and **Client Secret** in Reality's Settings under Google Auth.
   4. Once linked, Reality automatically syncs your Tasks, Calendar events, and Daily Report Sheets.
 
-Everything is processed on-device , preserving total user privacy.
+Everything is processed on-device , preserving total user privacy. \n**Note:** When you use your own Google Cloud credentials (BYOK), Reality does not collect or store your email or name. If you use the Firebase Auth fallback (without custom keys), a standard Firebase authenticated user record is created on Google's servers. This active user list cannot be disabled but remains completely isolated from our subscription database in Cloudflare, which does not store any names, emails, or tokens.
