@@ -37,6 +37,14 @@ object GoogleSignInHelper {
         var fullScopes: Boolean = false
         var onSuccess: (() -> Unit)? = null
 
+        override fun onCreateView(
+            inflater: android.view.LayoutInflater,
+            container: android.view.ViewGroup?,
+            savedInstanceState: android.os.Bundle?
+        ): android.view.View? {
+            return inflater.inflate(com.neubofy.reality.R.layout.fragment_auth_loading, container, false)
+        }
+
         private val launcher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == android.app.Activity.RESULT_OK) {
                 val task = com.google.android.gms.auth.api.signin.GoogleSignIn.getSignedInAccountFromIntent(result.data)
@@ -44,7 +52,7 @@ object GoogleSignInHelper {
                     val account = task.getResult(com.google.android.gms.common.api.ApiException::class.java)
                     val idToken = account?.idToken
                     if (idToken != null) {
-                        firebaseAuthWithGoogle(idToken, account.serverAuthCode)
+                        firebaseAuthWithGoogle(idToken, account.serverAuthCode, account.account)
                     } else {
                         Toast.makeText(requireContext(), "Sign-in failed. No ID Token.", Toast.LENGTH_SHORT).show()
                         finishAuth(false)
@@ -58,7 +66,7 @@ object GoogleSignInHelper {
             }
         }
 
-        private fun firebaseAuthWithGoogle(idToken: String, serverAuthCode: String?) {
+        private fun firebaseAuthWithGoogle(idToken: String, serverAuthCode: String?, googleAccount: android.accounts.Account?) {
             val credential = com.google.firebase.auth.GoogleAuthProvider.getCredential(idToken, null)
             com.google.firebase.auth.FirebaseAuth.getInstance().signInWithCredential(credential)
                 .addOnCompleteListener(requireActivity()) { task ->
@@ -66,9 +74,22 @@ object GoogleSignInHelper {
                         val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
                         if (user != null) {
                             lifecycleScope.launch {
+                                var accessToken: String? = null
+                                
+                                if (fullScopes && googleAccount != null) {
+                                    val scopes = "oauth2:https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/tasks https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/documents"
+                                    try {
+                                        accessToken = withContext(Dispatchers.IO) {
+                                            com.google.android.gms.auth.GoogleAuthUtil.getToken(requireContext(), googleAccount, scopes)
+                                        }
+                                    } catch (e: Exception) {
+                                        TerminalLogger.log("GOOGLE AUTH: Failed to get GoogleAuthUtil token - ${e.message}")
+                                    }
+                                }
+
                                 GoogleAuthManager.saveFirebaseSession(
                                     requireContext(), idToken,
-                                    user.email, user.displayName, serverAuthCode
+                                    user.email, user.displayName, accessToken ?: serverAuthCode
                                 )
                                 SecurePreferences.get(requireContext(), "reality_features").edit()
                                     .putBoolean("reality_pro_basic_sign_in", !fullScopes).apply()
