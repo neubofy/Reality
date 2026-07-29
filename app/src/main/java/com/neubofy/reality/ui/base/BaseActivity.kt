@@ -108,34 +108,38 @@ open class BaseActivity : AppCompatActivity() {
     private val hideLoadingRunnable = Runnable { hideLoading() }
 
     fun showLoading(message: String = "Loading...") {
-        if (isFinishing || isDestroyed) return
-        
-        loadingHandler.removeCallbacks(hideLoadingRunnable)
-        
-        if (loadingDialog == null) {
-            loadingDialog = Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen).apply {
-                requestWindowFeature(Window.FEATURE_NO_TITLE)
-                setContentView(R.layout.fragment_auth_loading)
-                window?.setBackgroundDrawableResource(android.R.color.transparent)
-                setCancelable(false)
+        runOnUiThread {
+            if (isFinishing || isDestroyed) return@runOnUiThread
+            
+            loadingHandler.removeCallbacks(hideLoadingRunnable)
+            
+            if (loadingDialog == null) {
+                loadingDialog = Dialog(this@BaseActivity, android.R.style.Theme_Black_NoTitleBar_Fullscreen).apply {
+                    requestWindowFeature(Window.FEATURE_NO_TITLE)
+                    setContentView(R.layout.fragment_auth_loading)
+                    window?.setBackgroundDrawableResource(android.R.color.transparent)
+                    setCancelable(false)
+                }
             }
+            
+            loadingDialog?.findViewById<TextView>(R.id.tv_loading_message)?.text = message
+            
+            if (loadingDialog?.isShowing == false) {
+                loadingDialog?.show()
+            }
+            
+            // Safety timeout: 15 seconds max
+            loadingHandler.postDelayed(hideLoadingRunnable, 15000)
         }
-        
-        loadingDialog?.findViewById<TextView>(R.id.tv_loading_message)?.text = message
-        
-        if (loadingDialog?.isShowing == false) {
-            loadingDialog?.show()
-        }
-        
-        // Safety timeout: 15 seconds max
-        loadingHandler.postDelayed(hideLoadingRunnable, 15000)
     }
 
     fun hideLoading() {
-        if (isFinishing || isDestroyed) return
-        loadingHandler.removeCallbacks(hideLoadingRunnable)
-        if (loadingDialog?.isShowing == true) {
-            loadingDialog?.dismiss()
+        runOnUiThread {
+            if (isFinishing || isDestroyed) return@runOnUiThread
+            loadingHandler.removeCallbacks(hideLoadingRunnable)
+            if (loadingDialog?.isShowing == true) {
+                loadingDialog?.dismiss()
+            }
         }
     }
 }
