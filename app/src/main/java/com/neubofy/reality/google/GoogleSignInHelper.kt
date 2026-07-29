@@ -37,10 +37,7 @@ object GoogleSignInHelper {
         var fullScopes: Boolean = false
         var onSuccess: (() -> Unit)? = null
 
-        override fun onCreate(savedInstanceState: android.os.Bundle?) {
-            super.onCreate(savedInstanceState)
-            (activity as? com.neubofy.reality.ui.base.BaseActivity)?.showLoading("Authenticating...")
-        }
+
 
         private val launcher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == android.app.Activity.RESULT_OK) {
@@ -118,6 +115,7 @@ object GoogleSignInHelper {
 
         override fun onCreate(savedInstanceState: android.os.Bundle?) {
             super.onCreate(savedInstanceState)
+            (activity as? com.neubofy.reality.ui.base.BaseActivity)?.showLoading("Authenticating...")
             val defaultWebClientIdRes = resources.getIdentifier("default_web_client_id", "string", requireContext().packageName)
             if (defaultWebClientIdRes == 0) {
                 Toast.makeText(requireContext(), "Firebase configuration missing (default_web_client_id)", Toast.LENGTH_LONG).show()
