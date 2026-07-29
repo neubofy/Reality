@@ -498,7 +498,7 @@ object GoogleAuthManager {
         val clientSecret = getClientSecret(context)
         val workerUrl = com.neubofy.reality.BuildConfig.WORKER_URL
         
-        if (accessToken.isNullOrBlank()) {
+        if (accessToken.isNullOrBlank() && !isFirebaseSession(context)) {
             handleAuthFailure(context)
             return null
         }

@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { Settings, Play, Pause, Square, RotateCcw, X, Trash2, Edit2, QrCode, ArrowLeft, ChevronLeft, ChevronRight, Calendar, Maximize2, Minimize2, Clock } from 'lucide-react';
 import Link from 'next/link';
+import { auth, googleProvider, signInWithRedirect, getRedirectResult, signOut } from '@/lib/firebase';
+import { GoogleAuthProvider } from 'firebase/auth';
 
 export interface TapasyaSession {
   sessionId: string;
@@ -106,18 +108,44 @@ export default function TapashyaPage() {
           window.location.hash = '';
       }
 
-      const checkConnection = async () => {
+      // Check for redirect result from Firebase Auth
+      getRedirectResult(auth).then(async (result) => {
+          if (result) {
+              const credential = GoogleAuthProvider.credentialFromResult(result);
+              if (credential && credential.accessToken) {
+                  // Send the Google Access Token to our backend to be stored securely in an HTTP-only cookie
+                  await fetch('/api/auth/session', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ googleAccessToken: credential.accessToken })
+                  });
+              }
+          }
+          // After handling redirect (or if no redirect), verify the session cookie
           await fetchTodayEvents();
-      };
+      }).catch((error) => {
+          console.error("Google Sign-In redirect failed", error);
+          fetchTodayEvents();
+      });
 
-      checkConnection();
   }, []);
+
+  const handleGoogleConnect = async () => {
+      try {
+          await signInWithRedirect(auth, googleProvider);
+      } catch (error) {
+          console.error("Google Sign-In redirect initiation failed", error);
+      }
+  };
 
   const fetchTodayEvents = async () => {
       try {
+          // The API route now uses the secure HTTP-only cookie to authenticate
           const res = await fetch('/api/calendar/events');
 
           if (res.status === 401) {
+              // If unauthorized (cookie missing or expired), sync Firebase state
+              await signOut(auth);
               setCalendarConnected(false);
               return;
           }
@@ -141,6 +169,8 @@ export default function TapashyaPage() {
 
   const disconnectCalendar = async () => {
       try {
+          // Sign out of Firebase AND clear our secure token cookie
+          await signOut(auth);
           await fetch('/api/auth/logout', { method: 'POST' });
           setCalendarConnected(false);
           setCalendarEvents([]);
@@ -651,9 +681,9 @@ export default function TapashyaPage() {
           </div>
           <div className="flex gap-2">
             {!calendarConnected ? (
-              <a href="/api/auth/google" className="flex items-center gap-2 px-4 py-2 bg-[#00E5FF]/10 text-[#00E5FF] rounded-full text-sm font-bold hover:bg-[#B2DFDB] transition-colors">
+              <button onClick={handleGoogleConnect} className="flex items-center gap-2 px-4 py-2 bg-[#00E5FF]/10 text-[#00E5FF] rounded-full text-sm font-bold hover:bg-[#B2DFDB] transition-colors">
                  <Calendar size={16} /> Connect
-              </a>
+              </button>
             ) : (
               <button onClick={disconnectCalendar} className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 rounded-full text-sm font-bold hover:bg-red-500/20 transition-colors">
                  <Calendar size={16} /> Disconnect
@@ -750,9 +780,9 @@ export default function TapashyaPage() {
                 <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 shadow-2xl shadow-black/80 border border-white/10 flex flex-col items-center justify-center text-center">
                     <Calendar size={32} className="text-gray-400 mb-3" />
                     <p className="text-gray-300 font-medium mb-4">Sync with your calendar to see study blocks.</p>
-                    <a href="/api/auth/google" className="px-6 py-2 bg-[#00E5FF] text-white rounded-full font-bold shadow hover:bg-[#00B8D4] transition-colors">
+                    <button onClick={handleGoogleConnect} className="px-6 py-2 bg-[#00E5FF] text-white rounded-full font-bold shadow hover:bg-[#00B8D4] transition-colors">
                         Connect Calendar
-                    </a>
+                    </button>
                 </div>
             ) : calendarEvents.length === 0 ? (
                 <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 shadow-2xl shadow-black/80 border border-white/10 flex flex-col items-center text-center">

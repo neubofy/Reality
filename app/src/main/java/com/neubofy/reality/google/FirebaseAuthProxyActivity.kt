@@ -50,6 +50,7 @@ class FirebaseAuthProxyActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // No layout, transparent activity
+        overridePendingTransition(0, 0)
 
         fullScopes = intent.getBooleanExtra("fullScopes", false)
 
@@ -111,5 +112,6 @@ class FirebaseAuthProxyActivity : AppCompatActivity() {
         intent.putExtra("success", success)
         androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
         finish()
+        overridePendingTransition(0, 0)
     }
 }
