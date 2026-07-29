@@ -562,7 +562,7 @@ object GoogleAuthManager {
                                 try {
                                     com.google.android.gms.auth.GoogleAuthUtil.clearToken(context, this.accessToken)
                                     val newToken = com.google.android.gms.auth.GoogleAuthUtil.getToken(context, android.accounts.Account(email, "com.google"), scopeString)
-                                    this.accessToken = newToken
+                                    this.setAccessToken(newToken)
                                     getPrefs(context).edit().putString(KEY_ACCESS_TOKEN, newToken).apply()
                                     TerminalLogger.log("GOOGLE AUTH: Token auto-refreshed seamlessly after 401 (Attempt \$retryCount)")
                                     return true // Instructs Java Client to retry the failed request
@@ -573,7 +573,7 @@ object GoogleAuthManager {
                             return super.handleResponse(request, response, supportsRetry)
                         }
                     }
-                    credential.accessToken = accToken
+                    credential.setAccessToken(accToken)
                     return credential
                 } catch(e: Exception) {
                     TerminalLogger.log("GOOGLE AUTH: Failed to fetch token via GoogleAuthUtil - \${e.message}")
@@ -635,16 +635,7 @@ object GoogleAuthManager {
         return isSignedIn(activity)
     }
     
-    fun getHttpTransport(): com.google.api.client.http.HttpTransport {
-        return object : com.google.api.client.http.HttpTransport() {
-            val delegate = com.google.api.client.extensions.android.http.AndroidHttp.newCompatibleTransport()
-            override fun buildRequest(method: String, url: String): com.google.api.client.http.LowLevelHttpRequest {
-                val req = delegate.buildRequest(method, url)
-                req.setTimeout(15000, 15000)
-                return req
-            }
-        }
-    }
+    fun getHttpTransport() = com.google.api.client.extensions.android.http.AndroidHttp.newCompatibleTransport()
     fun getJsonFactory() = com.google.api.client.json.gson.GsonFactory.getDefaultInstance()
     
     fun hasRequiredPermissions(context: Context): Boolean {
