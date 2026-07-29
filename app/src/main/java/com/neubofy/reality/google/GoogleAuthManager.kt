@@ -116,21 +116,27 @@ object GoogleAuthManager {
     }
 
 
-    fun saveFirebaseSession(context: Context, idToken: String, email: String?, name: String?, authCode: String? = null) {
+    suspend fun saveFirebaseSession(context: Context, idToken: String, email: String?, name: String?, accessTokenOrAuthCode: String? = null) {
         getPrefs(context).edit().apply {
             putBoolean(KEY_FIREBASE_SESSION, true)
             putString(KEY_ID_TOKEN, idToken)
             putBoolean(KEY_IS_SIGNED_IN, true)
             if (email != null) putString(KEY_USER_EMAIL, email)
             if (name != null) putString(KEY_USER_NAME, name)
+            
+            // If the string starts with ya29 (Google access token prefix), save it directly
+            if (accessTokenOrAuthCode != null && accessTokenOrAuthCode.startsWith("ya29")) {
+                putString(KEY_ACCESS_TOKEN, accessTokenOrAuthCode)
+            }
             apply()
         }
-        if (authCode != null) {
+        
+        if (accessTokenOrAuthCode != null && !accessTokenOrAuthCode.startsWith("ya29")) {
             kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-                exchangeCodeForTokens(context, authCode)
+                exchangeCodeForTokens(context, accessTokenOrAuthCode)
             }
         }
-        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch { com.neubofy.reality.utils.IdentityManager.refreshIdentity(context.applicationContext) }
+        com.neubofy.reality.utils.IdentityManager.refreshIdentity(context.applicationContext)
     }
 
     fun isFirebaseSession(context: Context): Boolean {
@@ -258,6 +264,23 @@ object GoogleAuthManager {
                             putString(KEY_ID_TOKEN, idToken)
                             apply()
                         }
+                        
+                        // Additionally refresh the Google Calendar access_token if we have one
+                        val oldAccessToken = getPrefs(context).getString(KEY_ACCESS_TOKEN, null)
+                        val userEmail = getPrefs(context).getString(KEY_USER_EMAIL, null)
+                        if (oldAccessToken != null && userEmail != null) {
+                            try {
+                                com.google.android.gms.auth.GoogleAuthUtil.clearToken(context, oldAccessToken)
+                                val account = android.accounts.Account(userEmail, "com.google")
+                                val scopes = "oauth2:https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/tasks https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/spreadsheets"
+                                val newAccessToken = com.google.android.gms.auth.GoogleAuthUtil.getToken(context, account, scopes)
+                                getPrefs(context).edit().putString(KEY_ACCESS_TOKEN, newAccessToken).apply()
+                                TerminalLogger.log("GOOGLE AUTH: Access token refreshed successfully via GoogleAuthUtil")
+                            } catch (e: Exception) {
+                                TerminalLogger.log("GOOGLE AUTH: Failed to refresh GoogleAuthUtil token - ${e.message}")
+                            }
+                        }
+
                         TerminalLogger.log("GOOGLE AUTH: Firebase token refreshed successfully")
                         return@withContext true
                     }
@@ -423,8 +446,12 @@ object GoogleAuthManager {
     }
 
     fun isSignedIn(context: Context): Boolean {
-        return getPrefs(context).getBoolean(KEY_IS_SIGNED_IN, false) &&
-               !getPrefs(context).getString(KEY_ACCESS_TOKEN, null).isNullOrBlank()
+        val prefs = getPrefs(context)
+        if (!prefs.getBoolean(KEY_IS_SIGNED_IN, false)) return false
+        if (isFirebaseSession(context)) {
+            return !prefs.getString(KEY_ID_TOKEN, null).isNullOrBlank()
+        }
+        return !prefs.getString(KEY_ACCESS_TOKEN, null).isNullOrBlank()
     }
 
     fun getUserEmail(context: Context): String? = getPrefs(context).getString(KEY_USER_EMAIL, null)

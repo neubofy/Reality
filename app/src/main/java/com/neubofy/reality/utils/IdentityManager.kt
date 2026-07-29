@@ -172,7 +172,7 @@ object IdentityManager {
     private suspend fun generateAndCacheIdentity(context: Context): IdentityResult? {
         return withContext(Dispatchers.IO) {
             val email = GoogleAuthManager.getUserEmail(context) ?: ""
-            val isSignedIn = GoogleAuthManager.isSignedIn(context) && email.isNotEmpty()
+            val isSignedIn = GoogleAuthManager.isSignedIn(context)
             
             // Refresh token before fetching identity
             if (isSignedIn) {
@@ -181,7 +181,7 @@ object IdentityManager {
             
             val idToken = GoogleAuthManager.getIdToken(context)
             
-            if (!isSignedIn || idToken.isNullOrBlank()) {
+            if (!isSignedIn && idToken.isNullOrBlank()) {
                 // Auto remove all local subscription data if not signed in
                 val featuresPrefs = SecurePreferences.get(context, "reality_features")
                 val proPrefs = SecurePreferences.get(context, "reality_pro_prefs")
