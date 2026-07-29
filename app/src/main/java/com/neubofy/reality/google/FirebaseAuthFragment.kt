@@ -4,7 +4,8 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -16,30 +17,33 @@ import com.google.api.services.sheets.v4.SheetsScopes
 import com.google.api.services.tasks.TasksScopes
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.neubofy.reality.R
 import com.neubofy.reality.utils.SecurePreferences
 import com.neubofy.reality.utils.TerminalLogger
-import androidx.activity.result.contract.ActivityResultContracts
 
-class FirebaseAuthProxyActivity : AppCompatActivity() {
+class FirebaseAuthFragment : Fragment() {
 
     private var fullScopes = false
+    private var onSuccess: (() -> Unit)? = null
 
     private val firebaseAuthLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
+        if (result.resultCode == Activity.RESULT_OK && result.data != null) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
-                val account = task.getResult(ApiException::class.java)!!
-                val idToken = account.idToken
-                if (idToken != null) {
-                    firebaseAuthWithGoogle(idToken, account.serverAuthCode)
+                val account = task.getResult(ApiException::class.java)
+                if (account != null) {
+                    val idToken = account.idToken
+                    if (idToken != null) {
+                        firebaseAuthWithGoogle(idToken, account.serverAuthCode)
+                    } else {
+                        Toast.makeText(requireContext(), "Sign-in failed. No ID Token.", Toast.LENGTH_SHORT).show()
+                        finishAuth(false)
+                    }
                 } else {
-                    Toast.makeText(this, "Sign-in failed. No ID Token.", Toast.LENGTH_SHORT).show()
                     finishAuth(false)
                 }
             } catch (e: ApiException) {
                 TerminalLogger.log("Firebase Google Sign In failed: ${e.message}")
-                Toast.makeText(this, "Sign-in failed.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Sign-in failed.", Toast.LENGTH_SHORT).show()
                 finishAuth(false)
             }
         } else {
@@ -49,21 +53,15 @@ class FirebaseAuthProxyActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // No layout, transparent activity
-        overridePendingTransition(0, 0)
+        fullScopes = arguments?.getBoolean("fullScopes") ?: false
 
-        fullScopes = intent.getBooleanExtra("fullScopes", false)
-
-
-
-        val defaultWebClientIdRes = resources.getIdentifier("default_web_client_id", "string", packageName)
+        val defaultWebClientIdRes = resources.getIdentifier("default_web_client_id", "string", requireContext().packageName)
         if (defaultWebClientIdRes == 0) {
-            Toast.makeText(this, "Firebase configuration missing (default_web_client_id)", Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), "Firebase configuration missing", Toast.LENGTH_LONG).show()
             finishAuth(false)
             return
         }
         val defaultWebClientId = getString(defaultWebClientIdRes)
-
 
         val gsoBuilder = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(defaultWebClientId)
@@ -79,39 +77,46 @@ class FirebaseAuthProxyActivity : AppCompatActivity() {
             gsoBuilder.requestScopes(Scope(SheetsScopes.SPREADSHEETS))
         }
 
-
-        val googleSignInClient = GoogleSignIn.getClient(this, gsoBuilder.build())
+        val googleSignInClient = GoogleSignIn.getClient(requireContext(), gsoBuilder.build())
         firebaseAuthLauncher.launch(googleSignInClient.signInIntent)
     }
 
     private fun firebaseAuthWithGoogle(idToken: String, serverAuthCode: String?) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         FirebaseAuth.getInstance().signInWithCredential(credential)
-            .addOnCompleteListener(this) { task ->
+            .addOnCompleteListener(requireActivity()) { task ->
                 if (task.isSuccessful) {
                     val user = FirebaseAuth.getInstance().currentUser
                     if (user != null) {
-                        GoogleAuthManager.saveFirebaseSession(this, idToken, user.email, user.displayName, serverAuthCode)
-                        SecurePreferences.get(this, "reality_features").edit()
+                        GoogleAuthManager.saveFirebaseSession(requireContext(), idToken, user.email, user.displayName, serverAuthCode)
+                        SecurePreferences.get(requireContext(), "reality_features").edit()
                             .putBoolean("reality_pro_basic_sign_in", !fullScopes).apply()
-                        Toast.makeText(this, "Sign-in successful!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Sign-in successful!", Toast.LENGTH_SHORT).show()
                         finishAuth(true)
                     } else {
                         finishAuth(false)
                     }
                 } else {
                     TerminalLogger.log("Firebase Auth failed: ${task.exception?.message}")
-                    Toast.makeText(this, "Authentication Failed.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Authentication Failed.", Toast.LENGTH_SHORT).show()
                     finishAuth(false)
                 }
             }
     }
 
     private fun finishAuth(success: Boolean) {
-        val intent = Intent(GoogleSignInHelper.ACTION_FIREBASE_AUTH_SUCCESS)
+        if (success) {
+            onSuccess?.invoke()
+        }
+        val intent = Intent(GoogleSignInHelper.ACTION_FIREBASE_AUTH_SUCCESS).apply {
+            setPackage(requireContext().packageName)
+        }
         intent.putExtra("success", success)
-        androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-        finish()
-        overridePendingTransition(0, 0)
+        androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)
+        parentFragmentManager.beginTransaction().remove(this).commitAllowingStateLoss()
+    }
+
+    fun setCallback(callback: () -> Unit) {
+        this.onSuccess = callback
     }
 }

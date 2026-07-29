@@ -1,0 +1,1 @@
+cd app && ../gradlew assembleDebug

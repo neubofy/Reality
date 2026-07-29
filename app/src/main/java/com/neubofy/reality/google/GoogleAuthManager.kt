@@ -241,17 +241,12 @@ object GoogleAuthManager {
                 if (user != null) {
                     val task = user.getIdToken(true)
                     var tokenResult: com.google.firebase.auth.GetTokenResult? = null
-                    try {
-                        // removed await to avoid unresolved reference
-                    } catch(e: Exception) {
-                        // In case await is not imported properly
-                        val latch = java.util.concurrent.CountDownLatch(1)
-                        task.addOnCompleteListener { res ->
-                            if(res.isSuccessful) tokenResult = res.result
-                            latch.countDown()
-                        }
-                        latch.await()
+                    val latch = java.util.concurrent.CountDownLatch(1)
+                    task.addOnCompleteListener { res ->
+                        if(res.isSuccessful) tokenResult = res.result
+                        latch.countDown()
                     }
+                    latch.await()
                     val idToken = tokenResult?.token
                     if (idToken != null) {
                         getPrefs(context).edit().apply {

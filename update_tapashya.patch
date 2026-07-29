@@ -1,0 +1,42 @@
+--- website/src/app/tapashya/page.tsx
++++ website/src/app/tapashya/page.tsx
+@@ -8,2 +8,2 @@
+-import { auth, googleProvider, signInWithPopup, getRedirectResult, signOut } from '@/lib/firebase';
++import { auth, googleProvider, signInWithPopup, signOut } from '@/lib/firebase';
+ import { GoogleAuthProvider } from 'firebase/auth';
+@@ -109,14 +109,2 @@
+
+-      // Check for redirect result from Firebase Auth
+-      getRedirectResult(auth).then(async (result) => {
+-          if (result) {
+-              const credential = GoogleAuthProvider.credentialFromResult(result);
+-              if (credential && credential.accessToken) {
+-                  // Send the Google Access Token to our backend to be stored securely in an HTTP-only cookie
+-                  await fetch('/api/auth/session', {
+-                      method: 'POST',
+-                      headers: { 'Content-Type': 'application/json' },
+-                      body: JSON.stringify({ googleAccessToken: credential.accessToken })
+-                  });
+-              }
+-          }
+-          // After handling redirect (or if no redirect), verify the session cookie
+-          await fetchTodayEvents();
+-      }).catch((error) => {
+-          console.error("Google Sign-In redirect failed", error);
+-          fetchTodayEvents();
+-      });
++      fetchTodayEvents();
+@@ -134,3 +122,12 @@
+       try {
+-          await signInWithPopup(auth, googleProvider);
++          const result = await signInWithPopup(auth, googleProvider);
++          const credential = GoogleAuthProvider.credentialFromResult(result);
++          if (credential && credential.accessToken) {
++              await fetch('/api/auth/session', {
++                  method: 'POST',
++                  headers: { 'Content-Type': 'application/json' },
++                  body: JSON.stringify({ googleAccessToken: credential.accessToken })
++              });
++          }
++          await fetchTodayEvents();
+       } catch (error) {
