@@ -128,8 +128,8 @@ open class BaseActivity : AppCompatActivity() {
                 loadingDialog?.show()
             }
             
-            // Safety timeout: 15 seconds max
-            loadingHandler.postDelayed(hideLoadingRunnable, 15000)
+            // Safety timeout: 5 seconds max
+            loadingHandler.postDelayed(hideLoadingRunnable, 5000)
         }
     }
 

@@ -82,7 +82,7 @@ object GoogleAuthManager {
     private const val KEY_FIREBASE_SESSION = "firebase_session"
     
     val ALL_SCOPES = listOf(
-        CalendarScopes.CALENDAR,
+        "https://www.googleapis.com/auth/calendar.events",
         TasksScopes.TASKS,
         DriveScopes.DRIVE_FILE,
         DocsScopes.DOCUMENTS,
@@ -548,9 +548,35 @@ object GoogleAuthManager {
                     val gBuilder = Credential.Builder(BearerToken.authorizationHeaderAccessMethod())
                         .setTransport(getHttpTransport())
                         .setJsonFactory(getJsonFactory())
-                    return gBuilder.build().setAccessToken(accToken)
+                        
+                    val credential = object : Credential(gBuilder) {
+                        private var retryCount = 0
+                        
+                        override fun handleResponse(
+                            request: com.google.api.client.http.HttpRequest,
+                            response: com.google.api.client.http.HttpResponse,
+                            supportsRetry: Boolean
+                        ): Boolean {
+                            if (response.statusCode == 401 && retryCount < 2) {
+                                retryCount++
+                                try {
+                                    com.google.android.gms.auth.GoogleAuthUtil.clearToken(context, this.accessToken)
+                                    val newToken = com.google.android.gms.auth.GoogleAuthUtil.getToken(context, android.accounts.Account(email, "com.google"), scopeString)
+                                    this.accessToken = newToken
+                                    getPrefs(context).edit().putString(KEY_ACCESS_TOKEN, newToken).apply()
+                                    TerminalLogger.log("GOOGLE AUTH: Token auto-refreshed seamlessly after 401 (Attempt \$retryCount)")
+                                    return true // Instructs Java Client to retry the failed request
+                                } catch (e: Exception) {
+                                    TerminalLogger.log("GOOGLE AUTH: Auto-refresh failed: \${e.message}")
+                                }
+                            }
+                            return super.handleResponse(request, response, supportsRetry)
+                        }
+                    }
+                    credential.accessToken = accToken
+                    return credential
                 } catch(e: Exception) {
-                    TerminalLogger.log("GOOGLE AUTH: Failed to fetch token via GoogleAuthUtil - ${e.message}")
+                    TerminalLogger.log("GOOGLE AUTH: Failed to fetch token via GoogleAuthUtil - \${e.message}")
                 }
             }
         }
@@ -609,8 +635,16 @@ object GoogleAuthManager {
         return isSignedIn(activity)
     }
     
-    fun getHttpTransport() = com.google.api.client.extensions.android.http.AndroidHttp.newCompatibleTransport()
-    
+    fun getHttpTransport(): com.google.api.client.http.HttpTransport {
+        return object : com.google.api.client.http.HttpTransport() {
+            val delegate = com.google.api.client.extensions.android.http.AndroidHttp.newCompatibleTransport()
+            override fun buildRequest(method: String, url: String): com.google.api.client.http.LowLevelHttpRequest {
+                val req = delegate.buildRequest(method, url)
+                req.setTimeout(15000, 15000)
+                return req
+            }
+        }
+    }
     fun getJsonFactory() = com.google.api.client.json.gson.GsonFactory.getDefaultInstance()
     
     fun hasRequiredPermissions(context: Context): Boolean {
