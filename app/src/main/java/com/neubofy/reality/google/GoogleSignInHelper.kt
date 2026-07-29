@@ -34,6 +34,7 @@ object GoogleSignInHelper {
     }
 
     private fun performFirebaseSignIn(activity: AppCompatActivity, fullScopes: Boolean, onSuccess: () -> Unit) {
+
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 LocalBroadcastManager.getInstance(activity).unregisterReceiver(this)
@@ -42,6 +43,12 @@ object GoogleSignInHelper {
             }
         }
         LocalBroadcastManager.getInstance(activity).registerReceiver(receiver, IntentFilter(ACTION_FIREBASE_AUTH_SUCCESS))
+        activity.lifecycle.addObserver(object : androidx.lifecycle.DefaultLifecycleObserver {
+            override fun onDestroy(owner: androidx.lifecycle.LifecycleOwner) {
+                LocalBroadcastManager.getInstance(activity).unregisterReceiver(receiver)
+            }
+        })
+
 
         val intent = Intent(activity, FirebaseAuthProxyActivity::class.java)
         intent.putExtra("fullScopes", fullScopes)

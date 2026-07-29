@@ -147,8 +147,7 @@ object GoogleAuthManager {
 
     fun hasCloudCredentials(context: Context): Boolean {
         val customHasCredentials = !getClientId(context).isNullOrBlank() && !getClientSecret(context).isNullOrBlank()
-        val workerUrl = com.neubofy.reality.BuildConfig.WORKER_URL
-        return customHasCredentials || workerUrl.isNotBlank()
+        return customHasCredentials
     }
     
 
@@ -511,6 +510,23 @@ object GoogleAuthManager {
             return null
         }
 
+
+        if (isFirebaseSession(context)) {
+            val email = getUserEmail(context)
+            if (!email.isNullOrBlank()) {
+                val scopeString = "oauth2:" + ALL_SCOPES.joinToString(" ")
+                try {
+                    val accToken = com.google.android.gms.auth.GoogleAuthUtil.getToken(context, android.accounts.Account(email, "com.google"), scopeString)
+                    getPrefs(context).edit().putString(KEY_ACCESS_TOKEN, accToken).apply()
+                    val gBuilder = Credential.Builder(BearerToken.authorizationHeaderAccessMethod())
+                        .setTransport(getHttpTransport())
+                        .setJsonFactory(getJsonFactory())
+                    return gBuilder.build().setAccessToken(accToken)
+                } catch(e: Exception) {
+                    TerminalLogger.log("GOOGLE AUTH: Failed to fetch token via GoogleAuthUtil - ${e.message}")
+                }
+            }
+        }
         val hasCustomAuth = !clientId.isNullOrBlank() && !clientSecret.isNullOrBlank()
 
         if (!hasCustomAuth && workerUrl.isBlank()) {
