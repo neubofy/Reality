@@ -15,6 +15,6 @@ const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
 // Add required scope for reading calendar events
-googleProvider.addScope('https://www.googleapis.com/auth/calendar.readonly');
+googleProvider.addScope('https://www.googleapis.com/auth/calendar.events.readonly');
 
 export { app, auth, googleProvider, signInWithPopup, signOut };
