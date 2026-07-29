@@ -49,6 +49,8 @@ work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "w
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
+play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version = "21.0.0" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -79,6 +79,7 @@ object GoogleAuthManager {
     private const val KEY_USER_PHOTO_URL = "user_photo_url"
     private const val KEY_IS_SIGNED_IN = "is_signed_in"
     private const val KEY_ID_TOKEN = "id_token"
+    private const val KEY_FIREBASE_SESSION = "firebase_session"
     
     val ALL_SCOPES = listOf(
         CalendarScopes.CALENDAR,
@@ -112,6 +113,28 @@ object GoogleAuthManager {
 
     fun getCustomClientSecret(context: Context): String? {
         return getPrefs(context).getString(KEY_CLIENT_SECRET, null)
+    }
+
+
+    fun saveFirebaseSession(context: Context, idToken: String, email: String?, name: String?, authCode: String? = null) {
+        getPrefs(context).edit().apply {
+            putBoolean(KEY_FIREBASE_SESSION, true)
+            putString(KEY_ID_TOKEN, idToken)
+            putBoolean(KEY_IS_SIGNED_IN, true)
+            if (email != null) putString(KEY_USER_EMAIL, email)
+            if (name != null) putString(KEY_USER_NAME, name)
+            apply()
+        }
+        if (authCode != null) {
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                exchangeCodeForTokens(context, authCode)
+            }
+        }
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch { com.neubofy.reality.utils.IdentityManager.refreshIdentity(context.applicationContext) }
+    }
+
+    fun isFirebaseSession(context: Context): Boolean {
+        return getPrefs(context).getBoolean(KEY_FIREBASE_SESSION, false)
     }
 
     fun getClientId(context: Context): String? {
@@ -148,12 +171,6 @@ object GoogleAuthManager {
             )
             .setAccessType("offline")
             .build()
-        } else if (workerUrl.isNotBlank()) {
-             TerminalLogger.log("GOOGLE AUTH: No cloud credential found. Falling back to secure worker OAuth flow.")
-             val scopeStr = scopes.joinToString(" ")
-             val encodedScopeStr = java.net.URLEncoder.encode(scopeStr, "UTF-8").replace("+", "%20")
-             val cleanWorkerUrl = workerUrl.removeSuffix("/")
-             return "$cleanWorkerUrl/oauth/auth?scope=$encodedScopeStr&redirect_uri=${java.net.URLEncoder.encode(redirectUri, "UTF-8")}"
         }
         return null
     }
@@ -316,34 +333,9 @@ object GoogleAuthManager {
                     refreshToken = tokenResponse.refreshToken
                     idToken = tokenResponse.idToken
                 } else {
-                     val cleanWorkerUrl = workerUrl.removeSuffix("/")
-                     val url = URL("$cleanWorkerUrl/oauth/token")
-                     val conn = url.openConnection() as HttpURLConnection
-                     conn.requestMethod = "POST"
-                     conn.setRequestProperty("Content-Type", "application/json")
-                     conn.doOutput = true
-
-                     val jsonBody = JSONObject()
-                     jsonBody.put("code", code)
-                     jsonBody.put("redirect_uri", "http://127.0.0.1:$activeLocalPort/Callback")
-                     jsonBody.put("grant_type", "authorization_code")
-
-                     java.io.OutputStreamWriter(conn.outputStream).use { writer ->
-                         writer.write(jsonBody.toString())
-                     }
-
-                     if (conn.responseCode == 200) {
-                         val response = conn.inputStream.bufferedReader().use { it.readText() }
-                         val json = JSONObject(response)
-                         accessToken = json.optString("access_token", null)
-                         refreshToken = json.optString("refresh_token", null)
-                         idToken = json.optString("id_token", null)
-                     } else {
-                         accessToken = null
-                         refreshToken = null
-                         idToken = null
-                         TerminalLogger.log("GOOGLE AUTH: Token exchange failed with status ${conn.responseCode}")
-                     }
+                     accessToken = null
+                     refreshToken = null
+                     idToken = null
                 }
 
                 if (accessToken != null) {
@@ -361,7 +353,7 @@ object GoogleAuthManager {
                     
                     // Fetch user info
                     fetchAndSaveUserInfo(context, accessToken)
-                    com.neubofy.reality.utils.IdentityManager.refreshIdentity(context.applicationContext)
+                    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch { com.neubofy.reality.utils.IdentityManager.refreshIdentity(context.applicationContext) }
 
                     return@withContext true
                 }
@@ -416,6 +408,14 @@ object GoogleAuthManager {
         val clientSecret = getClientSecret(context)
 
         // Revoke pro access locally before clearing identity
+
+        if (isFirebaseSession(context)) {
+            com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+            com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(
+                context,
+                com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN
+            ).signOut()
+        }
         val featureManager = com.neubofy.reality.utils.FeatureManager(context)
         featureManager.setRealityProVerified(false)
         featureManager.setRealityProEnabled(false)
