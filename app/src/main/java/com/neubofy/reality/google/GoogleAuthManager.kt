@@ -116,13 +116,14 @@ object GoogleAuthManager {
     }
 
 
-    suspend fun saveFirebaseSession(context: Context, idToken: String, email: String?, name: String?, accessTokenOrAuthCode: String? = null) {
+    suspend fun saveFirebaseSession(context: Context, idToken: String, email: String?, name: String?, photoUrl: String? = null, accessTokenOrAuthCode: String? = null) {
         getPrefs(context).edit().apply {
             putBoolean(KEY_FIREBASE_SESSION, true)
             putString(KEY_ID_TOKEN, idToken)
             putBoolean(KEY_IS_SIGNED_IN, true)
             if (email != null) putString(KEY_USER_EMAIL, email)
             if (name != null) putString(KEY_USER_NAME, name)
+            if (photoUrl != null) putString(KEY_USER_PHOTO_URL, photoUrl)
             
             // If the string starts with ya29 (Google access token prefix), save it directly
             if (accessTokenOrAuthCode != null && accessTokenOrAuthCode.startsWith("ya29")) {

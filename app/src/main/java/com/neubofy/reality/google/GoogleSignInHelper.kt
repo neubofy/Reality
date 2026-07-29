@@ -83,7 +83,7 @@ object GoogleSignInHelper {
 
                                 GoogleAuthManager.saveFirebaseSession(
                                     requireContext(), idToken,
-                                    user.email, user.displayName, accessToken ?: serverAuthCode
+                                    user.email, user.displayName, user.photoUrl?.toString(), accessToken ?: serverAuthCode
                                 )
                                 SecurePreferences.get(requireContext(), "reality_features").edit()
                                     .putBoolean("reality_pro_basic_sign_in", !fullScopes).apply()
