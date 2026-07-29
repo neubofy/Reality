@@ -104,8 +104,13 @@ open class BaseActivity : AppCompatActivity() {
         }
     }
 
+    private val loadingHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val hideLoadingRunnable = Runnable { hideLoading() }
+
     fun showLoading(message: String = "Loading...") {
         if (isFinishing || isDestroyed) return
+        
+        loadingHandler.removeCallbacks(hideLoadingRunnable)
         
         if (loadingDialog == null) {
             loadingDialog = Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen).apply {
@@ -121,10 +126,14 @@ open class BaseActivity : AppCompatActivity() {
         if (loadingDialog?.isShowing == false) {
             loadingDialog?.show()
         }
+        
+        // Safety timeout: 15 seconds max
+        loadingHandler.postDelayed(hideLoadingRunnable, 15000)
     }
 
     fun hideLoading() {
         if (isFinishing || isDestroyed) return
+        loadingHandler.removeCallbacks(hideLoadingRunnable)
         if (loadingDialog?.isShowing == true) {
             loadingDialog?.dismiss()
         }
