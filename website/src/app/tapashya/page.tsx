@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { Settings, Play, Pause, Square, RotateCcw, X, Trash2, Edit2, QrCode, ArrowLeft, ChevronLeft, ChevronRight, Calendar, Maximize2, Minimize2, Clock } from 'lucide-react';
 import Link from 'next/link';
-import { auth, googleProvider, signInWithRedirect, getRedirectResult, signOut } from '@/lib/firebase';
+import { auth, googleProvider, signInWithPopup, signOut } from '@/lib/firebase';
 import { GoogleAuthProvider } from 'firebase/auth';
 
 export interface TapasyaSession {
@@ -103,38 +103,24 @@ export default function TapashyaPage() {
   const [recommendedEvent, setRecommendedEvent] = useState<CalendarEvent | null>(null);
 
   useEffect(() => {
-      // Clean up hash if coming from old auth flow or just to be safe
-      if (typeof window !== 'undefined' && window.location.hash.includes('access_token=')) {
-          window.location.hash = '';
-      }
-
-      // Check for redirect result from Firebase Auth
-      getRedirectResult(auth).then(async (result) => {
-          if (result) {
-              const credential = GoogleAuthProvider.credentialFromResult(result);
-              if (credential && credential.accessToken) {
-                  // Send the Google Access Token to our backend to be stored securely in an HTTP-only cookie
-                  await fetch('/api/auth/session', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ googleAccessToken: credential.accessToken })
-                  });
-              }
-          }
-          // After handling redirect (or if no redirect), verify the session cookie
-          await fetchTodayEvents();
-      }).catch((error) => {
-          console.error("Google Sign-In redirect failed", error);
-          fetchTodayEvents();
-      });
-
+      // On mount, check existing session cookie for calendar connectivity
+      fetchTodayEvents();
   }, []);
 
   const handleGoogleConnect = async () => {
       try {
-          await signInWithRedirect(auth, googleProvider);
+          const result = await signInWithPopup(auth, googleProvider);
+          const credential = GoogleAuthProvider.credentialFromResult(result);
+          if (credential && credential.accessToken) {
+              await fetch('/api/auth/session', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ googleAccessToken: credential.accessToken })
+              });
+              await fetchTodayEvents();
+          }
       } catch (error) {
-          console.error("Google Sign-In redirect initiation failed", error);
+          console.error("Google Sign-In failed", error);
       }
   };
 

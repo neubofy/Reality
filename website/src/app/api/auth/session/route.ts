@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
         await setTokenCookie({
             access_token: googleAccessToken,
-            expires_at: Date.now() + (3600 * 1000)
+            expires_at: Date.now() + (3600 * 1000) // Note: Google access tokens expire in 1 hour
         });
 
         return NextResponse.json({ success: true });

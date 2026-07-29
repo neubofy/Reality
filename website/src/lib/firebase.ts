@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "dummy_api_key",
@@ -17,4 +17,4 @@ const googleProvider = new GoogleAuthProvider();
 // Add required scope for reading calendar events
 googleProvider.addScope('https://www.googleapis.com/auth/calendar.readonly');
 
-export { app, auth, googleProvider, signInWithRedirect, getRedirectResult, signOut };
+export { app, auth, googleProvider, signInWithPopup, signOut };

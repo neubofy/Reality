@@ -116,7 +116,7 @@ object GoogleAuthManager {
     }
 
 
-    fun saveFirebaseSession(context: Context, idToken: String, email: String?, name: String?, authCode: String? = null) {
+    suspend fun saveFirebaseSession(context: Context, idToken: String, email: String?, name: String?, authCode: String? = null) {
         getPrefs(context).edit().apply {
             putBoolean(KEY_FIREBASE_SESSION, true)
             putString(KEY_ID_TOKEN, idToken)
@@ -130,7 +130,7 @@ object GoogleAuthManager {
                 exchangeCodeForTokens(context, authCode)
             }
         }
-        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch { com.neubofy.reality.utils.IdentityManager.refreshIdentity(context.applicationContext) }
+        com.neubofy.reality.utils.IdentityManager.refreshIdentity(context.applicationContext)
     }
 
     fun isFirebaseSession(context: Context): Boolean {
@@ -423,8 +423,12 @@ object GoogleAuthManager {
     }
 
     fun isSignedIn(context: Context): Boolean {
-        return getPrefs(context).getBoolean(KEY_IS_SIGNED_IN, false) &&
-               !getPrefs(context).getString(KEY_ACCESS_TOKEN, null).isNullOrBlank()
+        val prefs = getPrefs(context)
+        if (!prefs.getBoolean(KEY_IS_SIGNED_IN, false)) return false
+        if (isFirebaseSession(context)) {
+            return !prefs.getString(KEY_ID_TOKEN, null).isNullOrBlank()
+        }
+        return !prefs.getString(KEY_ACCESS_TOKEN, null).isNullOrBlank()
     }
 
     fun getUserEmail(context: Context): String? = getPrefs(context).getString(KEY_USER_EMAIL, null)
