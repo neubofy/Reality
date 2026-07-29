@@ -1,54 +1,14 @@
 import { NextResponse } from 'next/server';
-import { getTokenCookie, setTokenCookie } from '@/lib/tokenCookie';
+import { getTokenCookie } from '@/lib/tokenCookie';
 
 export async function GET() {
     let tokenData = await getTokenCookie();
 
-    if (!tokenData || (!tokenData.access_token && !tokenData.refresh_token)) {
+    if (!tokenData || !tokenData.access_token) {
         return NextResponse.json({ error: 'Not connected' }, { status: 401 });
     }
 
-    // Refresh access token if expired and we have a refresh token
-    const now = Date.now();
-    if (tokenData.refresh_token && (!tokenData.access_token || (tokenData.expires_at && now > (tokenData.expires_at as number) - 60000))) {
-        const clientId = process.env.CLIENT_ID;
-        const clientSecret = process.env.CLIENT_SECRET;
-
-        try {
-            const refreshRes = await fetch('https://oauth2.googleapis.com/token', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({
-                    client_id: clientId || '',
-                    client_secret: clientSecret || '',
-                    grant_type: 'refresh_token',
-                    refresh_token: tokenData.refresh_token as string,
-                }),
-            });
-
-            if (refreshRes.ok) {
-                const refreshedData = await refreshRes.json();
-                tokenData = {
-                    ...tokenData,
-                    access_token: refreshedData.access_token,
-                    expires_in: refreshedData.expires_in,
-                    expires_at: now + (refreshedData.expires_in * 1000)
-                };
-                if (refreshedData.refresh_token) {
-                    tokenData.refresh_token = refreshedData.refresh_token;
-                }
-                await setTokenCookie(tokenData);
-            } else {
-                return NextResponse.json({ error: 'Failed to refresh token' }, { status: 401 });
-            }
-        } catch {
-            return NextResponse.json({ error: 'Auth service unreachable' }, { status: 503 });
-        }
-    }
-
-    if (!tokenData.access_token) {
-        return NextResponse.json({ error: 'No access token available' }, { status: 401 });
-    }
+    const accessToken = tokenData.access_token;
 
     try {
         const startOfDay = new Date();
@@ -61,7 +21,7 @@ export async function GET() {
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
         const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${startOfDay.toISOString()}&timeMax=${endOfDay.toISOString()}&singleEvents=true&orderBy=startTime`, {
-            headers: { Authorization: `Bearer ${tokenData.access_token}` },
+            headers: { Authorization: `Bearer ${accessToken}` },
             signal: controller.signal
         });
 

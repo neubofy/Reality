@@ -2,7 +2,6 @@ import { cookies } from 'next/headers';
 
 const ALGORITHM = 'AES-GCM';
 const COOKIE_NAME = 'reality_google_auth';
-const STATE_COOKIE_NAME = 'reality_oauth_state';
 
 async function getCryptoKey(secret: string) {
     const encoder = new TextEncoder();
@@ -71,7 +70,7 @@ export async function setTokenCookie(payload: Record<string, unknown>) {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
-        maxAge: 30 * 24 * 60 * 60,
+        maxAge: 30 * 24 * 60 * 60, // 30 days
     });
 }
 
@@ -85,27 +84,4 @@ export async function getTokenCookie() {
 export async function clearTokenCookie() {
     const cookieStore = await cookies();
     cookieStore.delete(COOKIE_NAME);
-}
-
-export async function setStateCookie(state: string) {
-    const cookieStore = await cookies();
-    cookieStore.set({
-        name: STATE_COOKIE_NAME,
-        value: state,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 15 * 60,
-    });
-}
-
-export async function getStateCookie() {
-    const cookieStore = await cookies();
-    return cookieStore.get(STATE_COOKIE_NAME)?.value;
-}
-
-export async function clearStateCookie() {
-    const cookieStore = await cookies();
-    cookieStore.delete(STATE_COOKIE_NAME);
 }
