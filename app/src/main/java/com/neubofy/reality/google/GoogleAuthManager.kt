@@ -272,7 +272,7 @@ object GoogleAuthManager {
                             try {
                                 com.google.android.gms.auth.GoogleAuthUtil.clearToken(context, oldAccessToken)
                                 val account = android.accounts.Account(userEmail, "com.google")
-                                val scopes = "oauth2:https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/tasks https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/documents"
+                                val scopes = "oauth2:https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/tasks https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/spreadsheets"
                                 val newAccessToken = com.google.android.gms.auth.GoogleAuthUtil.getToken(context, account, scopes)
                                 getPrefs(context).edit().putString(KEY_ACCESS_TOKEN, newAccessToken).apply()
                                 TerminalLogger.log("GOOGLE AUTH: Access token refreshed successfully via GoogleAuthUtil")
