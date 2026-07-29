@@ -236,6 +236,36 @@ object GoogleAuthManager {
     suspend fun refreshTokenIfNeeded(context: Context): Boolean {
         return withContext(Dispatchers.IO) {
             try {
+
+            if (isFirebaseSession(context)) {
+                val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                if (user != null) {
+                    val task = user.getIdToken(true)
+                    var tokenResult: com.google.firebase.auth.GetTokenResult? = null
+                    try {
+                        // removed await to avoid unresolved reference
+                    } catch(e: Exception) {
+                        // In case await is not imported properly
+                        val latch = java.util.concurrent.CountDownLatch(1)
+                        task.addOnCompleteListener { res ->
+                            if(res.isSuccessful) tokenResult = res.result
+                            latch.countDown()
+                        }
+                        latch.await()
+                    }
+                    val idToken = tokenResult?.token
+                    if (idToken != null) {
+                        getPrefs(context).edit().apply {
+                            putString(KEY_ID_TOKEN, idToken)
+                            apply()
+                        }
+                        TerminalLogger.log("GOOGLE AUTH: Firebase token refreshed successfully")
+                        return@withContext true
+                    }
+                }
+                return@withContext false
+            }
+
                 // To properly refresh the id_token (required for Identity Worker), we MUST use the manual 
                 // direct exchange because GoogleCredential.refreshToken() only returns an access_token.
                 val refreshToken = getPrefs(context).getString(KEY_REFRESH_TOKEN, null)
