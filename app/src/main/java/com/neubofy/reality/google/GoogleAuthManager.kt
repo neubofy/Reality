@@ -15,9 +15,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.calendar.CalendarScopes
-import com.google.api.services.docs.v1.DocsScopes
 import com.google.api.services.drive.DriveScopes
-import com.google.api.services.sheets.v4.SheetsScopes
 import com.google.api.services.tasks.TasksScopes
 import com.neubofy.reality.utils.TerminalLogger
 import kotlinx.coroutines.Dispatchers
@@ -86,8 +84,6 @@ object GoogleAuthManager {
         "https://www.googleapis.com/auth/calendar.events",
         TasksScopes.TASKS,
         DriveScopes.DRIVE_FILE,
-        DocsScopes.DOCUMENTS,
-        SheetsScopes.SPREADSHEETS,
         "email",
         "profile"
     )

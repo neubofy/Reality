@@ -66,6 +66,31 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-neural-bg font-outfit text-gray-100 selection:bg-neural-cyan selection:text-black overflow-x-hidden">
       
+      {/* Structured Data for Google Verification Crawlers */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "Reality",
+            "operatingSystem": "Android",
+            "applicationCategory": "Productivity",
+            "publisher": {
+              "@type": "Organization",
+              "name": "Neubofy",
+              "url": "https://reality.neubofy.in"
+            },
+            "description": "Reality is a highly private, local-first productivity operating system. It processes all user data entirely on-device. Google user data is not shared with any third party, not used for AI/ML training, and is retained locally until the user deletes it.",
+            "url": "https://reality.neubofy.in",
+            "author": {
+              "@type": "Organization",
+              "name": "Neubofy"
+            }
+          })
+        }}
+      />
+      
       {/* Premium Hero Section */}
       <header id="hero-section" className="relative overflow-hidden border-b border-gray-800 py-20 lg:py-32">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-neural-purple/20 via-neural-bg to-neural-bg opacity-50 z-0"></div>
@@ -189,31 +214,43 @@ export default async function Home() {
          </div>
       </section>
 
-      {/* Google Cloud BYOC Setup Details */}
-      <section id="google-byoc" className="py-24 bg-neural-card/30 border-b border-gray-800">
-         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Google Cloud BYOK Setup Details */}
+      <section id="byok-setup" className="py-24 bg-neural-card/30 border-b border-gray-800">
+         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
              <div className="text-center mb-12">
                 <h2 className="text-3xl font-extrabold text-white">Host Your Own Workspace Sync</h2>
-                <p className="text-gray-400">Bring Your Own Cloud (BYOC) for ultimate control.</p>
+                <p className="text-gray-400">Bring Your Own Cloud (BYOK) for ultimate control.</p>
              </div>
 
              <div className="bg-neural-card p-4 sm:p-8 rounded-2xl border border-gray-800 shadow-lg space-y-6">
                  <h3 className="text-2xl font-bold text-neural-cyan">OAuth Project Architecture</h3>
                  <p className="text-gray-300 text-sm leading-relaxed">
-                     To ensure no centralized database has access to your files, you connect Reality directly to your Google Cloud Console project. All Google Tasks, Calendar events, and Docs logs are created straight from your device using local OAuth tokens.
+                     To ensure no centralized database has access to your files, you connect Reality directly to your Google Cloud Console project. All Google Tasks, Calendar events, and Drive files are created straight from your device using local OAuth tokens.
                  </p>
+                 
+                 <div className="bg-black/50 p-6 rounded-xl border border-gray-800">
+                     <h4 className="text-lg font-bold text-white mb-2">Required OAuth Scopes</h4>
+                     <ul className="list-disc pl-5 text-gray-400 space-y-1 text-sm font-mono">
+                         <li>https://www.googleapis.com/auth/calendar.events</li>
+                         <li>https://www.googleapis.com/auth/drive.file</li>
+                         <li>https://www.googleapis.com/auth/tasks</li>
+                         <li>https://www.googleapis.com/auth/userinfo.email</li>
+                         <li>https://www.googleapis.com/auth/userinfo.profile</li>
+                         <li>openid</li>
+                     </ul>
+                 </div>
 
-                 <div className="space-y-6 border-l-2 border-neural-purple pl-6">
+                 <div className="space-y-6 border-l-2 border-neural-purple pl-6 mt-8">
                      <div>
                          <h4 className="text-lg font-bold text-white">1. Configure Google Cloud Console</h4>
                          <p className="text-gray-400 text-sm mt-1">
-                           Go to the <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline">Google Cloud Console</a>, create a project, and enable the <strong>Google Calendar API</strong>, <strong>Google Drive API</strong>, <strong>Google Tasks API</strong>, and <strong>Google Docs API</strong>.
+                           Go to the <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline">Google Cloud Console</a>, create a project, and enable the <strong>Google Calendar API</strong>, <strong>Google Drive API</strong>, and <strong>Google Tasks API</strong>.
                          </p>
                      </div>
                      <div>
-                         <h4 className="text-lg font-bold text-white">2. Set Up OAuth Consent Screen & Test User</h4>
+                         <h4 className="text-lg font-bold text-white">2. Set Up OAuth Consent Screen</h4>
                          <p className="text-gray-400 text-sm mt-1">
-                           Set up an External OAuth Consent Screen. Since the project is in testing, you <strong>must add your Google account email as a Test User</strong> to authorize login. Add scopes for Tasks, Drive, Calendar, and Documents.
+                           Set up an <strong>External</strong> OAuth Consent Screen. Add your Google account email as a <strong>Test User</strong>. Add the scopes listed above.
                          </p>
                      </div>
                      <div>
@@ -223,10 +260,53 @@ export default async function Home() {
                          </p>
                      </div>
                      <div>
-                         <h4 className="text-lg font-bold text-white">4. Link inside Reality</h4>
+                         <h4 className="text-lg font-bold text-white">4. Save in Reality App</h4>
                          <p className="text-gray-400 text-sm mt-1">
-                           Open Settings &gt; Integrations &gt; Google Setup inside the app. Paste your Client ID and Client Secret, and tap <strong>Sign In</strong>. Reality launches your browser for OAuth authentication and automatically catches the loopback callback locally at <code>http://127.0.0.1:8080/Callback</code> using a JIT on-device socket.
+                           Open Reality App &gt; Go to <strong>Elite Page</strong> or <strong>Profile Page</strong> &gt; Tap the <strong>Settings icon</strong> in the top right. Paste your Client ID and Client Secret, and tap <strong>Save</strong>. You can now tap Connect on any service to authenticate!
                          </p>
+                     </div>
+                 </div>
+                 
+                 <div className="mt-8 pt-8 border-t border-gray-800">
+                     <h4 className="text-xl font-bold text-white mb-4">Want an AI to guide you?</h4>
+                     <p className="text-gray-400 text-sm mb-4">
+                         Copy this prompt and paste it into ChatGPT or Google Gemini. It will walk you through the entire Google Cloud Console setup step-by-step.
+                     </p>
+                     <div className="relative">
+                         <div className="bg-[#0d1117] text-gray-300 text-xs font-mono p-4 rounded-xl overflow-x-auto border border-gray-800">
+                             <pre className="whitespace-pre-wrap">
+{`Help me set up a Google Cloud Console project for a local-first Android app called "Reality".
+
+Walk me through these steps one by one. Don't give me the next step until I say "done".
+
+Step 1: Go to Google Cloud Console and create a new project.
+Step 2: Enable the following APIs: Google Calendar API, Google Tasks API, Google Drive API.
+Step 3: Setup the "OAuth Consent Screen" as "External". Fill in the mandatory app details.
+Step 4: In the "Scopes" section of the consent screen, add exactly these 6 scopes:
+- https://www.googleapis.com/auth/calendar.events
+- https://www.googleapis.com/auth/drive.file
+- https://www.googleapis.com/auth/tasks
+- https://www.googleapis.com/auth/userinfo.email
+- https://www.googleapis.com/auth/userinfo.profile
+- openid
+Step 5: Set the publishing status to "Testing" and add my own email to the "Test Users" list.
+Step 6: Go to "Credentials" -> "Create Credentials" -> "OAuth Client ID".
+Step 7: Choose Application Type: "Desktop app". (This is critical because the app uses a local 127.0.0.1 redirect).
+Step 8: Give me the Client ID and Client Secret.
+
+Once I have the keys, tell me to open the Reality App -> Go to the Elite Page or Profile Page -> Tap the Settings icon in the top right -> Paste the Client ID and Secret and click Save.`}
+                             </pre>
+                         </div>
+                         <button 
+                             onClick={() => {
+                                 navigator.clipboard.writeText(`Help me set up a Google Cloud Console project for a local-first Android app called "Reality".\n\nWalk me through these steps one by one. Don't give me the next step until I say "done".\n\nStep 1: Go to Google Cloud Console and create a new project.\nStep 2: Enable the following APIs: Google Calendar API, Google Tasks API, Google Drive API.\nStep 3: Setup the "OAuth Consent Screen" as "External". Fill in the mandatory app details.\nStep 4: In the "Scopes" section of the consent screen, add exactly these 6 scopes:\n- https://www.googleapis.com/auth/calendar.events\n- https://www.googleapis.com/auth/drive.file\n- https://www.googleapis.com/auth/tasks\n- https://www.googleapis.com/auth/userinfo.email\n- https://www.googleapis.com/auth/userinfo.profile\n- openid\nStep 5: Set the publishing status to "Testing" and add my own email to the "Test Users" list.\nStep 6: Go to "Credentials" -> "Create Credentials" -> "OAuth Client ID".\nStep 7: Choose Application Type: "Desktop app". (This is critical because the app uses a local 127.0.0.1 redirect).\nStep 8: Give me the Client ID and Client Secret.\n\nOnce I have the keys, tell me to open the Reality App -> Go to the Elite Page or Profile Page -> Tap the Settings icon in the top right -> Paste the Client ID and Secret and click Save.`);
+                                 alert('Prompt copied to clipboard!');
+                             }}
+                             className="absolute top-4 right-4 bg-neural-purple hover:bg-neural-purple/80 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors shadow-lg flex items-center gap-2"
+                         >
+                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                             Copy Prompt
+                         </button>
                      </div>
                  </div>
              </div>

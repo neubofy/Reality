@@ -163,6 +163,12 @@ object GoogleSignInHelper {
         val dialogView = activity.layoutInflater.inflate(R.layout.dialog_cloud_settings, null)
         val etClientId = dialogView.findViewById<EditText>(R.id.et_client_id)
         val etClientSecret = dialogView.findViewById<EditText>(R.id.et_client_secret)
+        val btnSetupGuide = dialogView.findViewById<android.widget.TextView>(R.id.btn_cloud_setup_guide)
+
+        btnSetupGuide.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://reality.neubofy.in/#byok-setup"))
+            activity.startActivity(intent)
+        }
 
         val customId = GoogleAuthManager.getCustomClientId(activity)
         val customSecret = GoogleAuthManager.getCustomClientSecret(activity)

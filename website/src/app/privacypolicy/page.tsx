@@ -126,7 +126,28 @@ export default function PrivacyPolicy() {
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-white border-b border-gray-800 pb-2">8. Contact Us</h2>
+              <h2 className="text-2xl font-bold text-white border-b border-gray-800 pb-2">8. Data Sharing and Protection</h2>
+              <p className="text-sm text-gray-400">
+                Reality is a local-first application built by Neubofy. We do not sell, transfer, or disclose your Google user data to any third parties. All Google Workspace data (such as Tasks, Calendar Events, and Drive Files) is processed locally on your device to automate focus and goal planning. We implement industry-standard on-device encryption and secure Android Keystore mechanisms to protect your sensitive authentication tokens and data from unauthorized access.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-white border-b border-gray-800 pb-2">9. Data Retention and Deletion</h2>
+              <p className="text-sm text-gray-400">
+                Because Reality operates locally, your Google user data is retained only on your personal device. You can delete this data at any time by clearing the app&apos;s data in your device settings, uninstalling the app, or explicitly signing out from the Profile page, which instantly wipes all locally cached Google Workspace data and revokes access.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-white border-b border-gray-800 pb-2">10. Google Workspace API Limited Use Disclosure</h2>
+              <p className="text-sm text-gray-400">
+                The use of information received from Google APIs will adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline">Google API Services User Data Policy</a>, including the Limited Use requirements. Specifically, Reality strictly prohibits using, transferring, or selling Google user data—including raw, aggregated, or derived data—to create, train, or improve foundational or generalized machine learning and artificial intelligence models.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-white border-b border-gray-800 pb-2">11. Contact Us</h2>
               <p className="text-sm text-gray-400">
                 For security audits or privacy queries, reach out directly: <a href="mailto:support@neubofy.in" className="text-neural-cyan hover:underline">support@neubofy.in</a>
               </p>

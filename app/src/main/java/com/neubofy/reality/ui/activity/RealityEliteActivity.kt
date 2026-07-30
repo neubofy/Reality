@@ -61,9 +61,11 @@ class RealityEliteActivity : BaseActivity() {
 
         btnUnifiedSignin = findViewById(R.id.btn_unified_signin)
         btnSyncIdentity = findViewById(R.id.btn_sync_identity)
-        
-        findViewById<android.view.View>(R.id.btn_why_google)?.setOnClickListener {
-            startActivity(android.content.Intent(this, WhyGooglePermissionActivity::class.java))
+        val btnCloudSetupGuide: android.widget.TextView = findViewById(R.id.btn_cloud_setup_guide)
+
+        btnCloudSetupGuide.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://reality.neubofy.in/#byok-setup"))
+            startActivity(intent)
         }
 
         btnCancel = findViewById(R.id.btn_cancel)

@@ -109,12 +109,24 @@ A fully customized UI rendering module allows personalizing fonts, layouts, and 
 
 ## 🔒 ZERO-TRUST SECURITY & DATA OWNERSHIP
 
-### Bring Your Own Cloud (BYOC) Setup Guide
-Reality works without developer servers. You can host your own sync endpoints using a Google Cloud Console project:
-1. **Enable Google APIs**: Go to the Google Cloud Console and activate the **Calendar API**, **Drive API**, **Tasks API**, and **Docs API**.
-2. **OAuth Consent Screen**: Add your email as a test user and add scopes for Tasks, Drive, Calendar, and Docs.
-3. **Generate OAuth Credentials**: Go to `Credentials` -> `Create Credentials` -> `OAuth Client ID`. Select **Desktop application** as the application type, name your client, and generate the credentials.
-4. **Link inside Reality**: Paste your Client ID and Client Secret in [GoogleAuthManager.kt](https://github.com/pawanwashudev-official/Reality/blob/main/app/src/main/java/com/neubofy/reality/google/GoogleAuthManager.kt) / Google setup panel. Reality will execute direct on-device OAuth token updates with Google.
+### Bring Your Own Cloud (BYOK) Setup Guide
+Reality works without developer servers. You can host your own sync endpoints using a custom Google Cloud Console project.
+
+**Required OAuth Scopes:**
+- `.../auth/calendar.events` (To block apps based on meetings)
+- `.../auth/drive.file` (To create and read Nightly plans)
+- `.../auth/tasks` (To create tasks)
+- `.../auth/userinfo.email` and `.../auth/userinfo.profile` and `openid` (For Identity)
+
+**To Setup Your Keys, read the Step-by-Step BYOK Setup Guide on our official website:**
+[https://reality.neubofy.in/#byok-setup](https://reality.neubofy.in/#byok-setup)
+
+**Where to save credentials in Reality:**
+1. Open the Reality App on your Android device.
+2. Go to the **Elite Page** or the **Profile Page**.
+3. Tap the **Settings/Cloud Icon** in the top right corner.
+4. Paste your Client ID and Client Secret and tap Save.
+5. Click **Connect** on any Google service to authenticate!
 
 ### Secure Identity & Encryption
 * Encrypted database storage is implemented via [Room](https://github.com/pawanwashudev-official/Reality/blob/main/app/src/main/java/com/neubofy/reality/data/) and Android's native `EncryptedSharedPreferences`.

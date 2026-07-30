@@ -350,66 +350,6 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Docs Connector -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_docs"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp"
-                android:visibility="gone">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/baseline_description_24"
-                        app:tint="?attr/colorPrimary"/>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="12dp"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Google Docs"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorPrimary"
-        android:fontFamily="monospace"/>
-
-                        <TextView
-                            android:id="@+id/tv_docs_status"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Not connected"
-                            android:textSize="12sp"
-                            android:textColor="?attr/colorOnSurfaceVariant"/>
-
-                    </LinearLayout>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_connect_docs"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:text="Connect"/>
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
 
             <!-- Calendar Connector -->
             <com.google.android.material.card.MaterialCardView
@@ -803,6 +743,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Erase All Protocol Setup"
+                android:textColor="?attr/colorError"
+                app:strokeColor="?attr/colorError"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                app:icon="@drawable/ic_delete_forever"
+                app:iconTint="?attr/colorError"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone"/>
+
+            <!-- Delete Account Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_delete_account"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Delete Account &amp; Data"
                 android:textColor="?attr/colorError"
                 app:strokeColor="?attr/colorError"
                 style="@style/Widget.Material3.Button.OutlinedButton"
