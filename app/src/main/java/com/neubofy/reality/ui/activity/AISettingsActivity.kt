@@ -98,7 +98,7 @@ class AISettingsActivity : BaseActivity() {
         binding.recyclerToolToggles.adapter = toolToggleAdapter
         binding.recyclerToolToggles.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
 
-        setupMeshApiUI()
+        setupGeminiApiUI()
         setupModelSpinners()
         setupUsageCheck()
     }
@@ -166,35 +166,35 @@ class AISettingsActivity : BaseActivity() {
         }
     }
 
-    private fun setupMeshApiUI() {
+    private fun setupGeminiApiUI() {
         val prefs = com.neubofy.reality.utils.SecurePreferences.get(this, "ai_prefs")
-        val savedMeshKey = prefs.getString("mesh_api_key", "")
-        if (!savedMeshKey.isNullOrEmpty()) {
-            binding.etMeshApiKey.setText(savedMeshKey)
+        val savedGeminiKey = prefs.getString("gemini_api_key", "")
+        if (!savedGeminiKey.isNullOrEmpty()) {
+            binding.etGeminiApiKey.setText(savedGeminiKey)
         }
 
-        binding.btnMeshSave.setOnClickListener {
-            val key = binding.etMeshApiKey.text.toString().trim()
-            prefs.edit().putString("mesh_api_key", key).apply()
-            Toast.makeText(this, "Mesh API Key saved successfully", Toast.LENGTH_SHORT).show()
+        binding.btnGeminiSave.setOnClickListener {
+            val key = binding.etGeminiApiKey.text.toString().trim()
+            prefs.edit().putString("gemini_api_key", key).apply()
+            Toast.makeText(this, "Gemini API Key saved successfully", Toast.LENGTH_SHORT).show()
         }
 
-        binding.btnMeshRemove.setOnClickListener {
-            binding.etMeshApiKey.setText("")
-            prefs.edit().remove("mesh_api_key").apply()
-            Toast.makeText(this, "Mesh API Key removed", Toast.LENGTH_SHORT).show()
+        binding.btnGeminiRemove.setOnClickListener {
+            binding.etGeminiApiKey.setText("")
+            prefs.edit().remove("gemini_api_key").apply()
+            Toast.makeText(this, "Gemini API Key removed", Toast.LENGTH_SHORT).show()
         }
 
-        binding.tvMeshGetKey.setOnClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://app.meshapi.ai/")))
+        binding.tvGeminiGetKey.setOnClickListener {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://aistudio.google.com/app/apikey")))
         }
 
-        binding.tvMeshPrivacy.setOnClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://meshapi.ai/privacy")))
+        binding.tvGeminiPrivacy.setOnClickListener {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://policies.google.com/privacy")))
         }
 
-        binding.tvMeshTos.setOnClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://meshapi.ai/terms")))
+        binding.tvGeminiTos.setOnClickListener {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://policies.google.com/terms")))
         }
     }
 
@@ -206,12 +206,12 @@ class AISettingsActivity : BaseActivity() {
         val savedNightlyModel = prefs.getString("nightly_model", "@cf/openai/gpt-oss-120b") ?: "@cf/openai/gpt-oss-120b"
 
         val models = mutableListOf<String>()
-        val defaultModels = listOf("@cf/openai/gpt-oss-120b", "openai/gpt-4o", "anthropic/claude-3-5-sonnet")
+        val defaultModels = listOf("@cf/openai/gpt-oss-120b", "gemini-3.6-flash", "gemini-3.5-flash-lite")
         models.addAll(defaultModels)
         if (!models.contains(savedChatModel)) models.add(savedChatModel)
         if (!models.contains(savedNightlyModel)) models.add(savedNightlyModel)
 
-        val customModelsStr = prefs.getString("custom_mesh_models", "")
+        val customModelsStr = prefs.getString("custom_gemini_models", "")
         if (!customModelsStr.isNullOrEmpty()) {
             val customModels = customModelsStr.split(",")
             for (m in customModels) {
@@ -225,14 +225,14 @@ class AISettingsActivity : BaseActivity() {
             override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
                 val view = super.getView(position, convertView, parent) as android.widget.TextView
                 val modelName = getItem(position) ?: ""
-                view.text = if (modelName.startsWith("@cf/")) "$modelName (Powered by Neubofy)" else "$modelName (Powered by Mesh API)"
+                view.text = if (modelName.startsWith("@cf/")) "$modelName (Powered by Neubofy)" else "$modelName (Powered by Gemini API)"
                 return view
             }
 
             override fun getDropDownView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
                 val view = super.getDropDownView(position, convertView, parent) as android.widget.TextView
                 val modelName = getItem(position) ?: ""
-                view.text = if (modelName.startsWith("@cf/")) "$modelName (Powered by Neubofy)" else "$modelName (Powered by Mesh API)"
+                view.text = if (modelName.startsWith("@cf/")) "$modelName (Powered by Neubofy)" else "$modelName (Powered by Gemini API)"
                 return view
             }
         }
@@ -285,14 +285,14 @@ class AISettingsActivity : BaseActivity() {
             val input = EditText(this@AISettingsActivity)
             input.hint = "e.g., openai/gpt-4"
             AlertDialog.Builder(this@AISettingsActivity)
-                .setTitle("Add Custom Mesh API Model")
+                .setTitle("Add Custom Gemini API Model")
                 .setView(input)
                 .setPositiveButton("Add") { _, _ ->
                     val newModel = input.text.toString().trim()
                     if (newModel.isNotEmpty()) {
-                        val currentCustoms = prefs.getString("custom_mesh_models", "") ?: ""
+                        val currentCustoms = prefs.getString("custom_gemini_models", "") ?: ""
                         val updatedCustoms = if (currentCustoms.isEmpty()) newModel else "$currentCustoms,$newModel"
-                        prefs.edit().putString("custom_mesh_models", updatedCustoms).apply()
+                        prefs.edit().putString("custom_gemini_models", updatedCustoms).apply()
                         setupModelSpinners() // Refresh
                     }
                 }
@@ -302,7 +302,7 @@ class AISettingsActivity : BaseActivity() {
 
         binding.btnRemoveCustomModel.visibility = View.VISIBLE
         binding.btnRemoveCustomModel.setOnClickListener {
-            val currentCustomsStr = prefs.getString("custom_mesh_models", "") ?: ""
+            val currentCustomsStr = prefs.getString("custom_gemini_models", "") ?: ""
             if (currentCustomsStr.isEmpty()) {
                 Toast.makeText(this@AISettingsActivity, "No custom models to remove", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -313,7 +313,7 @@ class AISettingsActivity : BaseActivity() {
                 .setItems(customModelsList) { _, which ->
                     val modelToRemove = customModelsList[which]
                     val newList = customModelsList.filter { it != modelToRemove }.joinToString(",")
-                    prefs.edit().putString("custom_mesh_models", newList).apply()
+                    prefs.edit().putString("custom_gemini_models", newList).apply()
 
                     // If selected model is being removed, reset to default
                     if (prefs.getString("chat_model", "") == modelToRemove) {

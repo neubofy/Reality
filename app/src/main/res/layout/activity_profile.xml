@@ -207,7 +207,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="• Your Google connection is entirely yours. Even when using the developer connection, we simply proxy your login to inject our GCP credentials on the fly. We NEVER see or store your Google data, files, tasks, calendar events, or access tokens—everything remains encrypted locally on your phone.\n\n• Zero-Server Architecture: Reality operates completely without traditional database servers. We use serverless Cloudflare Workers solely to securely manage subscription validation and cryptographic edge routing. All identity checks are computed on-the-fly via cryptography; we have no central database containing your habits."
+                        android:text="• Your Google connection is entirely yours. We NEVER see or store your Google data, tasks, calendar events, or access tokens—everything remains encrypted locally on your phone.\n\n• Zero-Server Architecture: Reality operates completely without traditional database servers. We use serverless Cloudflare Workers solely to securely manage subscription validation and cryptographic edge routing. All identity checks are computed on-the-fly via cryptography; we have no central database containing your habits."
                         android:textSize="12sp"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:lineSpacingMultiplier="1.2"/>
