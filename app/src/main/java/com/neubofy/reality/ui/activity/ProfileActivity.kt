@@ -226,9 +226,11 @@ class ProfileActivity : BaseActivity() {
                     credential
                 ).setApplicationName("com.neubofy.reality").build()
                 
-                val calendars = calendarService.calendarList().list().execute()
-                val count = calendars.items?.size ?: 0
-                "Found $count calendar(s)"
+                val events = calendarService.events().list("primary")
+                    .setMaxResults(10)
+                    .execute()
+                val count = events.items?.size ?: 0
+                "Found $count upcoming event(s) in primary calendar"
             }
         }
     }
