@@ -66,16 +66,52 @@
                 android:paddingVertical="12dp"
                 android:layout_marginBottom="8dp"/>
 
-            <TextView
-                android:id="@+id/btn_why_google"
-                android:layout_width="wrap_content"
+            <!-- BYOK Cloud Setup Info Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Why do we need this?"
-                android:textSize="12sp"
-                android:fontFamily="monospace"
-                android:textColor="?attr/colorPrimary"
-                android:padding="8dp"
-                android:layout_marginBottom="16dp"/>
+                android:layout_marginBottom="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorPrimary"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Why connect Google?"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorPrimary"
+                        android:layout_marginBottom="8dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Reality uses Google Calendar, Tasks, and Drive to sync your data entirely on-device, bypassing third-party servers. Elite members can supply their own Custom Google Cloud Keys (BYOK) to avoid API quotas."
+                        android:textSize="14sp"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_marginBottom="12dp"/>
+                        
+                    <TextView
+                        android:id="@+id/btn_cloud_setup_guide"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Click here to read the Cloud Setup Guide"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorPrimary"
+                        android:background="?attr/selectableItemBackground"
+                        android:padding="8dp"/>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Developer Support Info Card -->
             <com.google.android.material.card.MaterialCardView

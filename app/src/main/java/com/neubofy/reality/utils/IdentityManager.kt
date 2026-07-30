@@ -179,153 +179,170 @@ object IdentityManager {
                 GoogleAuthManager.refreshTokenIfNeeded(context)
             }
             
-            val idToken = GoogleAuthManager.getIdToken(context)
-            
-            if (!isSignedIn && idToken.isNullOrBlank()) {
-                // Auto remove all local subscription data if not signed in
-                val featuresPrefs = SecurePreferences.get(context, "reality_features")
-                val proPrefs = SecurePreferences.get(context, "reality_pro_prefs")
+            var retried = false
+            while (true) {
+                val idToken = GoogleAuthManager.getIdToken(context)
                 
-                val featureEditor = featuresPrefs.edit()
-                featureEditor.putBoolean("feature_reality_pro", false)
-                featuresPrefs.all.keys.filter { it.startsWith("feature_reality_pro_") }.forEach {
-                    featureEditor.remove(it)
-                }
-                featureEditor.apply()
-                
-                val proEditor = proPrefs.edit()
-                proPrefs.all.keys.filter { it.contains("pro_saved_verification_code_for_") || it.contains("is_registered_for_") }.forEach {
-                    proEditor.remove(it)
-                }
-                proEditor.apply()
-                
-                clearIdentity(context)
-                return@withContext null
-            }
-
-            try {
-                val workerUrl = BuildConfig.WORKER_URL.removeSuffix("/")
-                val url = URL("$workerUrl/api/generate-identity")
-                val conn = url.openConnection() as HttpURLConnection
-                conn.requestMethod = "POST"
-                conn.connectTimeout = 5000
-                conn.readTimeout = 5000
-                conn.setRequestProperty("Content-Type", "application/json")
-                conn.doOutput = true
-
-                val jsonInputString = JSONObject().apply {
-                    put("idToken", idToken)
-                }.toString()
-
-                conn.outputStream.use { os ->
-                    val input = jsonInputString.toByteArray(Charsets.UTF_8)
-                    os.write(input, 0, input.size)
+                if (!isSignedIn && idToken.isNullOrBlank()) {
+                    // Auto remove all local subscription data if not signed in
+                    val featuresPrefs = SecurePreferences.get(context, "reality_features")
+                    val proPrefs = SecurePreferences.get(context, "reality_pro_prefs")
+                    
+                    val featureEditor = featuresPrefs.edit()
+                    featureEditor.putBoolean("feature_reality_pro", false)
+                    featuresPrefs.all.keys.filter { it.startsWith("feature_reality_pro_") }.forEach {
+                        featureEditor.remove(it)
+                    }
+                    featureEditor.apply()
+                    
+                    val proEditor = proPrefs.edit()
+                    proPrefs.all.keys.filter { it.contains("pro_saved_verification_code_for_") || it.contains("is_registered_for_") }.forEach {
+                        proEditor.remove(it)
+                    }
+                    proEditor.apply()
+                    
+                    clearIdentity(context)
+                    return@withContext null
                 }
 
-                if (conn.responseCode == HttpURLConnection.HTTP_OK) {
-                    val responseStr = conn.inputStream.bufferedReader().use { it.readText() }
-                    val responseJson = JSONObject(responseStr)
+                try {
+                    val workerUrl = BuildConfig.WORKER_URL.removeSuffix("/")
+                    val url = URL("$workerUrl/api/generate-identity")
+                    val conn = url.openConnection() as HttpURLConnection
+                    conn.requestMethod = "POST"
+                    conn.connectTimeout = 8000
+                    conn.readTimeout = 8000
+                    conn.setRequestProperty("Content-Type", "application/json")
+                    conn.doOutput = true
 
-                    val userId = responseJson.optString("userId")
-                    // connectionSecret = rotating HMAC (server field: "connectionSecret" or legacy "backupPassword"/"password")
-                    val connectionSecret = responseJson.optString("connectionSecret").takeIf { it.isNotEmpty() }
-                        ?: responseJson.optString("backupPassword").takeIf { it.isNotEmpty() }
-                        ?: responseJson.optString("password")
-                    // backupPassword = static key (server field: "backupPassword" in new, "backupKey" in legacy)
-                    val backupPassword = responseJson.optString("backupPassword").takeIf { it.isNotEmpty() }
-                        ?: responseJson.optString("backupKey", "")
-                    val status = responseJson.optString("status")
-                    val activeExpiry = responseJson.optString("activeExpiry", "0")
-                    val activeDuration = responseJson.optString("activeDuration", "0")
-                    val activeStatus = responseJson.optString("activeStatus", "N")
-                    val planType = responseJson.optString("planType", "none")
+                    val jsonInputString = JSONObject().apply {
+                        put("idToken", idToken)
+                    }.toString()
 
-                    if (userId.isNotEmpty()) {
-                        val prefs = SecurePreferences.get(context, PREFS_NAME)
-                        val editor = prefs.edit()
-                        editor.putString(KEY_USER_ID, userId)
-                        if (connectionSecret.isNotEmpty()) {
-                            editor.putString(KEY_CONNECTION_SECRET, connectionSecret)
-                        }
-                        if (backupPassword.isNotEmpty()) {
-                            editor.putString(KEY_BACKUP_PASSWORD, backupPassword)
-                        }
-                        editor.putString(KEY_ACTIVE_EXPIRY, activeExpiry)
-                        editor.putString(KEY_ACTIVE_DURATION, activeDuration)
-                        editor.putString(KEY_ACTIVE_STATUS, activeStatus)
-                        editor.putString(KEY_ACTIVE_PLAN_TYPE, planType)
-                        editor.apply()
+                    conn.outputStream.use { os ->
+                        val input = jsonInputString.toByteArray(Charsets.UTF_8)
+                        os.write(input, 0, input.size)
+                    }
 
-                        val featuresPrefs = SecurePreferences.get(context, "reality_features")
-                        val featuresEditor = featuresPrefs.edit()
+                    if (conn.responseCode == HttpURLConnection.HTTP_OK) {
+                        val responseStr = conn.inputStream.bufferedReader().use { it.readText() }
+                        val responseJson = JSONObject(responseStr)
 
-                        val proPrefs = SecurePreferences.get(context, "reality_pro_prefs")
-                        val proEditor = proPrefs.edit()
-                        proEditor.putBoolean("is_registered_for_$userId", true)
+                        val userId = responseJson.optString("userId")
+                        // connectionSecret = rotating HMAC (server field: "connectionSecret" or legacy "backupPassword"/"password")
+                        val connectionSecret = responseJson.optString("connectionSecret").takeIf { it.isNotEmpty() }
+                            ?: responseJson.optString("backupPassword").takeIf { it.isNotEmpty() }
+                            ?: responseJson.optString("password")
+                        // backupPassword = static key (server field: "backupPassword" in new, "backupKey" in legacy)
+                        val backupPassword = responseJson.optString("backupPassword").takeIf { it.isNotEmpty() }
+                            ?: responseJson.optString("backupKey", "")
+                        val status = responseJson.optString("status")
+                        val activeExpiry = responseJson.optString("activeExpiry", "0")
+                        val activeDuration = responseJson.optString("activeDuration", "0")
+                        val activeStatus = responseJson.optString("activeStatus", "N")
+                        val planType = responseJson.optString("planType", "none")
 
-                        if (status == "P" || status == "V") {
-                            proEditor.putString("pro_saved_verification_code_for_$userId", "PENDING")
-                        } else {
-                            proEditor.remove("pro_saved_verification_code_for_$userId")
-                        }
+                        if (userId.isNotEmpty()) {
+                            val prefs = SecurePreferences.get(context, PREFS_NAME)
+                            val editor = prefs.edit()
+                            editor.putString(KEY_USER_ID, userId)
+                            if (connectionSecret.isNotEmpty()) {
+                                editor.putString(KEY_CONNECTION_SECRET, connectionSecret)
+                            }
+                            if (backupPassword.isNotEmpty()) {
+                                editor.putString(KEY_BACKUP_PASSWORD, backupPassword)
+                            }
+                            editor.putString(KEY_ACTIVE_EXPIRY, activeExpiry)
+                            editor.putString(KEY_ACTIVE_DURATION, activeDuration)
+                            editor.putString(KEY_ACTIVE_STATUS, activeStatus)
+                            editor.putString(KEY_ACTIVE_PLAN_TYPE, planType)
+                            editor.apply()
 
-                        // Clear prior settings to avoid caching obsolete state
-                        featuresEditor.putBoolean("feature_reality_pro", false)
-                        featuresEditor.remove("feature_reality_pro_start_time_$userId")
-                        featuresEditor.remove("feature_reality_pro_verified_until_$userId")
-                        featuresEditor.remove("trial_start_time_$userId")
-                        featuresEditor.remove("trial_end_time_$userId")
+                            val featuresPrefs = SecurePreferences.get(context, "reality_features")
+                            val featuresEditor = featuresPrefs.edit()
 
-                        if (activeStatus == "V") {
-                            try {
-                                val expiryUnix = activeExpiry.toLong()
-                                if (expiryUnix > System.currentTimeMillis()) {
-                                    featuresEditor.putBoolean("feature_reality_pro", true)
-                                    val duration = activeDuration.toLong()
-                                    if (planType == "paid") {
-                                        // Paid subscription (duration is in months, e.g. 12 months)
-                                        val durationMs = (365L / 12) * duration * 24 * 60 * 60 * 1000
-                                        val startTime = expiryUnix - durationMs
-                                        featuresEditor.putLong("feature_reality_pro_start_time_$userId", startTime)
-                                        featuresEditor.putLong("feature_reality_pro_verified_until_$userId", expiryUnix)
-                                    } else {
-                                        // Trial subscription (duration is 3 days)
-                                        val startTime = expiryUnix - (duration * 24 * 60 * 60 * 1000)
-                                        featuresEditor.putLong("trial_end_time_$userId", expiryUnix)
-                                        featuresEditor.putLong("trial_start_time_$userId", startTime)
+                            val proPrefs = SecurePreferences.get(context, "reality_pro_prefs")
+                            val proEditor = proPrefs.edit()
+                            proEditor.putBoolean("is_registered_for_$userId", true)
+
+                            if (status == "P" || status == "V") {
+                                proEditor.putString("pro_saved_verification_code_for_$userId", "PENDING")
+                            } else {
+                                proEditor.remove("pro_saved_verification_code_for_$userId")
+                            }
+
+                            // Clear prior settings to avoid caching obsolete state
+                            featuresEditor.putBoolean("feature_reality_pro", false)
+                            featuresEditor.remove("feature_reality_pro_start_time_$userId")
+                            featuresEditor.remove("feature_reality_pro_verified_until_$userId")
+                            featuresEditor.remove("trial_start_time_$userId")
+                            featuresEditor.remove("trial_end_time_$userId")
+
+                            if (activeStatus == "V") {
+                                try {
+                                    val expiryUnix = activeExpiry.toLong()
+                                    if (expiryUnix > System.currentTimeMillis()) {
+                                        featuresEditor.putBoolean("feature_reality_pro", true)
+                                        val duration = activeDuration.toLong()
+                                        if (planType == "paid") {
+                                            // Paid subscription (duration is in months, e.g. 12 months)
+                                            val durationMs = (365L / 12) * duration * 24 * 60 * 60 * 1000
+                                            val startTime = expiryUnix - durationMs
+                                            featuresEditor.putLong("feature_reality_pro_start_time_$userId", startTime)
+                                            featuresEditor.putLong("feature_reality_pro_verified_until_$userId", expiryUnix)
+                                        } else {
+                                            // Trial subscription (duration is 3 days)
+                                            val startTime = expiryUnix - (duration * 24 * 60 * 60 * 1000)
+                                            featuresEditor.putLong("trial_end_time_$userId", expiryUnix)
+                                            featuresEditor.putLong("trial_start_time_$userId", startTime)
+                                        }
                                     }
+                                } catch (e: Exception) {
+                                    com.neubofy.reality.utils.TerminalLogger.log("ERROR parsing active subscription: ${e.message}")
                                 }
-                            } catch (e: Exception) {
-                                com.neubofy.reality.utils.TerminalLogger.log("ERROR parsing active subscription: ${e.message}")
+                            }
+
+                            featuresEditor.apply()
+                            proEditor.apply()
+
+                            val intent = android.content.Intent("com.neubofy.reality.IDENTITY_UPDATED").apply {
+                                putExtra("userId", userId)
+                                putExtra("backupPassword", backupPassword.ifEmpty { connectionSecret })
+                                putExtra("activeExpiry", activeExpiry)
+                                putExtra("activeDuration", activeDuration)
+                                putExtra("activeStatus", activeStatus)
+                                putExtra("planType", planType)
+                            }
+                            androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
+
+                            return@withContext IdentityResult(
+                                userId = userId,
+                                backupPassword = backupPassword.ifEmpty { connectionSecret },
+                                connectionSecretMasked = "•".repeat(32),
+                                activeExpiry = activeExpiry,
+                                activeDuration = activeDuration,
+                                activeStatus = activeStatus,
+                                planType = planType
+                            )
+                        }
+                    } else {
+                        val decoded = WorkerErrorDecoder.decodeConnectionError(conn)
+                        com.neubofy.reality.utils.TerminalLogger.log("Identity Worker Error: ${decoded.responseCode} - ${decoded.errorMsg} (${decoded.type})")
+                        
+                        if (!retried && (decoded.type == WorkerErrorDecoder.AuthErrorType.EXPIRED_ID_TOKEN || decoded.type == WorkerErrorDecoder.AuthErrorType.UNAUTHORIZED)) {
+                            retried = true
+                            com.neubofy.reality.utils.TerminalLogger.log("Identity Manager: Token expired/invalid, forcing Google token refresh...")
+                            val refreshed = GoogleAuthManager.refreshTokenIfNeeded(context, force = true)
+                            if (refreshed) {
+                                continue // Retry loop once with fresh token
                             }
                         }
-
-                        featuresEditor.apply()
-                        proEditor.apply()
-
-                        val intent = android.content.Intent("com.neubofy.reality.IDENTITY_UPDATED").apply {
-                            putExtra("userId", userId)
-                            putExtra("backupPassword", backupPassword.ifEmpty { connectionSecret })
-                            putExtra("activeExpiry", activeExpiry)
-                            putExtra("activeDuration", activeDuration)
-                            putExtra("activeStatus", activeStatus)
-                            putExtra("planType", planType)
-                        }
-                        androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
-
-                        return@withContext IdentityResult(
-                            userId = userId,
-                            backupPassword = backupPassword.ifEmpty { connectionSecret },
-                            connectionSecretMasked = "•".repeat(32),
-                            activeExpiry = activeExpiry,
-                            activeDuration = activeDuration,
-                            activeStatus = activeStatus,
-                            planType = planType
-                        )
+                        break
                     }
+                } catch (e: Exception) {
+                    com.neubofy.reality.utils.TerminalLogger.log("Identity Exception: ${e.message}")
+                    break
                 }
-            } catch (e: Exception) {
-                com.neubofy.reality.utils.TerminalLogger.log("ERROR: ${e.message}")
             }
             null
         }

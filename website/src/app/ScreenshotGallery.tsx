@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { 
   Layout, 
   Zap, 
@@ -112,11 +113,13 @@ export default function ScreenshotGallery() {
                   </div>
                 </div>
               )}
-              <img
+              <Image
                 src={currentScreen.img}
                 onLoad={() => setLoading(false)}
                 alt={`Reality Mobile App simulator displaying ${currentScreen.title}`}
-                className={`max-w-full max-h-full object-contain rounded-[20px] transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`}
+                width={500}
+                height={1000}
+                className={`max-w-full max-h-full w-auto h-auto object-contain rounded-[20px] transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`}
               />
             </div>
           </div>

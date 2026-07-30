@@ -388,8 +388,8 @@ class SettingsActivity : BaseActivity() {
             val name = com.neubofy.reality.google.GoogleAuthManager.getUserName(this)
             val email = com.neubofy.reality.google.GoogleAuthManager.getUserEmail(this)
             
-            binding.tvAccountTitle.text = name ?: "Google User"
-            binding.tvAccountStatus.text = email
+            binding.tvAccountTitle.text = "${name ?: "User"} (Profile)"
+            binding.tvAccountStatus.text = "$email • Tap to manage"
             
             try {
                 val photoUrl = com.neubofy.reality.google.GoogleAuthManager.getUserPhotoUrl(this)
@@ -415,8 +415,8 @@ class SettingsActivity : BaseActivity() {
                 binding.ivProfile.setImageResource(R.drawable.baseline_account_circle_24)
             }
         } else {
-            binding.tvAccountTitle.text = "Sign in with Google"
-            binding.tvAccountStatus.text = "Sync Tasks, Docs & Drive"
+            binding.tvAccountTitle.text = "Profile & Sign-in"
+            binding.tvAccountStatus.text = "Connect Google Account for sync"
             binding.ivProfile.setColorFilter(android.graphics.Color.GRAY)
         }
         // Strict Mode

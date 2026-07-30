@@ -99,7 +99,14 @@ export default function TermsOfService() {
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-white border-b border-gray-800 pb-2">6. Changes to Terms</h2>
+              <h2 className="text-2xl font-bold text-white border-b border-gray-800 pb-2">6. Google API Limited Use Policy</h2>
+              <p className="text-sm text-gray-400">
+                Reality uses Google APIs to synchronize your data. Our use and transfer to any other app of information received from Google APIs will adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline">Google API Services User Data Policy</a>, including the Limited Use requirements. Reality does not use your data for AI/ML training.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-white border-b border-gray-800 pb-2">7. Changes to Terms</h2>
               <p className="text-sm text-gray-400">
                 We reserve the right to modify these Terms of Service. Check the top of this document for active Effective Dates. Your continued usage after modifications constitutes agreement to the updated clauses.
               </p>

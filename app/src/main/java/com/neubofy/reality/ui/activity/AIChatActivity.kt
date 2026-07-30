@@ -274,22 +274,22 @@ open class AIChatActivity : BaseActivity() {
 
                 val aiPrefs = com.neubofy.reality.utils.SecurePreferences.get(this@AIChatActivity, "ai_prefs")
                 val selectedModel = aiPrefs.getString("chat_model", "@cf/openai/gpt-oss-120b") ?: "@cf/openai/gpt-oss-120b"
-                val meshKey = aiPrefs.getString("mesh_api_key", "") ?: ""
+                val geminiKey = aiPrefs.getString("gemini_api_key", "") ?: ""
 
-                val isMeshModel = !selectedModel.startsWith("@cf/")
-                if (isMeshModel && meshKey.isEmpty()) {
-                    return@withContext "You have selected a Mesh API model but haven't provided an API key. Please add your Mesh API key in settings."
+                val isGeminiModel = !selectedModel.startsWith("@cf/")
+                if (isGeminiModel && geminiKey.isEmpty()) {
+                    return@withContext "You have selected a Gemini API model but haven't provided an API key. Please add your Gemini API key in settings."
                 }
 
-                val apiUrl = if (isMeshModel) {
-                    "https://api.meshapi.ai/v1/chat/completions"
+                val apiUrl = if (isGeminiModel) {
+                    "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
                 } else {
                     com.neubofy.reality.BuildConfig.AI_URL.removeSuffix("/")
                 }
 
                 // Construct API Request with Dynamic Tools
                 val jsonBody = org.json.JSONObject().apply {
-                    if (!isMeshModel) {
+                    if (!isGeminiModel) {
                         val userId = com.neubofy.reality.utils.IdentityManager.getUserId(this@AIChatActivity)
                         val connectionSecret = com.neubofy.reality.utils.IdentityManager.getConnectionSecret(this@AIChatActivity)
                         if (userId.isEmpty() || connectionSecret.isEmpty()) {
@@ -318,8 +318,8 @@ open class AIChatActivity : BaseActivity() {
                 conn.connectTimeout = 45000 
                 conn.readTimeout = 45000
                 conn.setRequestProperty("Content-Type", "application/json")
-                if (isMeshModel) {
-                    conn.setRequestProperty("Authorization", "Bearer $meshKey")
+                if (isGeminiModel) {
+                    conn.setRequestProperty("Authorization", "Bearer $geminiKey")
                 }
                 conn.doOutput = true
                 
@@ -455,9 +455,9 @@ open class AIChatActivity : BaseActivity() {
             if (currentSessionId == null && sessions.isNotEmpty()) {
                 loadSession(sessions.first().id)
             } else if (sessions.isEmpty()) {
-                // Show welcome if no history
+                 // Show welcome if no history
                  if (messages.isEmpty()) {
-                     adapter.addMessage(ChatMessage("Hello! I am Reality. Tap the sparkle icon to toggle Pro Mode.", false))
+                     adapter.addMessage(ChatMessage("Hello! I am Reality AI. By default, I run on our own deployed open-source models with a strict zero-retention policy — your prompts and responses are never tracked or saved, we only count your request limit. How can I help you today?", false))
                  }
             }
         }

@@ -43,7 +43,6 @@ class ProfileActivity : BaseActivity() {
     private val NIGHTLY_PREFS = "nightly_prefs"
     private val KEY_TASKS_CONNECTED = "tasks_connected"
     private val KEY_DRIVE_CONNECTED = "drive_connected"
-    private val KEY_DOCS_CONNECTED = "docs_connected"
     private val KEY_CALENDAR_CONNECTED = "calendar_connected"
     
     private var pendingAction: (() -> Unit)? = null
@@ -112,7 +111,7 @@ class ProfileActivity : BaseActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
-            REQUEST_AUTH_TASKS, REQUEST_AUTH_DRIVE, REQUEST_AUTH_DOCS, REQUEST_AUTH_CALENDAR -> {
+            REQUEST_AUTH_TASKS, REQUEST_AUTH_DRIVE, REQUEST_AUTH_CALENDAR -> {
                 if (resultCode == RESULT_OK) {
                     TerminalLogger.log("PROFILE: Permission granted for $pendingServiceName")
                     pendingAction?.invoke()
@@ -139,14 +138,46 @@ class ProfileActivity : BaseActivity() {
                 val prefs = com.neubofy.reality.utils.SecurePreferences.get(this, "google_connector_prefs")
                 val tasksConnected = prefs.getBoolean(KEY_TASKS_CONNECTED, false)
                 val driveConnected = prefs.getBoolean(KEY_DRIVE_CONNECTED, false)
-                val docsConnected = prefs.getBoolean(KEY_DOCS_CONNECTED, false)
                 val calendarConnected = prefs.getBoolean(KEY_CALENDAR_CONNECTED, false)
-                val isAllConnected = tasksConnected && driveConnected && docsConnected && calendarConnected
+                val isAllConnected = tasksConnected && driveConnected && calendarConnected
                 
                 com.neubofy.reality.google.GoogleSignInHelper.startSignInFlow(this, isAllConnected, forceBasicScope = false) {
                     updateUI()
                 }
             }
+        }
+
+        binding.btnDeleteAccount.setOnClickListener {
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle("Delete Account")
+                .setMessage("Are you sure you want to delete your Reality account? This will permanently delete your data from Firebase and Google Auth. This cannot be undone.")
+                .setPositiveButton("Delete") { _, _ ->
+                    val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                    if (user != null) {
+                        user.delete().addOnCompleteListener { task ->
+                            lifecycleScope.launch {
+                                if (task.isSuccessful) {
+                                    GoogleAuthManager.signOut(this@ProfileActivity)
+                                    clearAllConnections()
+                                    updateUI()
+                                    android.widget.Toast.makeText(this@ProfileActivity, "Account deleted successfully", android.widget.Toast.LENGTH_LONG).show()
+                                } else {
+                                    val errorMsg = task.exception?.message ?: "Unknown error"
+                                    com.neubofy.reality.utils.TerminalLogger.log("PROFILE: Delete account error: $errorMsg")
+                                    android.widget.Toast.makeText(this@ProfileActivity, "Error deleting account: $errorMsg", android.widget.Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        }
+                    } else {
+                        lifecycleScope.launch {
+                            GoogleAuthManager.signOut(this@ProfileActivity)
+                            clearAllConnections()
+                            updateUI()
+                        }
+                    }
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
         }
     }
 
@@ -192,27 +223,6 @@ class ProfileActivity : BaseActivity() {
             }
         }
         
-        // Docs connector - Create a test doc
-        binding.btnConnectDocs.setOnClickListener {
-            connectAndTestService("Docs", KEY_DOCS_CONNECTED, REQUEST_AUTH_DOCS) {
-                val email = GoogleAuthManager.getUserEmail(this@ProfileActivity)
-                val credential = GoogleAuthManager.getGoogleCredential(this)
-                    ?: throw IllegalStateException("Not signed in - email missing")
-                
-                val docsService = com.google.api.services.docs.v1.Docs.Builder(
-                    GoogleAuthManager.getHttpTransport(),
-                    GoogleAuthManager.getJsonFactory(),
-                    credential
-                ).setApplicationName("com.neubofy.reality").build()
-                
-                val doc = com.google.api.services.docs.v1.model.Document().apply {
-                    title = "Reality Test"
-                }
-                val createdDoc = docsService.documents().create(doc).execute()
-                "Created doc: ${createdDoc.title}"
-            }
-        }
-        
         // Calendar connector - List calendars
         binding.btnConnectCalendar.setOnClickListener {
             connectAndTestService("Calendar", KEY_CALENDAR_CONNECTED, REQUEST_AUTH_CALENDAR) {
@@ -226,9 +236,11 @@ class ProfileActivity : BaseActivity() {
                     credential
                 ).setApplicationName("com.neubofy.reality").build()
                 
-                val calendars = calendarService.calendarList().list().execute()
-                val count = calendars.items?.size ?: 0
-                "Found $count calendar(s)"
+                val events = calendarService.events().list("primary")
+                    .setMaxResults(10)
+                    .execute()
+                val count = events.items?.size ?: 0
+                "Found $count upcoming event(s) in primary calendar"
             }
         }
     }
@@ -312,9 +324,8 @@ class ProfileActivity : BaseActivity() {
         val prefs = com.neubofy.reality.utils.SecurePreferences.get(this, "google_connector_prefs")
         val tasksConnected = prefs.getBoolean(KEY_TASKS_CONNECTED, false)
         val driveConnected = prefs.getBoolean(KEY_DRIVE_CONNECTED, false)
-        val docsConnected = prefs.getBoolean(KEY_DOCS_CONNECTED, false)
         val calendarConnected = prefs.getBoolean(KEY_CALENDAR_CONNECTED, false)
-        val isAllConnected = tasksConnected && driveConnected && docsConnected && calendarConnected
+        val isAllConnected = tasksConnected && driveConnected && calendarConnected
 
         val cardSecureIdentity = findViewById<com.google.android.material.card.MaterialCardView>(R.id.card_secure_identity)
         if (isSignedIn && email.isNotEmpty()) {
@@ -372,7 +383,6 @@ class ProfileActivity : BaseActivity() {
             binding.tvConnectorsTitle.visibility = View.VISIBLE
             binding.cardTasks.visibility = View.VISIBLE
             binding.cardDrive.visibility = View.VISIBLE
-            binding.cardDocs.visibility = View.VISIBLE
             binding.cardCalendar.visibility = View.VISIBLE
             
             // Show Detailed Setup Sections
@@ -380,11 +390,11 @@ class ProfileActivity : BaseActivity() {
             binding.cardDriveSetup.visibility = View.VISIBLE
             binding.cardTasksSetup.visibility = View.VISIBLE
             binding.btnEraseAllSetup.visibility = View.VISIBLE
+            binding.btnDeleteAccount.visibility = View.VISIBLE
             
             // Update connector statuses
             updateConnectorStatus(binding.tvTasksStatus, binding.btnConnectTasks, KEY_TASKS_CONNECTED)
             updateConnectorStatus(binding.tvDriveStatus, binding.btnConnectDrive, KEY_DRIVE_CONNECTED)
-            updateConnectorStatus(binding.tvDocsStatus, binding.btnConnectDocs, KEY_DOCS_CONNECTED)
             updateConnectorStatus(binding.tvCalendarStatus, binding.btnConnectCalendar, KEY_CALENDAR_CONNECTED)
             
         } else {
@@ -399,7 +409,6 @@ class ProfileActivity : BaseActivity() {
             binding.tvConnectorsTitle.visibility = View.GONE
             binding.cardTasks.visibility = View.GONE
             binding.cardDrive.visibility = View.GONE
-            binding.cardDocs.visibility = View.GONE
             binding.cardCalendar.visibility = View.GONE
 
             // Hide Detailed Setup
@@ -407,6 +416,7 @@ class ProfileActivity : BaseActivity() {
             binding.cardDriveSetup.visibility = View.GONE
             binding.cardTasksSetup.visibility = View.GONE
             binding.btnEraseAllSetup.visibility = View.GONE
+            binding.btnDeleteAccount.visibility = View.GONE
         }
     }
     

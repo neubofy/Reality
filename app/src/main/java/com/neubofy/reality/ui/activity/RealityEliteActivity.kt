@@ -61,9 +61,11 @@ class RealityEliteActivity : BaseActivity() {
 
         btnUnifiedSignin = findViewById(R.id.btn_unified_signin)
         btnSyncIdentity = findViewById(R.id.btn_sync_identity)
-        
-        findViewById<android.view.View>(R.id.btn_why_google)?.setOnClickListener {
-            startActivity(android.content.Intent(this, WhyGooglePermissionActivity::class.java))
+        val btnCloudSetupGuide: android.widget.TextView = findViewById(R.id.btn_cloud_setup_guide)
+
+        btnCloudSetupGuide.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://reality.neubofy.in/#byok-setup"))
+            startActivity(intent)
         }
 
         btnCancel = findViewById(R.id.btn_cancel)
@@ -100,7 +102,12 @@ class RealityEliteActivity : BaseActivity() {
                         if (result != null) {
                             showIdentityResultDialog(result)
                         } else {
-                            Toast.makeText(this@RealityEliteActivity, "Identity sync failed. Please sign in first.", Toast.LENGTH_LONG).show()
+                            val isSignedIn = GoogleAuthManager.isSignedIn(this@RealityEliteActivity)
+                            if (isSignedIn) {
+                                Toast.makeText(this@RealityEliteActivity, "Identity synced with active session.", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this@RealityEliteActivity, "Please sign in with Google to sync identity.", Toast.LENGTH_LONG).show()
+                            }
                         }
                     }
                 } catch (e: Exception) {

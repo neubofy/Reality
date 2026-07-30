@@ -386,6 +386,7 @@ class ChatAdapter(private val messages: MutableList<ChatMessage>, private val us
                              android.widget.Toast.makeText(context, "Message copied", android.widget.Toast.LENGTH_SHORT).show()
                              true
                         }
+                        movementMethod = android.text.method.LinkMovementMethod.getInstance()
                     }
                     holder.container.addView(tv)
                     mwNormal.setMarkdown(tv, content)

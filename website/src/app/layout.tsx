@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import Link from 'next/link';
+import Image from 'next/image';
 import { Crown } from 'lucide-react';
 import { Analytics } from '@vercel/analytics/next';
+import MobileNav from './MobileNav';
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -56,7 +58,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${outfit.className} bg-neural-bg text-gray-100 min-h-screen flex flex-col`}>
+      <body className={`${outfit.className} bg-neural-bg text-gray-100 min-h-screen flex flex-col overflow-x-hidden`}>
         {/* JSON-LD Structured Data for AEO/SEO */}
         <script
           type="application/ld+json"
@@ -82,10 +84,12 @@ export default function RootLayout({
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16 items-center">
               <div className="flex-shrink-0 flex items-center gap-3">
-                <img
+                <Image
                   src="https://res.cloudinary.com/dnh4fonis/image/upload/v1781091079/ck39669alz53z3vkeiaq.png"
                   alt="Reality Logo"
-                  className="w-8 h-8 rounded-lg"
+                  width={32}
+                  height={32}
+                  className="rounded-lg"
                 />
                 <Link href="/" className="font-bold text-xl tracking-tight text-white">Reality </Link>
               </div>
@@ -96,6 +100,7 @@ export default function RootLayout({
 
                 <Link href="/privacypolicy" className="text-gray-400 hover:text-white transition-colors px-3 py-2 rounded-md font-medium">PRIVACY</Link>
               </div>
+              <MobileNav />
             </div>
           </div>
         </nav>
