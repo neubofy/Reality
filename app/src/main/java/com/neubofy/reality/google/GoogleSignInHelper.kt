@@ -71,7 +71,7 @@ object GoogleSignInHelper {
                                 var accessToken: String? = null
                                 
                                 if (fullScopes && googleAccount != null) {
-                                    val scopes = "oauth2:https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/tasks https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/spreadsheets"
+                                    val scopes = "oauth2:https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/tasks https://www.googleapis.com/auth/drive.file"
                                     try {
                                         accessToken = withContext(Dispatchers.IO) {
                                             com.google.android.gms.auth.GoogleAuthUtil.getToken(requireContext(), googleAccount, scopes)
@@ -132,9 +132,7 @@ object GoogleSignInHelper {
                 gsoBuilder.requestScopes(
                     com.google.android.gms.common.api.Scope("https://www.googleapis.com/auth/calendar.events"),
                     com.google.android.gms.common.api.Scope("https://www.googleapis.com/auth/tasks"),
-                    com.google.android.gms.common.api.Scope("https://www.googleapis.com/auth/drive.file"),
-                    com.google.android.gms.common.api.Scope("https://www.googleapis.com/auth/documents"),
-                    com.google.android.gms.common.api.Scope("https://www.googleapis.com/auth/spreadsheets")
+                    com.google.android.gms.common.api.Scope("https://www.googleapis.com/auth/drive.file")
                 )
             }
 
