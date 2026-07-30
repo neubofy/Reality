@@ -571,7 +571,12 @@ object GoogleAuthManager {
                                     TerminalLogger.log("GOOGLE AUTH: Auto-refresh failed: \${e.message}")
                                 }
                             }
-                            return super.handleResponse(request, response, supportsRetry)
+                            val handled = super.handleResponse(request, response, supportsRetry)
+                            if (!handled && response.statusCode == 401) {
+                                TerminalLogger.log("GOOGLE AUTH: Unauthorized (401) error encountered in Firebase session, triggering handleAuthFailure")
+                                handleAuthFailure(context)
+                            }
+                            return handled
                         }
                     }
                     credential.setAccessToken(accToken)
@@ -625,7 +630,22 @@ object GoogleAuthManager {
             }
         })
 
-        return builder.build()
+        val credential = object : Credential(builder) {
+            override fun handleResponse(
+                request: com.google.api.client.http.HttpRequest,
+                response: com.google.api.client.http.HttpResponse,
+                supportsRetry: Boolean
+            ): Boolean {
+                val handled = super.handleResponse(request, response, supportsRetry)
+                if (!handled && response.statusCode == 401) {
+                    TerminalLogger.log("GOOGLE AUTH: Unauthorized (401) error encountered in Workspace API, triggering handleAuthFailure")
+                    handleAuthFailure(context)
+                }
+                return handled
+            }
+        }
+
+        return credential
             .setAccessToken(accessToken)
             .setRefreshToken(refreshToken)
     }
