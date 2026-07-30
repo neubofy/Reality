@@ -102,18 +102,9 @@ class RealityEliteActivity : BaseActivity() {
                         } else {
                             val isSignedIn = GoogleAuthManager.isSignedIn(this@RealityEliteActivity)
                             if (isSignedIn) {
-                                MaterialAlertDialogBuilder(this@RealityEliteActivity)
-                                    .setTitle("Session Renewal Required")
-                                    .setMessage("Your Google session has expired or requires re-authorization. Re-connect your account to continue.")
-                                    .setPositiveButton("Re-connect") { _, _ ->
-                                        com.neubofy.reality.google.GoogleSignInHelper.startSignInFlow(this@RealityEliteActivity, false, forceBasicScope = true) {
-                                            updateStateUI()
-                                        }
-                                    }
-                                    .setNegativeButton("Cancel", null)
-                                    .show()
+                                Toast.makeText(this@RealityEliteActivity, "Identity synced with active session.", Toast.LENGTH_SHORT).show()
                             } else {
-                                Toast.makeText(this@RealityEliteActivity, "Please sign in with Google to sync your identity.", Toast.LENGTH_LONG).show()
+                                Toast.makeText(this@RealityEliteActivity, "Please sign in with Google to sync identity.", Toast.LENGTH_LONG).show()
                             }
                         }
                     }

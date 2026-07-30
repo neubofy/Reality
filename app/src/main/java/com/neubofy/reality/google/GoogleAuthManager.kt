@@ -451,6 +451,8 @@ object GoogleAuthManager {
         val prefs = getPrefs(context)
         if (!prefs.getBoolean(KEY_IS_SIGNED_IN, false)) return false
         if (isFirebaseSession(context)) {
+            val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+            if (user != null) return true
             return !prefs.getString(KEY_ID_TOKEN, null).isNullOrBlank()
         }
         return !prefs.getString(KEY_ACCESS_TOKEN, null).isNullOrBlank()
@@ -459,20 +461,48 @@ object GoogleAuthManager {
     fun getUserEmail(context: Context): String? = getPrefs(context).getString(KEY_USER_EMAIL, null)
     fun getUserName(context: Context): String? = getPrefs(context).getString(KEY_USER_NAME, null)
     fun getUserPhotoUrl(context: Context): String? = getPrefs(context).getString(KEY_USER_PHOTO_URL, null)
-    fun getIdToken(context: Context): String? = getPrefs(context).getString(KEY_ID_TOKEN, null)
+    
+    fun getIdToken(context: Context): String? {
+        val prefs = getPrefs(context)
+        val cached = prefs.getString(KEY_ID_TOKEN, null)
+        if (!cached.isNullOrBlank()) return cached
+        
+        if (isFirebaseSession(context)) {
+            val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+            if (user != null) {
+                var token: String? = null
+                try {
+                    val task = user.getIdToken(false)
+                    val latch = java.util.concurrent.CountDownLatch(1)
+                    task.addOnCompleteListener { res ->
+                        if (res.isSuccessful) token = res.result?.token
+                        latch.countDown()
+                    }
+                    latch.await(3, java.util.concurrent.TimeUnit.SECONDS)
+                } catch (_: Exception) {}
+                if (token != null) {
+                    prefs.edit().putString(KEY_ID_TOKEN, token).apply()
+                    return token
+                }
+            }
+        }
+        return null
+    }
     
     fun signOut(context: Context) {
         val clientId = getClientId(context)
         val clientSecret = getClientSecret(context)
 
-        // Revoke pro access locally before clearing identity
-
         if (isFirebaseSession(context)) {
-            com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
-            com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(
-                context,
-                com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN
-            ).signOut()
+            try {
+                com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(
+                    context,
+                    com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN
+                ).signOut()
+            } catch (e: Exception) {
+                TerminalLogger.log("GOOGLE AUTH: Error during Firebase signout - ${e.message}")
+            }
         }
         val featureManager = com.neubofy.reality.utils.FeatureManager(context)
         featureManager.setRealityProVerified(false)
@@ -486,7 +516,7 @@ object GoogleAuthManager {
 
         com.neubofy.reality.utils.SecurePreferences.get(context, "google_connector_prefs").edit().clear().apply()
         com.neubofy.reality.utils.IdentityManager.clearIdentity(context)
-        TerminalLogger.log("GOOGLE AUTH: Signed out and cleared connections")
+        TerminalLogger.log("GOOGLE AUTH: Explicit sign out completed")
     }
 
     private var lastAuthFailureTime = 0L
@@ -495,21 +525,12 @@ object GoogleAuthManager {
         if (!isSignedIn(context)) return
         
         val now = System.currentTimeMillis()
-        if (now - lastAuthFailureTime < 5000) return // Prevent multiple redirects
+        if (now - lastAuthFailureTime < 5000) return
         lastAuthFailureTime = now
 
-        TerminalLogger.log("GOOGLE AUTH: Token missing or invalid. Forcing sign out and redirecting to Profile.")
-        
-        signOut(context)
-        
-        val intent = android.content.Intent(context, com.neubofy.reality.ui.activity.ProfileActivity::class.java).apply {
-            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("reconnect_google", true)
-        }
-        context.startActivity(intent)
-        
-        kotlinx.coroutines.CoroutineScope(Dispatchers.Main).launch {
-            android.widget.Toast.makeText(context, "Google Session Expired. Please reconnect your Workspace.", android.widget.Toast.LENGTH_LONG).show()
+        TerminalLogger.log("GOOGLE AUTH: Token issue detected - attempting background refresh")
+        kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
+            refreshTokenIfNeeded(context, force = true)
         }
     }
 
@@ -527,11 +548,6 @@ object GoogleAuthManager {
         val clientSecret = getClientSecret(context)
         val workerUrl = com.neubofy.reality.BuildConfig.WORKER_URL
         
-        if (accessToken.isNullOrBlank() && !isFirebaseSession(context)) {
-            handleAuthFailure(context)
-            return null
-        }
-
         val isBasicSignIn = com.neubofy.reality.utils.SecurePreferences.get(context, "reality_features")
             .getBoolean("reality_pro_basic_sign_in", false)
         if (isBasicSignIn) {
@@ -566,10 +582,10 @@ object GoogleAuthManager {
                                     val newToken = com.google.android.gms.auth.GoogleAuthUtil.getToken(context, android.accounts.Account(email, "com.google"), scopeString)
                                     this.setAccessToken(newToken)
                                     getPrefs(context).edit().putString(KEY_ACCESS_TOKEN, newToken).apply()
-                                    TerminalLogger.log("GOOGLE AUTH: Token auto-refreshed seamlessly after 401 (Attempt \$retryCount)")
+                                    TerminalLogger.log("GOOGLE AUTH: Token auto-refreshed seamlessly after 401 (Attempt $retryCount)")
                                     return true // Instructs Java Client to retry the failed request
                                 } catch (e: Exception) {
-                                    TerminalLogger.log("GOOGLE AUTH: Auto-refresh failed: \${e.message}")
+                                    TerminalLogger.log("GOOGLE AUTH: Auto-refresh failed: ${e.message}")
                                 }
                             }
                             return super.handleResponse(request, response, supportsRetry)
@@ -578,7 +594,7 @@ object GoogleAuthManager {
                     credential.setAccessToken(accToken)
                     return credential
                 } catch(e: Exception) {
-                    TerminalLogger.log("GOOGLE AUTH: Failed to fetch token via GoogleAuthUtil - \${e.message}")
+                    TerminalLogger.log("GOOGLE AUTH: Failed to fetch token via GoogleAuthUtil - ${e.message}")
                 }
             }
         }
@@ -621,8 +637,7 @@ object GoogleAuthManager {
                 credential: Credential,
                 tokenErrorResponse: com.google.api.client.auth.oauth2.TokenErrorResponse
             ) {
-                TerminalLogger.log("GOOGLE AUTH: Failed to refresh token silently - ${tokenErrorResponse.error}")
-                handleAuthFailure(context)
+                TerminalLogger.log("GOOGLE AUTH: Token error response received: ${tokenErrorResponse.error}")
             }
         })
 
@@ -653,8 +668,6 @@ object GoogleAuthManager {
                 val refreshed = refreshTokenIfNeeded(context, force = true)
                 if (refreshed) {
                     return block()
-                } else {
-                    handleAuthFailure(context)
                 }
             }
             throw e
@@ -665,8 +678,6 @@ object GoogleAuthManager {
                 val refreshed = refreshTokenIfNeeded(context, force = true)
                 if (refreshed) {
                     return block()
-                } else {
-                    handleAuthFailure(context)
                 }
             }
             throw e

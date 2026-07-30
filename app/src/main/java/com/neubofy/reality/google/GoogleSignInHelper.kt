@@ -104,11 +104,9 @@ object GoogleSignInHelper {
         }
 
         private fun finishAuth(success: Boolean) {
+            (activity as? com.neubofy.reality.ui.base.BaseActivity)?.hideLoading()
             if (success) {
-                (activity as? com.neubofy.reality.ui.base.BaseActivity)?.showLoading("Syncing Identity...")
                 onSuccess?.invoke()
-            } else {
-                (activity as? com.neubofy.reality.ui.base.BaseActivity)?.hideLoading()
             }
             parentFragmentManager.beginTransaction().remove(this).commitAllowingStateLoss()
         }
