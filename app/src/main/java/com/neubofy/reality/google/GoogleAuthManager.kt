@@ -75,83 +75,6 @@ object GoogleAuthManager {
     private const val KEY_ACCESS_TOKEN = "access_token"
     private const val KEY_REFRESH_TOKEN = "refresh_token"
     private const val KEY_USER_EMAIL = "user_email"
-package com.neubofy.reality.google
-
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import com.google.api.client.auth.oauth2.AuthorizationCodeFlow
-import com.google.api.client.auth.oauth2.BearerToken
-import com.google.api.client.auth.oauth2.ClientParametersAuthentication
-import com.google.api.client.auth.oauth2.Credential
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
-import com.google.api.client.http.javanet.NetHttpTransport
-import com.google.api.client.json.gson.GsonFactory
-import com.google.api.services.calendar.CalendarScopes
-import com.google.api.services.docs.v1.DocsScopes
-import com.google.api.services.drive.DriveScopes
-import com.google.api.services.sheets.v4.SheetsScopes
-import com.google.api.services.tasks.TasksScopes
-import com.neubofy.reality.utils.TerminalLogger
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.launch
-import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
-
-/**
- * Centralized Google Authentication Manager using BYOK (Bring Your Own Key) Desktop OAuth.
- */
-object GoogleAuthManager {
-    
-    @Volatile
-    private var activeServerSocket: java.net.ServerSocket? = null
-
-    @Volatile
-    var activeLocalPort: Int = 8080
-        private set
-
-    fun prepareLocalServer(): Int {
-        try {
-            activeServerSocket?.close()
-        } catch (_: Exception) {}
-        activeServerSocket = null
-
-        // Try ports from 8080 to 8090
-        for (port in 8080..8090) {
-            try {
-                val socket = java.net.ServerSocket(port, 50, java.net.InetAddress.getByName("127.0.0.1"))
-                activeServerSocket = socket
-                activeLocalPort = port
-                return port
-            } catch (e: Exception) {
-                // port busy, continue
-            }
-        }
-
-        // Fallback to random port
-        try {
-            val socket = java.net.ServerSocket(0, 50, java.net.InetAddress.getByName("127.0.0.1"))
-            activeServerSocket = socket
-            activeLocalPort = socket.localPort
-            return activeLocalPort
-        } catch (e: Exception) {
-            activeLocalPort = 8080
-            return 8080
-        }
-    }
-
-    private const val PREF_NAME = "google_auth_prefs"
-    private const val KEY_CLIENT_ID = "client_id"
-    private const val KEY_CLIENT_SECRET = "client_secret"
-    private const val KEY_ACCESS_TOKEN = "access_token"
-    private const val KEY_REFRESH_TOKEN = "refresh_token"
-    private const val KEY_USER_EMAIL = "user_email"
     private const val KEY_USER_NAME = "user_display_name"
     private const val KEY_USER_PHOTO_URL = "user_photo_url"
     private const val KEY_IS_SIGNED_IN = "is_signed_in"
@@ -322,61 +245,39 @@ object GoogleAuthManager {
             try {
 
             if (isFirebaseSession(context)) {
-                val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
-                if (user != null) {
-                    val task = user.getIdToken(force)
-                    var tokenResult: com.google.firebase.auth.GetTokenResult? = null
+                val userEmail = getPrefs(context).getString(KEY_USER_EMAIL, null)
+                val oldAccessToken = getPrefs(context).getString(KEY_ACCESS_TOKEN, null)
+                
+                if (userEmail != null) {
                     try {
-                        val latch = java.util.concurrent.CountDownLatch(1)
-                        task.addOnCompleteListener { res ->
-                            if(res.isSuccessful) tokenResult = res.result
-                            latch.countDown()
-                        }
-                        latch.await(10, java.util.concurrent.TimeUnit.SECONDS)
-                    } catch(e: Exception) {
-                        TerminalLogger.log("GOOGLE AUTH: Firebase getIdToken exception: ${e.message}")
-                    }
-
-                    val userEmail = getPrefs(context).getString(KEY_USER_EMAIL, null)
-                    var googleIdToken: String? = null
-
-                    if (userEmail != null) {
-                        try {
-                            val account = android.accounts.Account(userEmail, "com.google")
-                            
-                            val oldAccessToken = getPrefs(context).getString(KEY_ACCESS_TOKEN, null)
+                        val isExpired = oldAccessToken != null && isJwtExpired(oldAccessToken)
+                        if (force || isExpired || oldAccessToken == null) {
                             if (force && oldAccessToken != null) {
                                 com.google.android.gms.auth.GoogleAuthUtil.clearToken(context, oldAccessToken)
                             }
+                            val account = android.accounts.Account(userEmail, "com.google")
+                            
+                            val webClientId = context.getString(context.resources.getIdentifier("default_web_client_id", "string", context.packageName))
                             val scopes = "oauth2:" + ALL_SCOPES.joinToString(" ")
                             val newAccessToken = com.google.android.gms.auth.GoogleAuthUtil.getToken(context, account, scopes)
-                            getPrefs(context).edit().putString(KEY_ACCESS_TOKEN, newAccessToken).apply()
-
-                            val defaultWebClientIdRes = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
-                            if (defaultWebClientIdRes != 0) {
-                                val webClientId = context.getString(defaultWebClientIdRes)
-                                val idTokenScope = "audience:server:client_id:$webClientId"
-                                
-                                val oldIdToken = getPrefs(context).getString(KEY_ID_TOKEN, null)
-                                if (force && oldIdToken != null) {
-                                     com.google.android.gms.auth.GoogleAuthUtil.clearToken(context, oldIdToken)
-                                }
-                                googleIdToken = com.google.android.gms.auth.GoogleAuthUtil.getToken(context, account, idTokenScope)
+                            
+                            val idTokenScopes = "audience:server:client_id:$webClientId"
+                            val newIdToken = com.google.android.gms.auth.GoogleAuthUtil.getToken(context, account, idTokenScopes)
+                            
+                            getPrefs(context).edit().apply {
+                                putString(KEY_ACCESS_TOKEN, newAccessToken)
+                                putString(KEY_ID_TOKEN, newIdToken)
+                                apply()
                             }
-                            TerminalLogger.log("GOOGLE AUTH: Google tokens refreshed successfully via GoogleAuthUtil")
-                        } catch (e: Exception) {
-                            TerminalLogger.log("GOOGLE AUTH: Failed to refresh GoogleAuthUtil tokens - ${e.message}")
+                            TerminalLogger.log("GOOGLE AUTH: Firebase (Google) tokens refreshed successfully via GoogleAuthUtil")
+                            return@withContext true
+                        } else {
+                            TerminalLogger.log("GOOGLE AUTH: Firebase (Google) tokens still valid, skipping refresh.")
+                            return@withContext true
                         }
-                    }
-
-                    if (googleIdToken != null) {
-                        getPrefs(context).edit().apply {
-                            putString(KEY_ID_TOKEN, googleIdToken)
-                            apply()
-                        }
-                        return@withContext true
-                    } else if (tokenResult?.token != null) {
-                        return@withContext true
+                    } catch (e: Exception) {
+                        TerminalLogger.log("GOOGLE AUTH: Failed to refresh GoogleAuthUtil token - ${e.message}")
+                        return@withContext false
                     }
                 }
                 return@withContext false
@@ -390,11 +291,6 @@ object GoogleAuthManager {
                 val workerUrl = com.neubofy.reality.BuildConfig.WORKER_URL
 
                 if (refreshToken != null) {
-                    val currentIdToken = getPrefs(context).getString(KEY_ID_TOKEN, null)
-                    if (!force && currentIdToken != null && !isJwtExpired(currentIdToken)) {
-                        return@withContext true
-                    }
-
                     val accessToken: String?
                     val idToken: String?
                     
@@ -784,14 +680,15 @@ object GoogleAuthManager {
     private fun isJwtExpired(token: String): Boolean {
         try {
             val parts = token.split(".")
-            if (parts.size == 3) {
-                val payload = String(android.util.Base64.decode(parts[1], android.util.Base64.URL_SAFE))
-                val json = JSONObject(payload)
-                val exp = json.optLong("exp", 0)
-                // Add 5 minutes buffer (300000 ms)
-                return (exp * 1000) < (System.currentTimeMillis() + 300000)
-            }
-        } catch (e: Exception) {}
-        return true
+            if (parts.size != 3) return false
+            val payload = String(android.util.Base64.decode(parts[1], android.util.Base64.URL_SAFE))
+            val json = JSONObject(payload)
+            val exp = json.optLong("exp", 0)
+            if (exp == 0L) return false
+            // Refresh if within 5 minutes of expiration
+            return (exp * 1000) - System.currentTimeMillis() < 300000
+        } catch (e: Exception) {
+            return false
+        }
     }
 }
