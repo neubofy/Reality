@@ -39,10 +39,12 @@ object GoogleTasksManager {
      */
     suspend fun getTaskLists(context: Context): List<TaskList> {
         return withContext(Dispatchers.IO) {
-            val service = getTasksService(context) 
-                ?: throw IllegalStateException("Not signed in")
-            val result = service.tasklists().list().execute()
-            result.items ?: emptyList()
+            GoogleAuthManager.runWithAutoTokenRefresh(context) {
+                val service = getTasksService(context) 
+                    ?: throw IllegalStateException("Not signed in")
+                val result = service.tasklists().list().execute()
+                result.items ?: emptyList()
+            }
         }
     }
 

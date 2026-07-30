@@ -105,26 +105,28 @@ object GoogleCalendarManager {
     suspend fun getEvents(context: Context, startTimeMs: Long, endTimeMs: Long, calendarId: String = "primary"): List<Event> {
         return withContext(Dispatchers.IO) {
             try {
-                val service = getCalendarService(context) ?: throw Exception("Not signed in to Google Workspace")
-                
-                val events = retryWithBackoff {
-                    service.events().list(calendarId)
-                        .setTimeMin(DateTime(Date(startTimeMs)))
-                        .setTimeMax(DateTime(Date(endTimeMs)))
-                        .setSingleEvents(true)
-                        .setOrderBy("startTime")
-                        .execute()
+                GoogleAuthManager.runWithAutoTokenRefresh(context) {
+                    val service = getCalendarService(context) ?: throw Exception("Not signed in to Google Workspace")
+                    
+                    val events = retryWithBackoff {
+                        service.events().list(calendarId)
+                            .setTimeMin(DateTime(Date(startTimeMs)))
+                            .setTimeMax(DateTime(Date(endTimeMs)))
+                            .setSingleEvents(true)
+                            .setOrderBy("startTime")
+                            .execute()
+                    }
+                    
+                    TerminalLogger.log("CALENDAR API: Fetched ${events.items?.size ?: 0} events")
+                    
+                    // Filter: Exclude All-Day (dateTime is null) and Family events
+                    events.items?.filter { event ->
+                        val isAllDay = event.start.dateTime == null
+                        val isFamily = (event.summary ?: "").contains("family", ignoreCase = true) ||
+                                      (event.description ?: "").contains("family", ignoreCase = true)
+                        !isAllDay && !isFamily
+                    } ?: emptyList()
                 }
-                
-                TerminalLogger.log("CALENDAR API: Fetched ${events.items?.size ?: 0} events")
-                
-                // Filter: Exclude All-Day (dateTime is null) and Family events
-                events.items?.filter { event ->
-                    val isAllDay = event.start.dateTime == null
-                    val isFamily = (event.summary ?: "").contains("family", ignoreCase = true) ||
-                                  (event.description ?: "").contains("family", ignoreCase = true)
-                    !isAllDay && !isFamily
-                } ?: emptyList()
             } catch (e: Exception) {
                 TerminalLogger.log("CALENDAR API: Error fetching events - ${e.message}")
                 throw e // CRITICAL: Throw the error so the Worker knows it failed and doesn't wipe the local database!

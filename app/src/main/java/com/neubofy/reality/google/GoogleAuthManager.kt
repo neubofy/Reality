@@ -239,25 +239,24 @@ object GoogleAuthManager {
         }
     }
 
-    suspend fun refreshTokenIfNeeded(context: Context): Boolean {
+    suspend fun refreshTokenIfNeeded(context: Context, force: Boolean = false): Boolean {
         return withContext(Dispatchers.IO) {
             try {
 
             if (isFirebaseSession(context)) {
                 val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
                 if (user != null) {
-                    val task = user.getIdToken(true)
+                    val task = user.getIdToken(force)
                     var tokenResult: com.google.firebase.auth.GetTokenResult? = null
                     try {
-                        // removed await to avoid unresolved reference
-                    } catch(e: Exception) {
-                        // In case await is not imported properly
                         val latch = java.util.concurrent.CountDownLatch(1)
                         task.addOnCompleteListener { res ->
                             if(res.isSuccessful) tokenResult = res.result
                             latch.countDown()
                         }
-                        latch.await()
+                        latch.await(10, java.util.concurrent.TimeUnit.SECONDS)
+                    } catch(e: Exception) {
+                        TerminalLogger.log("GOOGLE AUTH: Firebase getIdToken exception: ${e.message}")
                     }
                     val idToken = tokenResult?.token
                     if (idToken != null) {
@@ -266,12 +265,14 @@ object GoogleAuthManager {
                             apply()
                         }
                         
-                        // Additionally refresh the Google Calendar access_token if we have one
+                        // Additionally refresh the Google Workspace access_token if we have one
                         val oldAccessToken = getPrefs(context).getString(KEY_ACCESS_TOKEN, null)
                         val userEmail = getPrefs(context).getString(KEY_USER_EMAIL, null)
-                        if (oldAccessToken != null && userEmail != null) {
+                        if (userEmail != null) {
                             try {
-                                com.google.android.gms.auth.GoogleAuthUtil.clearToken(context, oldAccessToken)
+                                if (oldAccessToken != null) {
+                                    com.google.android.gms.auth.GoogleAuthUtil.clearToken(context, oldAccessToken)
+                                }
                                 val account = android.accounts.Account(userEmail, "com.google")
                                 val scopes = "oauth2:https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/tasks https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/spreadsheets"
                                 val newAccessToken = com.google.android.gms.auth.GoogleAuthUtil.getToken(context, account, scopes)
@@ -641,5 +642,34 @@ object GoogleAuthManager {
     
     fun hasRequiredPermissions(context: Context): Boolean {
         return isSignedIn(context)
+    }
+
+    suspend fun <T> runWithAutoTokenRefresh(context: Context, block: suspend () -> T): T {
+        return try {
+            block()
+        } catch (e: com.google.api.client.googleapis.json.GoogleJsonResponseException) {
+            if (e.statusCode == 401 || e.statusCode == 403) {
+                TerminalLogger.log("GOOGLE AUTH: API returned ${e.statusCode}, attempting force token refresh...")
+                val refreshed = refreshTokenIfNeeded(context, force = true)
+                if (refreshed) {
+                    return block()
+                } else {
+                    handleAuthFailure(context)
+                }
+            }
+            throw e
+        } catch (e: Exception) {
+            val msg = e.message?.lowercase() ?: ""
+            if (msg.contains("401") || msg.contains("invalid_credentials") || msg.contains("token expired")) {
+                TerminalLogger.log("GOOGLE AUTH: Token expired in request, attempting force refresh...")
+                val refreshed = refreshTokenIfNeeded(context, force = true)
+                if (refreshed) {
+                    return block()
+                } else {
+                    handleAuthFailure(context)
+                }
+            }
+            throw e
+        }
     }
 }

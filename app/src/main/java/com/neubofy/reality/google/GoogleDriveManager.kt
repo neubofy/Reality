@@ -42,20 +42,22 @@ object GoogleDriveManager {
     suspend fun listFiles(context: Context, folderId: String? = null, pageSize: Int = 20): List<File> {
         return withContext(Dispatchers.IO) {
             try {
-                val service = getDriveService(context) ?: return@withContext emptyList()
-                
-                var query = "trashed = false"
-                if (folderId != null) {
-                    query += " and '$folderId' in parents"
+                GoogleAuthManager.runWithAutoTokenRefresh(context) {
+                    val service = getDriveService(context) ?: return@runWithAutoTokenRefresh emptyList()
+                    
+                    var query = "trashed = false"
+                    if (folderId != null) {
+                        query += " and '$folderId' in parents"
+                    }
+                    
+                    val result = service.files().list()
+                        .setQ(query)
+                        .setPageSize(pageSize)
+                        .setFields("files(id, name, mimeType, modifiedTime, size)")
+                        .execute()
+                    
+                    result.files ?: emptyList()
                 }
-                
-                val result = service.files().list()
-                    .setQ(query)
-                    .setPageSize(pageSize)
-                    .setFields("files(id, name, mimeType, modifiedTime, size)")
-                    .execute()
-                
-                result.files ?: emptyList()
             } catch (e: Exception) {
                 TerminalLogger.log("DRIVE API: Error listing files - ${e.message}")
                 emptyList()

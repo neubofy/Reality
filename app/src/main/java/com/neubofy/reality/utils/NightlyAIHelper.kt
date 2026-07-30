@@ -406,8 +406,15 @@ Analyze the user's "Plan for Tomorrow" and extract actionable items with extreme
         conn.outputStream.bufferedWriter().use { it.write(requestBody.toString()) }
         
         if (conn.responseCode != 200) {
-            val error = conn.errorStream?.bufferedReader()?.readText() ?: "Unknown error"
-            throw Exception("API error ${conn.responseCode}: $error")
+            val decoded = WorkerErrorDecoder.decodeConnectionError(conn)
+            TerminalLogger.log("AI Worker Error: ${decoded.responseCode} - ${decoded.errorMsg} (${decoded.type})")
+            if (decoded.type == WorkerErrorDecoder.AuthErrorType.UNAUTHORIZED || decoded.type == WorkerErrorDecoder.AuthErrorType.EXPIRED_ID_TOKEN) {
+                // Attempt identity refresh once
+                kotlinx.coroutines.runBlocking {
+                    IdentityManager.refreshIdentity(context)
+                }
+            }
+            throw Exception("AI API error ${decoded.responseCode}: ${decoded.errorMsg}")
         }
         
         val response = conn.inputStream.bufferedReader().readText()
