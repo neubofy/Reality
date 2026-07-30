@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import HeroActions from './HeroActions';
 import ScreenshotGallery from './ScreenshotGallery';
 import EcosystemAnimation from './EcosystemAnimation';
@@ -139,10 +140,13 @@ export default async function Home() {
               <div className="relative group max-w-sm w-full">
                 <div className="absolute -inset-1 bg-gradient-to-r from-neural-cyan to-neural-purple rounded-[32px] blur-lg opacity-30 group-hover:opacity-75 transition duration-1000"></div>
                 <div className="relative rounded-[28px] border border-gray-700 bg-neural-card p-3 shadow-2xl">
-                  <img
+                  <Image
                     src="/dashboard_mockup.png"
                     alt="Reality Life OS Dashboard Mockup showcasing focus statistics and AMOLED-optimized productivity scores"
-                    className="rounded-[20px] w-full border border-gray-800 shadow-inner bg-black"
+                    width={400}
+                    height={800}
+                    priority
+                    className="rounded-[20px] w-full h-auto border border-gray-800 shadow-inner bg-black"
                   />
                   <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black/85 backdrop-blur border border-gray-800 px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
                     <Shield size={14} className="text-neural-cyan" />

@@ -194,7 +194,7 @@ class AISettingsActivity : BaseActivity() {
         }
 
         binding.tvGeminiTos.setOnClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://policies.google.com/terms")))
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://ai.google.dev/terms")))
         }
     }
 

@@ -349,15 +349,15 @@ Analyze the user's "Plan for Tomorrow" and extract actionable items with extreme
     private fun callAIWorker(context: Context, prompt: String, sysPrompt: String? = null, modelString: String? = null): String {
         val prefs = com.neubofy.reality.utils.SecurePreferences.get(context, "ai_prefs")
         val modelToUse = modelString ?: prefs.getString("nightly_model", "@cf/openai/gpt-oss-120b") ?: "@cf/openai/gpt-oss-120b"
-        val meshKey = prefs.getString("mesh_api_key", "") ?: ""
+        val geminiKey = prefs.getString("gemini_api_key", "") ?: ""
 
-        val isMeshModel = !modelToUse.startsWith("@cf/")
-        if (isMeshModel && meshKey.isEmpty()) {
-            throw Exception("Mesh API Key is missing. Please add it in settings to use $modelToUse.")
+        val isGeminiModel = !modelToUse.startsWith("@cf/")
+        if (isGeminiModel && geminiKey.isEmpty()) {
+            throw Exception("Gemini API Key is missing. Please add it in settings to use $modelToUse.")
         }
 
-        val apiUrl = if (isMeshModel) {
-            "https://api.meshapi.ai/v1/chat/completions"
+        val apiUrl = if (isGeminiModel) {
+            "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
         } else {
             com.neubofy.reality.BuildConfig.AI_URL.removeSuffix("/")
         }
@@ -371,13 +371,13 @@ Analyze the user's "Plan for Tomorrow" and extract actionable items with extreme
         val conn = url.openConnection() as java.net.HttpURLConnection
         conn.requestMethod = "POST"
         conn.setRequestProperty("Content-Type", "application/json")
-        if (isMeshModel) {
-            conn.setRequestProperty("Authorization", "Bearer $meshKey")
+        if (isGeminiModel) {
+            conn.setRequestProperty("Authorization", "Bearer $geminiKey")
         }
         conn.doOutput = true
         
                 val requestBody = JSONObject().apply {
-            if (!isMeshModel) {
+            if (!isGeminiModel) {
                 put("userId", userId)
                 put("connectionSecret", connectionSecret)
                 put("activeExpiry", com.neubofy.reality.utils.IdentityManager.getActiveExpiry(context))
