@@ -130,8 +130,8 @@ export default function TapashyaPage() {
           const res = await fetch('/api/calendar/events');
 
           if (res.status === 401) {
-              // If unauthorized (cookie missing or expired), sync Firebase state
-              await signOut(auth);
+              // If unauthorized (cookie missing or expired), do NOT sign out of Firebase.
+              // Just update the UI so the user can click "Connect" to instantly refresh the token.
               setCalendarConnected(false);
               return;
           }
