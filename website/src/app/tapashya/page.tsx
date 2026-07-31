@@ -109,7 +109,22 @@ export default function TapashyaPage() {
 
   const handleGoogleConnect = async () => {
       try {
-          const result = await signInWithPopup(auth, googleProvider);
+          // Check if the user manually disconnected previously
+          const forceReauth = localStorage.getItem('force_reauth') === 'true';
+          const provider = new GoogleAuthProvider();
+          provider.addScope('https://www.googleapis.com/auth/calendar.events');
+          
+          if (forceReauth) {
+              provider.setCustomParameters({ prompt: 'select_account' });
+          }
+
+          const result = await signInWithPopup(auth, provider);
+          
+          // Clear the flag after successful login
+          if (forceReauth) {
+              localStorage.removeItem('force_reauth');
+          }
+
           const credential = GoogleAuthProvider.credentialFromResult(result);
           if (credential && credential.accessToken) {
               await fetch('/api/auth/session', {
@@ -158,6 +173,10 @@ export default function TapashyaPage() {
           // Sign out of Firebase AND clear our secure token cookie
           await signOut(auth);
           await fetch('/api/auth/logout', { method: 'POST' });
+          
+          // Set a flag so the next connection forces the account picker
+          localStorage.setItem('force_reauth', 'true');
+          
           setCalendarConnected(false);
           setCalendarEvents([]);
           setRecommendedEvent(null);
