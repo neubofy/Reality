@@ -1,12 +1,16 @@
 import { cookies } from 'next/headers';
+import { encryptString, decryptString } from './encryption';
 
 const COOKIE_NAME = 'reality_google_auth';
 
 export async function setTokenCookie(payload: Record<string, unknown>) {
     const cookieStore = await cookies();
+    const jsonPayload = JSON.stringify(payload);
+    const encryptedValue = encryptString(jsonPayload);
+
     cookieStore.set({
         name: COOKIE_NAME,
-        value: JSON.stringify(payload),
+        value: encryptedValue,
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
@@ -21,8 +25,10 @@ export async function getTokenCookie() {
     if (!cookie?.value) return null;
 
     try {
-        return JSON.parse(cookie.value);
-    } catch {
+        const decryptedJson = decryptString(cookie.value);
+        return JSON.parse(decryptedJson);
+    } catch (e) {
+        console.error('Failed to decrypt or parse token cookie', e);
         return null;
     }
 }

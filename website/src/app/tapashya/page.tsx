@@ -107,36 +107,9 @@ export default function TapashyaPage() {
       fetchTodayEvents();
   }, []);
 
-  const handleGoogleConnect = async () => {
-      try {
-          // Check if the user manually disconnected previously
-          const forceReauth = localStorage.getItem('force_reauth') === 'true';
-          const provider = new GoogleAuthProvider();
-          provider.addScope('https://www.googleapis.com/auth/calendar.events');
-          
-          if (forceReauth) {
-              provider.setCustomParameters({ prompt: 'select_account' });
-          }
-
-          const result = await signInWithPopup(auth, provider);
-          
-          // Clear the flag after successful login
-          if (forceReauth) {
-              localStorage.removeItem('force_reauth');
-          }
-
-          const credential = GoogleAuthProvider.credentialFromResult(result);
-          if (credential && credential.accessToken) {
-              await fetch('/api/auth/session', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ googleAccessToken: credential.accessToken })
-              });
-              await fetchTodayEvents();
-          }
-      } catch (error) {
-          console.error("Google Sign-In failed", error);
-      }
+  const handleGoogleConnect = () => {
+      // Redirect to our new server-side OAuth flow
+      window.location.href = '/api/auth/google/login';
   };
 
   const fetchTodayEvents = async () => {
@@ -170,12 +143,8 @@ export default function TapashyaPage() {
 
   const disconnectCalendar = async () => {
       try {
-          // Sign out of Firebase AND clear our secure token cookie
-          await signOut(auth);
+          // Tell the server to clear our secure token cookie
           await fetch('/api/auth/logout', { method: 'POST' });
-          
-          // Set a flag so the next connection forces the account picker
-          localStorage.setItem('force_reauth', 'true');
           
           setCalendarConnected(false);
           setCalendarEvents([]);
