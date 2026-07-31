@@ -11,11 +11,10 @@ export async function GET(req: NextRequest) {
     const origin = req.nextUrl.origin;
     const redirectUri = `${origin}/api/auth/google/callback`;
 
-    // Define the scopes needed
+    // Define the scopes needed. 
+    // The Tapashya page only strictly needs calendar access.
     const scopes = [
         'https://www.googleapis.com/auth/calendar.events',
-        'https://www.googleapis.com/auth/tasks',
-        'https://www.googleapis.com/auth/drive.file',
         'email',
         'profile',
     ].join(' ');
