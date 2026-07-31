@@ -5,8 +5,7 @@ import { createPortal } from 'react-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { Settings, Play, Pause, Square, RotateCcw, X, Trash2, Edit2, QrCode, ArrowLeft, ChevronLeft, ChevronRight, Calendar, Maximize2, Minimize2, Clock } from 'lucide-react';
 import Link from 'next/link';
-import { auth, googleProvider, signInWithPopup, signOut } from '@/lib/firebase';
-import { GoogleAuthProvider } from 'firebase/auth';
+
 
 export interface TapasyaSession {
   sessionId: string;
