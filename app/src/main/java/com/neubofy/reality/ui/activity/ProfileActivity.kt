@@ -12,7 +12,6 @@ import coil.load
 import coil.transform.CircleCropTransformation
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.google.api.services.calendar.CalendarScopes
-import com.google.api.services.docs.v1.DocsScopes
 import com.google.api.services.drive.DriveScopes
 import com.google.api.services.tasks.TasksScopes
 import com.neubofy.reality.R
