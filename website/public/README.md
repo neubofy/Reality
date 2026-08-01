@@ -50,7 +50,7 @@
 4. **Google Workspace Sync (Calendar, Tasks, Sheets) & Own Key Setup**:
    Reality syncs directly with your own Google Cloud to preserve privacy.
    * Go to **Google Cloud Console** online and create a new project.
-   * Enable the **Calendar API**, **Drive API**, **Tasks API**, and **Docs API**.
+   * Enable the **Calendar API**, **Drive API**, and **Tasks API**.
    * Create an **OAuth 2.0 Client ID** for a **Desktop application**.
    * In Reality, open the **Settings panel -> Google Sync**. Input your generated **Client ID** and **Client Secret**.
    * Authenticate, and Reality will auto-sync calendar events, your folder task list, and nightly log sheets directly.

@@ -38,7 +38,7 @@ A local-first agent for secure, private in-app command execution (e.g., adding t
 ### 7. ☁️ Google Workspace Sync & BYOC (Bring Your Own Cloud)
 Reality works completely without developer servers, syncing directly to your own Google Cloud.
 * **Setup (Your Own Key):**
-  1. Go to Google Cloud Console, enable **Calendar, Drive, Tasks, and Docs APIs**.
+  1. Go to Google Cloud Console, enable **Calendar, Drive, and Tasks APIs**.
   2. Create OAuth 2.0 Client ID for a **Desktop application**.
   3. Enter the generated **Client ID** and **Client Secret** in Reality's Settings under Google Auth.
   4. Once linked, Reality automatically syncs your Tasks, Calendar events, and Daily Report Sheets.
