@@ -81,10 +81,13 @@ object GoogleSignInHelper {
                                     }
                                 }
 
+                                // Important: We await the saveFirebaseSession because it calls IdentityManager.refreshIdentity
+                                // which fetches the profile details, ensuring the UI will reflect them instantly
                                 GoogleAuthManager.saveFirebaseSession(
                                     requireContext(), idToken,
                                     user.email, user.displayName, user.photoUrl?.toString(), accessToken ?: serverAuthCode
                                 )
+
                                 SecurePreferences.get(requireContext(), "reality_features").edit()
                                     .putBoolean("reality_pro_basic_sign_in", !fullScopes).apply()
                                 withContext(Dispatchers.Main) {

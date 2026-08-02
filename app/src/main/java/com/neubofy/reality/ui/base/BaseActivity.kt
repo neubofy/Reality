@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.TextView
+import android.widget.ImageView
+import android.view.animation.AnimationUtils
 import androidx.appcompat.app.AppCompatActivity
 import com.neubofy.reality.R
 import com.neubofy.reality.utils.ThemeManager
@@ -122,7 +124,14 @@ open class BaseActivity : AppCompatActivity() {
                 }
             }
             
-            loadingDialog?.findViewById<TextView>(R.id.tv_loading_message)?.text = message
+            loadingDialog?.findViewById<TextView>(R.id.tv_loading_message)?.apply {
+                text = message
+                startAnimation(AnimationUtils.loadAnimation(this@BaseActivity, R.anim.pulse_alpha))
+            }
+
+            loadingDialog?.findViewById<ImageView>(R.id.iv_logo)?.apply {
+                startAnimation(AnimationUtils.loadAnimation(this@BaseActivity, R.anim.pulse_zoom))
+            }
             
             if (loadingDialog?.isShowing == false) {
                 loadingDialog?.show()

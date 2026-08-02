@@ -130,9 +130,9 @@ object GoogleAuthManager {
         }
         
         if (accessTokenOrAuthCode != null && !accessTokenOrAuthCode.startsWith("ya29")) {
-            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-                exchangeCodeForTokens(context, accessTokenOrAuthCode)
-            }
+            // Need to await this if we want it blocking, but it has internal coroutines.
+            // We just ensure refreshIdentity completes
+            exchangeCodeForTokens(context, accessTokenOrAuthCode)
         }
         com.neubofy.reality.utils.IdentityManager.refreshIdentity(context.applicationContext)
     }
