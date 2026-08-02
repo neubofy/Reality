@@ -130,11 +130,15 @@ object GoogleAuthManager {
         }
         
         if (accessTokenOrAuthCode != null && !accessTokenOrAuthCode.startsWith("ya29")) {
-            // Need to await this if we want it blocking, but it has internal coroutines.
-            // We just ensure refreshIdentity completes
-            exchangeCodeForTokens(context, accessTokenOrAuthCode)
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                exchangeCodeForTokens(context, accessTokenOrAuthCode)
+            }
         }
-        com.neubofy.reality.utils.IdentityManager.refreshIdentity(context.applicationContext)
+
+        // Launch identity refresh in background so it doesn't block UI reflection
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            com.neubofy.reality.utils.IdentityManager.refreshIdentity(context.applicationContext)
+        }
     }
 
     fun isFirebaseSession(context: Context): Boolean {
