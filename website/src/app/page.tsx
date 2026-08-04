@@ -41,7 +41,7 @@ export default async function Home() {
   let downloadCount = "1000+";
 
   try {
-      const res = await fetch('https://api.github.com/repos/pawanwashudev-official/Reality/releases', {
+      const res = await fetch('https://api.github.com/repos/neubofy/Reality/releases', {
           next: { revalidate: 360 }
       });
       if (res.ok) {
@@ -196,7 +196,7 @@ export default async function Home() {
                      All credentials, usage databases, and authentication logs are saved locally inside EncryptedSharedPreferences and an encrypted SQLite database. You configure your own personal Google Cloud project credentials for background integrations, ensuring your private events and documents are never shared.
                   </p>
                   <div className="pt-2">
-                    <a href="https://github.com/pawanwashudev-official/Reality/blob/main/app/src/main/java/com/neubofy/reality/google/GoogleAuthManager.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">
+                    <a href="https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/google/GoogleAuthManager.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">
                       GoogleAuthManager.kt <ArrowUpRight size={12}/>
                     </a>
                   </div>
@@ -210,7 +210,7 @@ export default async function Home() {
                      Reality prevents time manipulation and force-stops using background verification loops. If a settings-level override attempt is detected, Strict Mode blocks the request and initiates custom lockout penalties.
                   </p>
                   <div className="pt-2">
-                    <a href="https://github.com/pawanwashudev-official/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/StrictModeActivity.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">
+                    <a href="https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/StrictModeActivity.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">
                       StrictModeActivity.kt <ArrowUpRight size={12}/>
                     </a>
                   </div>

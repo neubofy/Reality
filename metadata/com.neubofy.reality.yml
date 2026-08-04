@@ -5,9 +5,9 @@ License: GPL-3.0-only
 AuthorName: Pawan Washudev
 AuthorEmail: support@neubofy.in
 AuthorWebSite: https://reality.neubofy.in/
-SourceCode: https://github.com/pawanwashudev-official/Reality
-IssueTracker: https://github.com/pawanwashudev-official/Reality/issues
-Changelog: https://github.com/pawanwashudev-official/Reality/releases
+SourceCode: https://github.com/neubofy/Reality
+IssueTracker: https://github.com/neubofy/Reality/issues
+Changelog: https://github.com/neubofy/Reality/releases
 
 AutoName: Reality
 
@@ -49,7 +49,7 @@ Description: |
   * Calendar - Optional, sync focus with calendar events
 
 RepoType: git
-Repo: https://github.com/pawanwashudev-official/Reality.git
+Repo: https://github.com/neubofy/Reality.git
 
 Builds:
   - versionName: 1.0.1

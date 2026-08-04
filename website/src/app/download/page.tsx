@@ -12,7 +12,7 @@ export default function DownloadPage() {
   const [bestApkUrl, setBestApkUrl] = useState<string>('');
 
   useEffect(() => {
-    fetch('https://api.github.com/repos/pawanwashudev-official/Reality/releases')
+    fetch('https://api.github.com/repos/neubofy/Reality/releases')
       .then((res) => res.json())
       .then((releases) => {
          if (releases && releases.length > 0) {

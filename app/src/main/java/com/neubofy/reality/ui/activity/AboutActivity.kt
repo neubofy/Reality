@@ -31,9 +31,9 @@ class AboutActivity : BaseActivity() {
 
 
     companion object {
-        const val ABOUT_MD_URL = "https://raw.githubusercontent.com/pawanwashudev-official/Reality/main/ABOUT.md"
+        const val ABOUT_MD_URL = "https://raw.githubusercontent.com/neubofy/Reality/main/ABOUT.md"
         const val GITHUB_PROFILE = "https://github.com/pawanwashudev-official"
-        const val GITHUB_REPO = "https://github.com/pawanwashudev-official/Reality"
+        const val GITHUB_REPO = "https://github.com/neubofy/Reality"
         const val TELEGRAM = "https://t.me/pawanwashudev"
         const val WHATSAPP = "https://wa.me/pawanwashudev"
         const val ARRATAI = "https://arratai.com/@pawanwashudev"
@@ -170,7 +170,7 @@ class AboutActivity : BaseActivity() {
                 .setPositiveButton("Submit") { _, _ ->
                     val title = URLEncoder.encode(titleBox.text.toString(), "UTF-8")
                     val body = URLEncoder.encode(descBox.text.toString(), "UTF-8")
-                    val url = "https://github.com/pawanwashudev-official/Reality/issues/new?title=$title&body=$body"
+                    val url = "https://github.com/neubofy/Reality/issues/new?title=$title&body=$body"
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                     try {
                         startActivity(intent)

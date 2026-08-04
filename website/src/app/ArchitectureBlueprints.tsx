@@ -84,8 +84,8 @@ export default function ArchitectureBlueprints() {
                   <li><strong className="text-white">Secure Time Verification:</strong> Reality requires an internet connection to sync with Cloudflare NTP, ensuring users cannot bypass blocks by changing device time.</li>
                 </ul>
                 <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
-                  <a href="https://github.com/pawanwashudev-official/Reality/blob/main/app/src/main/java/com/neubofy/reality/services/AppBlockerService.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">AppBlockerService.kt <ArrowUpRight size={12}/></a>
-                  <a href="https://github.com/pawanwashudev-official/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/StrictModeActivity.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">StrictModeActivity.kt <ArrowUpRight size={12}/></a>
+                  <a href="https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/services/AppBlockerService.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">AppBlockerService.kt <ArrowUpRight size={12}/></a>
+                  <a href="https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/StrictModeActivity.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">StrictModeActivity.kt <ArrowUpRight size={12}/></a>
                 </div>
               </div>
               <div className="bg-black/60 p-6 rounded-xl border border-gray-800 flex items-center justify-between overflow-x-auto">
@@ -112,7 +112,7 @@ export default function ArchitectureBlueprints() {
                   <li><strong className="text-white">AI Memories & Reflections:</strong> Log sliding-window facts and user introduction variables required for remote AI processing.</li>
                 </ul>
                 <div className="pt-2">
-                  <a href="https://github.com/pawanwashudev-official/Reality/blob/main/app/src/main/java/com/neubofy/reality/data/" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">Reality Room Database Package <ArrowUpRight size={12}/></a>
+                  <a href="https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/data/" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">Reality Room Database Package <ArrowUpRight size={12}/></a>
                 </div>
               </div>
               <div className="bg-black/60 p-6 rounded-xl border border-gray-800 flex flex-col items-center justify-center">
@@ -143,7 +143,7 @@ export default function ArchitectureBlueprints() {
                   <li><strong className="text-white">Drive Transfer:</strong> Interacts directly with the personal Google Drive API endpoint.</li>
                 </ul>
                 <div className="pt-2">
-                  <a href="https://github.com/pawanwashudev-official/Reality/blob/main/app/src/main/java/com/neubofy/reality/google/GoogleDriveManager.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">GoogleDriveManager.kt <ArrowUpRight size={12}/></a>
+                  <a href="https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/google/GoogleDriveManager.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">GoogleDriveManager.kt <ArrowUpRight size={12}/></a>
                 </div>
               </div>
               <div className="bg-black/60 p-6 rounded-xl border border-gray-800 flex items-center justify-between overflow-x-auto">
@@ -170,8 +170,8 @@ export default function ArchitectureBlueprints() {
                   <li><strong className="text-white">Synchronized writing:</strong> Automates tasks/events updates in Google Tasks and Calendar.</li>
                 </ul>
                 <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
-                  <a href="https://github.com/pawanwashudev-official/Reality/blob/main/app/src/main/java/com/neubofy/reality/google/GoogleCalendarManager.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">GoogleCalendarManager.kt <ArrowUpRight size={12}/></a>
-                  <a href="https://github.com/pawanwashudev-official/Reality/blob/main/app/src/main/java/com/neubofy/reality/google/GoogleTasksManager.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">GoogleTasksManager.kt <ArrowUpRight size={12}/></a>
+                  <a href="https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/google/GoogleCalendarManager.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">GoogleCalendarManager.kt <ArrowUpRight size={12}/></a>
+                  <a href="https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/google/GoogleTasksManager.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">GoogleTasksManager.kt <ArrowUpRight size={12}/></a>
                 </div>
               </div>
               <div className="bg-black/60 p-6 rounded-xl border border-gray-800 flex items-center justify-between overflow-x-auto">
@@ -199,7 +199,7 @@ export default function ArchitectureBlueprints() {
                   <li><strong className="text-white">Time Verification:</strong> Uses Cloudflare NTP to guarantee accurate session times independent of the device clock.</li>
                 </ul>
                 <div className="pt-2">
-                  <a href="https://github.com/pawanwashudev-official/Reality/blob/main/workers/identity/worker.js" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">workers/identity/worker.js <ArrowUpRight size={12}/></a>
+                  <a href="https://github.com/neubofy/Reality/blob/main/workers/identity/worker.js" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">workers/identity/worker.js <ArrowUpRight size={12}/></a>
                 </div>
               </div>
               <div className="bg-black/60 p-6 rounded-xl border border-gray-800 flex items-center justify-between overflow-x-auto">
@@ -226,7 +226,7 @@ export default function ArchitectureBlueprints() {
                   <li><strong className="text-white">Tamper penalty:</strong> Distraction activities trigger penalty lockouts.</li>
                 </ul>
                 <div className="pt-2">
-                  <a href="https://github.com/pawanwashudev-official/Reality/blob/main/app/src/main/java/com/neubofy/reality/services/TapasyaManager.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">TapasyaManager.kt <ArrowUpRight size={12}/></a>
+                  <a href="https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/services/TapasyaManager.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">TapasyaManager.kt <ArrowUpRight size={12}/></a>
                 </div>
               </div>
               <div className="bg-black/60 p-6 rounded-xl border border-gray-800 flex items-center justify-between overflow-x-auto">
@@ -253,7 +253,7 @@ export default function ArchitectureBlueprints() {
                   <li><strong className="text-white">Scale multiplier:</strong> Earlier hours generate complex arithmetic challenges.</li>
                 </ul>
                 <div className="pt-2">
-                  <a href="https://github.com/pawanwashudev-official/Reality/blob/main/app/src/main/java/com/neubofy/reality/services/WakeupAlarmService.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">WakeupAlarmService.kt <ArrowUpRight size={12}/></a>
+                  <a href="https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/services/WakeupAlarmService.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">WakeupAlarmService.kt <ArrowUpRight size={12}/></a>
                 </div>
               </div>
               <div className="bg-black/60 p-6 rounded-xl border border-gray-800 flex items-center justify-between overflow-x-auto">
@@ -280,7 +280,7 @@ export default function ArchitectureBlueprints() {
                   <li><strong className="text-white">Registry execution:</strong> Binds actions directly to `ToolRegistry.kt` for automation.</li>
                 </ul>
                 <div className="pt-2">
-                  <a href="https://github.com/pawanwashudev-official/Reality/blob/main/app/src/main/java/com/neubofy/reality/utils/ToolRegistry.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">ToolRegistry.kt <ArrowUpRight size={12}/></a>
+                  <a href="https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/utils/ToolRegistry.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">ToolRegistry.kt <ArrowUpRight size={12}/></a>
                 </div>
               </div>
               <div className="bg-black/60 p-6 rounded-xl border border-gray-800 flex items-center justify-between overflow-x-auto">
@@ -307,7 +307,7 @@ export default function ArchitectureBlueprints() {
                   <li><strong className="text-white">Fonts Integration:</strong> Injects customizable assets to style dashboard consoles.</li>
                 </ul>
                 <div className="pt-2">
-                  <a href="https://github.com/pawanwashudev-official/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/AppearanceActivity.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">AppearanceActivity.kt <ArrowUpRight size={12}/></a>
+                  <a href="https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/AppearanceActivity.kt" target="_blank" rel="noopener noreferrer" className="text-neural-cyan hover:underline font-mono text-xs flex items-center gap-1">AppearanceActivity.kt <ArrowUpRight size={12}/></a>
                 </div>
               </div>
               <div className="bg-black/60 p-6 rounded-xl border border-gray-800 flex items-center justify-between overflow-x-auto">

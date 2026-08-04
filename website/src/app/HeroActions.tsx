@@ -16,7 +16,7 @@ export default function HeroActions({ latestVersion }: { latestVersion: string }
           Download APK
         </Link>
         <a
-          href="https://github.com/pawanwashudev-official/Reality"
+          href="https://github.com/neubofy/Reality"
           target="_blank" rel="noreferrer"
           className="w-full sm:w-auto px-8 py-4 bg-neural-card border border-gray-700 text-white text-lg font-bold rounded-xl hover:border-gray-500 transition-colors shadow-lg text-center"
         >
