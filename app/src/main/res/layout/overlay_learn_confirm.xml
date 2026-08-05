@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="8dp"
+    app:cardBackgroundColor="#E6000000">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:gravity="center_horizontal"
+        android:minWidth="300dp"
+        android:maxWidth="320dp">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📍 Learning Mode Active"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Current Page Info -->
+        <TextView
+            android:id="@+id/tvCurrentPage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Current: Unknown"
+            android:textColor="#AAAAAA"
+            android:textSize="13sp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Instruction Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#1500E5FF"
+            android:padding="10dp"
+            android:layout_marginBottom="12dp">
+            
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="💡 Page Selection Guidelines:"
+                android:textColor="#00E5FF"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="1. Navigate to the exact Settings page.\n2. Tap 'Scan' to list page words.\n3. Tap to select keywords UNIQUE to this page (e.g. 'Grayscale', 'Vibration').\n❌ Avoid generic words like 'Settings', 'On', 'Off' to prevent false blocks of other pages."
+                android:textColor="#DDDDDD"
+                android:textSize="10.5sp"
+                android:lineSpacingMultiplier="1.2" />
+        </LinearLayout>
+
+        <!-- SMART KEYWORDS SECTION -->
+        <LinearLayout
+            android:id="@+id/keywordsSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#12FFFFFF"
+            android:padding="8dp"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone">
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🧠 Tap to select unique keywords:"
+                android:textColor="#00FF88"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+            
+            <!-- Extracted keywords will be added here in two scrollable rows for easier selection -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:layout_marginBottom="6dp">
+                <LinearLayout
+                    android:id="@+id/chipsContainerRow1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+            
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none">
+                <LinearLayout
+                    android:id="@+id/chipsContainerRow2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+            
+            <!-- Selected keywords -->
+            <TextView
+                android:id="@+id/tvSelectedKeywords"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#88CC88"
+                android:textSize="10sp"
+                android:layout_marginTop="8dp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Buttons Row -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <!-- Cancel Button -->
+            <Button
+                android:id="@+id/btnCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Cancel"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:backgroundTint="#555555"
+                android:layout_marginEnd="8dp"
+                android:paddingHorizontal="12dp"
+                style="@style/Widget.Material3.Button" />
+
+            <!-- Scan Keywords Button -->
+            <Button
+                android:id="@+id/btnScan"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="🔍 Scan"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:backgroundTint="#0066CC"
+                android:layout_marginEnd="8dp"
+                android:paddingHorizontal="12dp"
+                style="@style/Widget.Material3.Button" />
+
+            <!-- Confirm Button -->
+            <Button
+                android:id="@+id/btnConfirm"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="✓ Block"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:backgroundTint="#00AA44"
+                android:paddingHorizontal="12dp"
+                style="@style/Widget.Material3.Button" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

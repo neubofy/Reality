@@ -1,0 +1,17 @@
+name = "reality-notification-bridge"
+main = "worker.js"
+compatibility_date = "2026-07-04"
+workers_dev = false
+
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+# Secrets set directly via Cloudflare Dashboard (never in code or GitHub):
+# - APP_SECRET_PEPPER          (HMAC signing pepper for auth verification)
+# - FIREBASE_SERVICE_ACCOUNT   (Firebase service account JSON string)
+
+[[d1_databases]]
+binding = "DB"
+database_name = "reality-db"
+database_id = ""  # Injected by GitHub Action

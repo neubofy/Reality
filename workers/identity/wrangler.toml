@@ -1,0 +1,17 @@
+name = "realityproxy"
+main = "worker.js"
+compatibility_date = "2026-07-02"
+workers_dev = false
+
+# Records every request and console.log in the dashboard
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+[observability.traces]
+enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "reality-db"
+database_id = "" # Left blank intentionally; GitHub Action injects this safely

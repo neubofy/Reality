@@ -1,0 +1,68 @@
+===========================================================================
+                              NOTICE
+                           Reality App
+===========================================================================
+
+Copyright (c) 2025 Pawan Washudev / Neubofy
+All Rights Reserved.
+
+===========================================================================
+                         ATTRIBUTION NOTICE
+===========================================================================
+
+This software, "Reality - Digital Focus & Productivity App", was created
+and is maintained by:
+
+  👤 Pawan Washudev
+  🏢 Neubofy
+  🌐 https://reality.neubofy.in/
+  📧 GitHub: @pawanwashudev-official
+
+===========================================================================
+                      THIRD-PARTY ATTRIBUTIONS
+===========================================================================
+
+This project uses the following open-source libraries:
+
+1. Kotlin Programming Language
+   - License: Apache License 2.0
+   - https://kotlinlang.org/
+
+2. Android Jetpack Libraries
+   - License: Apache License 2.0
+   - https://developer.android.com/jetpack
+
+3. Material Design Components
+   - License: Apache License 2.0
+   - https://material.io/
+
+4. Room Database
+   - License: Apache License 2.0
+   - https://developer.android.com/training/data-storage/room
+
+5. WorkManager
+   - License: Apache License 2.0
+   - https://developer.android.com/topic/libraries/architecture/workmanager
+
+6. Lottie for Android
+   - License: Apache License 2.0
+   - https://github.com/airbnb/lottie-android
+
+===========================================================================
+                       USAGE REQUIREMENTS
+===========================================================================
+
+This application is strictly source-available for review purposes only. We do not allow anyone to clone this repository, modify the app, or build and distribute their own version. It is strictly prohibited to make your own version of the app or to claim ownership. App stores or individuals are allowed to distribute the exact pre-compiled APK obtained directly from our GitHub release page. Our AI crawlers continuously scan the internet. If unauthorized distribution or cloning is detected, strict legal action will be taken.
+
+
+===========================================================================
+                         TRADEMARK NOTICE
+===========================================================================
+
+"Reality", "Neubofy", and the Reality logo are trademarks of Neubofy.
+Use of these trademarks requires explicit permission from the trademark owner.
+
+===========================================================================
+
+For the complete license, see the LICENSE file.
+For more information, visit: https://reality.neubofy.in/
