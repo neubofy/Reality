@@ -60,12 +60,12 @@ class HabitAdapter(
                     ivStatus.setColorFilter(ContextCompat.getColor(itemView.context, R.color.green_500))
                 }
                 HabitEntryEntity.VALUE_SKIP -> {
-                    ivStatus.setImageResource(R.drawable.baseline_remove_circle_outline_24)
-                    ivStatus.setColorFilter(ContextCompat.getColor(itemView.context, R.color.amber_500))
+                    ivStatus.setImageResource(R.drawable.baseline_remove_24)
+                    ivStatus.setColorFilter(ContextCompat.getColor(itemView.context, R.color.orange_500))
                 }
                 else -> {
-                    ivStatus.setImageResource(R.drawable.baseline_check_circle_outline_24)
-                    ivStatus.setColorFilter(ContextCompat.getColor(itemView.context, R.color.gray_400))
+                    ivStatus.setImageResource(R.drawable.baseline_radio_button_unchecked_24)
+                    ivStatus.setColorFilter(ContextCompat.getColor(itemView.context, R.color.gray_light))
                 }
             }
 

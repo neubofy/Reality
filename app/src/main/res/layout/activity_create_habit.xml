@@ -142,7 +142,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginBottom="24dp"
-                android:background="@drawable/spinner_item" />
+                android:background="@drawable/spinner_background" />
 
             <!-- Save Button -->
             <com.google.android.material.button.MaterialButton

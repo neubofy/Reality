@@ -101,7 +101,7 @@ class HabitRepository(private val context: Context) {
         
         // Recalculate daily stats XP
         try {
-            com.neubofy.reality.utils.XPManager.recalculateDailyStats(context)
+            com.neubofy.reality.utils.XPManager.recalculateDailyStats(context, dateStr)
         } catch (e: Exception) {}
 
         newEntry
@@ -121,7 +121,7 @@ class HabitRepository(private val context: Context) {
         habitDao.insertOrUpdateEntry(entry)
 
         try {
-            com.neubofy.reality.utils.XPManager.recalculateDailyStats(context)
+            com.neubofy.reality.utils.XPManager.recalculateDailyStats(context, dateStr)
         } catch (e: Exception) {}
 
         entry

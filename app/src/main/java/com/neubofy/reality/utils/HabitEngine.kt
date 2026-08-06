@@ -225,15 +225,15 @@ object HabitEngine {
                 }
                 HabitEntity.SOURCE_TAPASYA_FOCUS -> {
                     val startOfDay = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                    val endOfDay = date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                    val sessions = db.tapasyaSessionDao().getSessionsInWindow(startOfDay, endOfDay)
+                    val endOfDay = date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli() - 1
+                    val sessions = db.tapasyaSessionDao().getSessionsForDay(startOfDay, endOfDay)
                     val focusMins = sessions.sumOf { it.effectiveTimeMs } / 60000.0
                     measuredValDouble = focusMins
                     isFulfilled = focusMins >= target
                 }
                 HabitEntity.SOURCE_TASK_COMPLETION -> {
-                    val dailyStats = db.dailyStatsDao().getDailyStats(dateStr)
-                    val tasksDone = (dailyStats?.tasksCompleted ?: 0).toDouble()
+                    val stats = XPManager.getDailyStats(context, dateStr)
+                    val tasksDone = ((stats?.taskXP ?: 0) / 100).coerceAtLeast(0).toDouble()
                     measuredValDouble = tasksDone
                     isFulfilled = tasksDone >= target
                 }
