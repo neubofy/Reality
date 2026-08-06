@@ -24,6 +24,7 @@ data class HabitEntity(
     // Passive Auto-Sourcing (Reads from Reality's existing DB/Preferences)
     val autoSourceType: String = SOURCE_NONE, // NONE, HEALTH_STEPS, HEALTH_SLEEP, USAGE_SCREEN_TIME, TAPASYA_FOCUS, TASK_COMPLETION
     val autoSourceTarget: Double = 0.0,
+    val category: String = CATEGORY_HEALTH,
     
     val createdAt: Long = System.currentTimeMillis()
 ) {
@@ -40,5 +41,12 @@ data class HabitEntity(
         const val SOURCE_USAGE_SCREEN_TIME = "USAGE_SCREEN_TIME"
         const val SOURCE_TAPASYA_FOCUS = "TAPASYA_FOCUS"
         const val SOURCE_TASK_COMPLETION = "TASK_COMPLETION"
+
+        const val CATEGORY_ALL = "ALL"
+        const val CATEGORY_HEALTH = "HEALTH"
+        const val CATEGORY_FOCUS = "FOCUS"
+        const val CATEGORY_MIND = "MIND"
+        const val CATEGORY_BODY = "BODY"
+        const val CATEGORY_OTHER = "OTHER"
     }
 }

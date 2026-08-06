@@ -317,6 +317,29 @@ class ReflectionDetailActivity : BaseActivity() {
         
         loadXpChart()
         loadStudyChart()
+        loadHabitStats()
+    }
+
+    private fun loadHabitStats() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val repo = com.neubofy.reality.data.repository.HabitRepository(applicationContext)
+            val today = java.time.LocalDate.now()
+            val habits = repo.getHabitsWithStatusForDate(today)
+
+            val completed = habits.count { it.isCompleted }
+            val total = habits.size
+            val avgScore = if (total > 0) (habits.sumOf { it.currentScore } / total * 100).toInt() else 100
+            val topStreak = habits.maxOfOrNull { it.currentStreak } ?: 0
+
+            withContext(Dispatchers.Main) {
+                binding.tvHabitsCompletedToday.text = "$completed/$total"
+                binding.tvHabitAvgScore.text = "$avgScore%"
+                binding.tvHabitTopStreak.text = "🔥 $topStreak"
+                binding.btnOpenHabitTracker.setOnClickListener {
+                    startActivity(android.content.Intent(this@ReflectionDetailActivity, HabitTrackerActivity::class.java))
+                }
+            }
+        }
     }
     
     private fun loadStudyChart() {

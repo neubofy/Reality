@@ -10,6 +10,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.neubofy.reality.R
 import com.neubofy.reality.data.db.HabitEntity
@@ -30,8 +31,20 @@ class CreateHabitActivity : BaseActivity() {
     private lateinit var layoutMeasurable: LinearLayout
     private lateinit var etTargetValue: TextInputEditText
     private lateinit var etUnit: TextInputEditText
+    private lateinit var spinnerCategory: Spinner
     private lateinit var spinnerAutoSource: Spinner
     private lateinit var btnSave: MaterialButton
+    private lateinit var layoutEditActions: LinearLayout
+    private lateinit var btnResetData: MaterialButton
+    private lateinit var btnDeleteHabit: MaterialButton
+
+    private val categoryOptions = listOf(
+        "🌱 Health" to HabitEntity.CATEGORY_HEALTH,
+        "⚡ Focus" to HabitEntity.CATEGORY_FOCUS,
+        "🧘 Mind" to HabitEntity.CATEGORY_MIND,
+        "💪 Body" to HabitEntity.CATEGORY_BODY,
+        "📌 Other" to HabitEntity.CATEGORY_OTHER
+    )
 
     private val autoSourceOptions = listOf(
         "None (Manual Check-in)" to HabitEntity.SOURCE_NONE,
@@ -61,29 +74,44 @@ class CreateHabitActivity : BaseActivity() {
         layoutMeasurable = findViewById(R.id.layout_measurable_fields)
         etTargetValue = findViewById(R.id.et_target_value)
         etUnit = findViewById(R.id.et_unit)
+        spinnerCategory = findViewById(R.id.spinner_category)
         spinnerAutoSource = findViewById(R.id.spinner_auto_source)
         btnSave = findViewById(R.id.btn_save_habit)
+        layoutEditActions = findViewById(R.id.layout_edit_actions)
+        btnResetData = findViewById(R.id.btn_reset_habit_data)
+        btnDeleteHabit = findViewById(R.id.btn_delete_habit)
 
-        setupAutoSourceSpinner()
+        setupSpinners()
         setupTypeToggle()
 
         if (editingHabitId > 0) {
+            layoutEditActions.visibility = View.VISIBLE
             loadHabitForEdit()
+            setupDeleteAndResetActions()
         } else {
+            layoutEditActions.visibility = View.GONE
             toggleType.check(R.id.btn_type_boolean)
         }
 
         btnSave.setOnClickListener { saveHabit() }
     }
 
-    private fun setupAutoSourceSpinner() {
-        val adapter = ArrayAdapter(
+    private fun setupSpinners() {
+        val catAdapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            categoryOptions.map { it.first }
+        )
+        catAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerCategory.adapter = catAdapter
+
+        val autoAdapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
             autoSourceOptions.map { it.first }
         )
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerAutoSource.adapter = adapter
+        autoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerAutoSource.adapter = autoAdapter
     }
 
     private fun setupTypeToggle() {
@@ -95,6 +123,38 @@ class CreateHabitActivity : BaseActivity() {
                     layoutMeasurable.visibility = View.GONE
                 }
             }
+        }
+    }
+
+    private fun setupDeleteAndResetActions() {
+        btnResetData.setOnClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Reset Habit Progress Data?")
+                .setMessage("This will clear all daily check-in records for this habit. Streaks and scores will be reset to zero.")
+                .setPositiveButton("Reset Data") { _, _ ->
+                    lifecycleScope.launch {
+                        repo.clearHabitEntries(editingHabitId)
+                        Toast.makeText(this@CreateHabitActivity, "Habit history cleared", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+
+        btnDeleteHabit.setOnClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Delete Habit?")
+                .setMessage("Are you sure you want to delete this habit permanently? This action cannot be undone.")
+                .setPositiveButton("Delete") { _, _ ->
+                    lifecycleScope.launch {
+                        repo.deleteHabit(editingHabitId)
+                        Toast.makeText(this@CreateHabitActivity, "Habit deleted", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
         }
     }
 
@@ -113,10 +173,11 @@ class CreateHabitActivity : BaseActivity() {
                 toggleType.check(R.id.btn_type_boolean)
             }
 
+            val catIdx = categoryOptions.indexOfFirst { it.second.equals(habit.category, ignoreCase = true) }
+            if (catIdx >= 0) spinnerCategory.setSelection(catIdx)
+
             val sourceIdx = autoSourceOptions.indexOfFirst { it.second == habit.autoSourceType }
-            if (sourceIdx >= 0) {
-                spinnerAutoSource.setSelection(sourceIdx)
-            }
+            if (sourceIdx >= 0) spinnerAutoSource.setSelection(sourceIdx)
         }
     }
 
@@ -131,6 +192,9 @@ class CreateHabitActivity : BaseActivity() {
         val isMeasurable = toggleType.checkedButtonId == R.id.btn_type_measurable
         val targetVal = etTargetValue.text.toString().toDoubleOrNull() ?: 0.0
         val unit = etUnit.text.toString().trim()
+
+        val selectedCatPos = spinnerCategory.selectedItemPosition
+        val category = if (selectedCatPos >= 0) categoryOptions[selectedCatPos].second else HabitEntity.CATEGORY_HEALTH
 
         val selectedSourcePos = spinnerAutoSource.selectedItemPosition
         val autoSourceType = if (selectedSourcePos >= 0) autoSourceOptions[selectedSourcePos].second else HabitEntity.SOURCE_NONE
@@ -148,6 +212,7 @@ class CreateHabitActivity : BaseActivity() {
                 type = if (isMeasurable) HabitEntity.TYPE_MEASURABLE else HabitEntity.TYPE_BOOLEAN,
                 targetValue = targetVal,
                 unit = unit,
+                category = category,
                 autoSourceType = autoSourceType,
                 autoSourceTarget = targetVal,
                 createdAt = existing?.createdAt ?: System.currentTimeMillis()

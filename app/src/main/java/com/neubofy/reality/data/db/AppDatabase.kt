@@ -107,6 +107,7 @@ abstract class AppDatabase : RoomDatabase() {
                         `isArchived` INTEGER NOT NULL,
                         `autoSourceType` TEXT NOT NULL,
                         `autoSourceTarget` REAL NOT NULL,
+                        `category` TEXT NOT NULL DEFAULT 'HEALTH',
                         `createdAt` INTEGER NOT NULL
                     )
                 """.trimIndent())
