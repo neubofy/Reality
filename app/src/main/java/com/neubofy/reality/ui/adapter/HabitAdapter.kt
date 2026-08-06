@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -17,7 +18,8 @@ import com.neubofy.reality.data.repository.HabitRepository
 
 class HabitAdapter(
     private val onToggleClick: (HabitRepository.HabitWithStatus) -> Unit,
-    private val onItemClick: (HabitRepository.HabitWithStatus) -> Unit
+    private val onItemClick: (HabitRepository.HabitWithStatus) -> Unit,
+    private val onOptionsClick: (HabitRepository.HabitWithStatus, View) -> Unit
 ) : ListAdapter<HabitRepository.HabitWithStatus, HabitAdapter.HabitViewHolder>(HabitDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HabitViewHolder {
@@ -36,11 +38,18 @@ class HabitAdapter(
         private val tvScore: TextView = itemView.findViewById(R.id.tv_score_percentage)
         private val ivStatus: ImageView = itemView.findViewById(R.id.iv_status_icon)
         private val btnToggle: FrameLayout = itemView.findViewById(R.id.btn_toggle_habit)
+        private val ibOptions: ImageButton = itemView.findViewById(R.id.ib_habit_options)
 
         fun bind(item: HabitRepository.HabitWithStatus) {
             tvName.text = item.habit.name
             
-            val subtext = if (item.habit.question.isNotEmpty()) {
+            val entryVal = item.entry?.value ?: HabitEntryEntity.VALUE_NO
+            val isSkip = entryVal == HabitEntryEntity.VALUE_SKIP
+
+            val subtext = if (item.habit.type == HabitEntity.TYPE_MEASURABLE) {
+                val currentVal = (entryVal / 1000.0).coerceAtLeast(0.0)
+                "Progress: ${String.format("%.1f", currentVal)} / ${item.habit.targetValue} ${item.habit.unit}"
+            } else if (item.habit.question.isNotEmpty()) {
                 item.habit.question
             } else if (item.habit.autoSourceType != HabitEntity.SOURCE_NONE) {
                 "Auto: ${item.habit.autoSourceType}"
@@ -53,13 +62,12 @@ class HabitAdapter(
             val scorePercent = (item.currentScore * 100).toInt()
             tvScore.text = "$scorePercent%"
 
-            val entryVal = item.entry?.value ?: HabitEntryEntity.VALUE_NO
-            when (entryVal) {
-                HabitEntryEntity.VALUE_YES_MANUAL, HabitEntryEntity.VALUE_YES_AUTO -> {
+            when {
+                item.isCompleted -> {
                     ivStatus.setImageResource(R.drawable.baseline_check_circle_24)
                     ivStatus.setColorFilter(ContextCompat.getColor(itemView.context, R.color.green_500))
                 }
-                HabitEntryEntity.VALUE_SKIP -> {
+                isSkip -> {
                     ivStatus.setImageResource(R.drawable.baseline_remove_24)
                     ivStatus.setColorFilter(ContextCompat.getColor(itemView.context, R.color.orange_500))
                 }
@@ -71,6 +79,13 @@ class HabitAdapter(
 
             btnToggle.setOnClickListener { onToggleClick(item) }
             itemView.setOnClickListener { onItemClick(item) }
+            itemView.setOnLongClickListener {
+                onOptionsClick(item, it)
+                true
+            }
+            ibOptions.setOnClickListener {
+                onOptionsClick(item, it)
+            }
         }
     }
 

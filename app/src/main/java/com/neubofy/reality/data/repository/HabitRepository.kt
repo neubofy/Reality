@@ -147,4 +147,9 @@ class HabitRepository(private val context: Context) {
     suspend fun clearHabitEntries(habitId: Long) = withContext(Dispatchers.IO) {
         habitDao.deleteAllEntriesForHabit(habitId)
     }
+
+    suspend fun deleteAllHabitsAndEntries() = withContext(Dispatchers.IO) {
+        val habits = habitDao.getAllHabitsIncludingArchived()
+        habits.forEach { habitDao.deleteHabit(it.id) }
+    }
 }

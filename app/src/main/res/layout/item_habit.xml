@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
+            android:layout_marginEnd="8dp"
             android:orientation="vertical">
 
             <TextView
@@ -49,6 +49,7 @@
                 android:layout_height="wrap_content"
                 android:text="Habit Name"
                 android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold" />
 
             <TextView
@@ -77,6 +78,7 @@
                 android:paddingVertical="4dp"
                 android:text="🔥 0"
                 android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold" />
 
             <TextView
@@ -89,6 +91,17 @@
                 android:textColor="?attr/colorPrimary"
                 android:textStyle="bold" />
         </LinearLayout>
+
+        <!-- 3-Dots Options Menu Icon -->
+        <ImageButton
+            android:id="@+id/ib_habit_options"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Habit Options"
+            android:src="@drawable/baseline_settings_24"
+            app:tint="?attr/colorOnSurfaceVariant" />
 
     </LinearLayout>
 

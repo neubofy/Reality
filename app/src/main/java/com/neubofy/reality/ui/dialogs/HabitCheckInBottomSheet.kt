@@ -16,11 +16,12 @@ import com.neubofy.reality.data.repository.HabitRepository
 
 class HabitCheckInBottomSheet(
     private val habitStatus: HabitRepository.HabitWithStatus,
+    private val onEditRequested: () -> Unit,
     private val onSaved: (value: Int, measurableVal: Double?, notes: String) -> Unit
 ) : BottomSheetDialogFragment() {
 
     private var selectedValue: Int = habitStatus.entry?.value ?: HabitEntryEntity.VALUE_NO
-    private var currentMeasurableVal: Double = (habitStatus.entry?.value ?: 0) / 1000.0
+    private var currentMeasurableVal: Double = ((habitStatus.entry?.value ?: 0) / 1000.0).coerceAtLeast(0.0)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,6 +35,7 @@ class HabitCheckInBottomSheet(
         super.onViewCreated(view, savedInstanceState)
 
         val tvName = view.findViewById<TextView>(R.id.dialog_tv_habit_name)
+        val btnEditSettings = view.findViewById<MaterialButton>(R.id.btn_dialog_edit_settings)
         val tvQuestion = view.findViewById<TextView>(R.id.dialog_tv_question)
         val layoutBoolean = view.findViewById<LinearLayout>(R.id.layout_boolean_actions)
         val btnYes = view.findViewById<MaterialButton>(R.id.btn_action_yes)
@@ -55,11 +57,17 @@ class HabitCheckInBottomSheet(
         tvQuestion.text = habitStatus.habit.question.ifEmpty { "Did you complete this habit today?" }
         etNotes.setText(habitStatus.entry?.notes ?: "")
 
+        btnEditSettings.setOnClickListener {
+            dismiss()
+            onEditRequested()
+        }
+
         if (habitStatus.habit.type == HabitEntity.TYPE_MEASURABLE) {
             layoutBoolean.visibility = View.GONE
             layoutMeasurable.visibility = View.VISIBLE
 
             fun updateMeasurableText() {
+                currentMeasurableVal = currentMeasurableVal.coerceAtLeast(0.0)
                 tvMeasurableProgress.text = "${String.format("%.1f", currentMeasurableVal)} / ${habitStatus.habit.targetValue} ${habitStatus.habit.unit}"
                 etCustom.setText(String.format("%.1f", currentMeasurableVal))
             }
@@ -123,7 +131,7 @@ class HabitCheckInBottomSheet(
         btnSave.setOnClickListener {
             val notes = etNotes.text.toString().trim()
             if (habitStatus.habit.type == HabitEntity.TYPE_MEASURABLE) {
-                val customVal = etCustom.text.toString().toDoubleOrNull() ?: currentMeasurableVal
+                val customVal = (etCustom.text.toString().toDoubleOrNull() ?: currentMeasurableVal).coerceAtLeast(0.0)
                 onSaved(HabitEntryEntity.VALUE_YES_MANUAL, customVal, notes)
             } else {
                 onSaved(selectedValue, null, notes)

@@ -3,10 +3,14 @@ package com.neubofy.reality.ui.activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.HapticFeedbackConstants
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.PopupMenu
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.ChipGroup
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.neubofy.reality.R
 import com.neubofy.reality.data.db.HabitEntity
@@ -54,6 +59,18 @@ class HabitTrackerActivity : BaseActivity() {
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         toolbar.title = "Habit Tracker"
         toolbar.setNavigationOnClickListener { finish() }
+        
+        // Add Delete-All Trash Can menu action to toolbar
+        toolbar.menu?.clear()
+        val trashMenu = toolbar.menu.add(Menu.NONE, 1001, Menu.NONE, "Delete All")
+        trashMenu.setIcon(R.drawable.baseline_delete_24)
+        trashMenu.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+        toolbar.setOnMenuItemClickListener { item ->
+            if (item.itemId == 1001) {
+                confirmDeleteAllHabits()
+                true
+            } else false
+        }
 
         swipeRefresh = findViewById(R.id.swipe_refresh_habits)
         tvCurrentDate = findViewById(R.id.tv_current_date)
@@ -102,9 +119,14 @@ class HabitTrackerActivity : BaseActivity() {
                 }
             },
             onItemClick = { habitStatus ->
-                // Open Check-In BottomSheet Popup Modal
                 HabitCheckInBottomSheet(
                     habitStatus = habitStatus,
+                    onEditRequested = {
+                        val intent = Intent(this, CreateHabitActivity::class.java).apply {
+                            putExtra("habit_id", habitStatus.habit.id)
+                        }
+                        startActivity(intent)
+                    },
                     onSaved = { value, measurableVal, notes ->
                         lifecycleScope.launch {
                             if (measurableVal != null) {
@@ -116,10 +138,74 @@ class HabitTrackerActivity : BaseActivity() {
                         }
                     }
                 ).show(supportFragmentManager, "HabitCheckInBottomSheet")
+            },
+            onOptionsClick = { habitStatus, anchorView ->
+                showHabitOptionsMenu(habitStatus, anchorView)
             }
         )
         rvHabits.layoutManager = LinearLayoutManager(this)
         rvHabits.adapter = adapter
+    }
+
+    private fun showHabitOptionsMenu(habitStatus: HabitRepository.HabitWithStatus, anchorView: View) {
+        val popup = PopupMenu(this, anchorView)
+        popup.menu.add("✏️ Edit Habit")
+        popup.menu.add("🔄 Reset Progress Data")
+        popup.menu.add("🗑️ Delete Habit")
+
+        popup.setOnMenuItemClickListener { item ->
+            when (item.title) {
+                "✏️ Edit Habit" -> {
+                    val intent = Intent(this, CreateHabitActivity::class.java).apply {
+                        putExtra("habit_id", habitStatus.habit.id)
+                    }
+                    startActivity(intent)
+                }
+                "🔄 Reset Progress Data" -> {
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle("Reset Habit Progress Data?")
+                        .setMessage("Clear all check-in entries for '${habitStatus.habit.name}'?")
+                        .setPositiveButton("Reset") { _, _ ->
+                            lifecycleScope.launch {
+                                repo.clearHabitEntries(habitStatus.habit.id)
+                                loadHabitsForSelectedDate()
+                            }
+                        }
+                        .setNegativeButton("Cancel", null)
+                        .show()
+                }
+                "🗑️ Delete Habit" -> {
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle("Delete Habit?")
+                        .setMessage("Permanently delete '${habitStatus.habit.name}'?")
+                        .setPositiveButton("Delete") { _, _ ->
+                            lifecycleScope.launch {
+                                repo.deleteHabit(habitStatus.habit.id)
+                                loadHabitsForSelectedDate()
+                            }
+                        }
+                        .setNegativeButton("Cancel", null)
+                        .show()
+                }
+            }
+            true
+        }
+        popup.show()
+    }
+
+    private fun confirmDeleteAllHabits() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Delete All Habits & Progress Data?")
+            .setMessage("Are you sure you want to delete all habits and their historical check-in records? This action cannot be undone.")
+            .setPositiveButton("Delete All") { _, _ ->
+                lifecycleScope.launch {
+                    repo.deleteAllHabitsAndEntries()
+                    Toast.makeText(this@HabitTrackerActivity, "All habits deleted", Toast.LENGTH_SHORT).show()
+                    loadHabitsForSelectedDate()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun setupDateNavigation() {

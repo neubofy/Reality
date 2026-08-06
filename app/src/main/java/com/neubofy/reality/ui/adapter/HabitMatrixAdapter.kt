@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.neubofy.reality.R
+import com.neubofy.reality.data.db.HabitEntity
 import com.neubofy.reality.data.db.HabitEntryEntity
 import com.neubofy.reality.data.repository.HabitRepository
 
@@ -61,16 +62,29 @@ class HabitMatrixAdapter(
                 dot.layoutParams = params
 
                 val entryVal = entry?.value ?: HabitEntryEntity.VALUE_NO
-                val bgDrawable = when (entryVal) {
-                    HabitEntryEntity.VALUE_YES_MANUAL, HabitEntryEntity.VALUE_YES_AUTO -> R.drawable.circle_primary
-                    HabitEntryEntity.VALUE_SKIP -> R.drawable.circle_background
+                val isCompleted = if (item.habitStatus.habit.type == HabitEntity.TYPE_MEASURABLE) {
+                    val valReal = entryVal / 1000.0
+                    val target = item.habitStatus.habit.targetValue
+                    if (item.habitStatus.habit.targetType == HabitEntity.TARGET_AT_LEAST) {
+                        valReal >= target && target > 0
+                    } else {
+                        entryVal != HabitEntryEntity.VALUE_NO && valReal <= target
+                    }
+                } else {
+                    entryVal == HabitEntryEntity.VALUE_YES_MANUAL || entryVal == HabitEntryEntity.VALUE_YES_AUTO
+                }
+                val isSkip = entryVal == HabitEntryEntity.VALUE_SKIP
+
+                val bgDrawable = when {
+                    isCompleted -> R.drawable.circle_primary
+                    isSkip -> R.drawable.circle_background
                     else -> R.drawable.circle_background_dark
                 }
                 dot.setBackgroundResource(bgDrawable)
 
-                val colorRes = when (entryVal) {
-                    HabitEntryEntity.VALUE_YES_MANUAL, HabitEntryEntity.VALUE_YES_AUTO -> R.color.green_500
-                    HabitEntryEntity.VALUE_SKIP -> R.color.orange_500
+                val colorRes = when {
+                    isCompleted -> R.color.green_500
+                    isSkip -> R.color.orange_500
                     else -> R.color.md_theme_surfaceContainerHighest
                 }
                 dot.backgroundTintList = ContextCompat.getColorStateList(ctx, colorRes)

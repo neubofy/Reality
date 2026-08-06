@@ -14,14 +14,31 @@
         android:layout_marginBottom="16dp"
         android:background="@drawable/chip_background" />
 
-    <!-- Habit Header -->
-    <TextView
-        android:id="@+id/dialog_tv_habit_name"
-        android:layout_width="wrap_content"
+    <!-- Habit Header Row with Edit Settings Button -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Habit Name"
-        android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
-        android:textStyle="bold" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/dialog_tv_habit_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Habit Name"
+            android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_dialog_edit_settings"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edit ⚙️"
+            android:textColor="?attr/colorPrimary" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/dialog_tv_question"
@@ -93,6 +110,7 @@
             android:layout_marginBottom="8dp"
             android:text="0.0 / 8.0 glasses"
             android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+            android:textColor="?attr/colorOnSurface"
             android:textStyle="bold" />
 
         <!-- Stepper Buttons Row -->
@@ -147,7 +165,8 @@
                 android:id="@+id/et_measurable_custom"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="numberDecimal" />
+                android:inputType="numberDecimal"
+                android:textColor="?attr/colorOnSurface" />
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
@@ -163,7 +182,8 @@
             android:id="@+id/dialog_et_notes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textShortMessage" />
+            android:inputType="textShortMessage"
+            android:textColor="?attr/colorOnSurface" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Save / Confirm Button -->
