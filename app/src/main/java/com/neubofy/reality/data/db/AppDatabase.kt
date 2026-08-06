@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [CalendarEvent::class, AppGroupEntity::class, AppLimitEntity::class, ChatSession::class, ChatMessageEntity::class, TapasyaSession::class, DailyStats::class, NightlySession::class, NightlyStep::class, TaskListConfig::class], version = 16, exportSchema = false)
+@Database(entities = [CalendarEvent::class, AppGroupEntity::class, AppLimitEntity::class, ChatSession::class, ChatMessageEntity::class, TapasyaSession::class, DailyStats::class, NightlySession::class, NightlyStep::class, TaskListConfig::class, HabitEntity::class, HabitEntryEntity::class], version = 18, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun calendarEventDao(): CalendarEventDao
     abstract fun appGroupDao(): AppGroupDao
@@ -15,6 +15,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun dailyStatsDao(): DailyStatsDao
     abstract fun nightlyDao(): NightlyDao
     abstract fun taskListConfigDao(): TaskListConfigDao
+    abstract fun habitDao(): HabitDao
 
     companion object {
         val MIGRATION_10_11 = object : androidx.room.migration.Migration(10, 11) {
@@ -61,28 +62,78 @@ abstract class AppDatabase : RoomDatabase() {
                     database.execSQL("ALTER TABLE nightly_steps ADD COLUMN linkUrl TEXT")
                 }
             }
-            
-            private fun hasColumn(db: androidx.sqlite.db.SupportSQLiteDatabase, tableName: String, columnName: String): Boolean {
-                val cursor = db.query("PRAGMA table_info($tableName)")
-                try {
-                    val nameIndex = cursor.getColumnIndex("name")
-                    if (nameIndex == -1) return false
-                    while (cursor.moveToNext()) {
-                        if (cursor.getString(nameIndex) == columnName) {
-                            return true
-                        }
+        }
+
+        private fun hasColumn(db: androidx.sqlite.db.SupportSQLiteDatabase, tableName: String, columnName: String): Boolean {
+            val cursor = db.query("PRAGMA table_info($tableName)")
+            try {
+                val nameIndex = cursor.getColumnIndex("name")
+                if (nameIndex == -1) return false
+                while (cursor.moveToNext()) {
+                    if (cursor.getString(nameIndex) == columnName) {
+                        return true
                     }
-                } finally {
-                    cursor.close()
                 }
-                return false
+            } finally {
+                cursor.close()
             }
+            return false
         }
 
         val MIGRATION_15_16 = object : androidx.room.migration.Migration(15, 16) {
             override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_calendar_events_startTime_endTime` ON `calendar_events` (`startTime`, `endTime`)")
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_tapasya_sessions_startTime` ON `tapasya_sessions` (`startTime`)")
+            }
+        }
+
+        val MIGRATION_16_17 = object : androidx.room.migration.Migration(16, 17) {
+            override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `habits` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `uuid` TEXT NOT NULL,
+                        `name` TEXT NOT NULL,
+                        `description` TEXT NOT NULL,
+                        `question` TEXT NOT NULL,
+                        `type` INTEGER NOT NULL,
+                        `targetValue` REAL NOT NULL,
+                        `targetType` INTEGER NOT NULL,
+                        `unit` TEXT NOT NULL,
+                        `freqNumerator` INTEGER NOT NULL,
+                        `freqDenominator` INTEGER NOT NULL,
+                        `color` INTEGER NOT NULL,
+                        `position` INTEGER NOT NULL,
+                        `isArchived` INTEGER NOT NULL,
+                        `autoSourceType` TEXT NOT NULL,
+                        `autoSourceTarget` REAL NOT NULL,
+                        `category` TEXT NOT NULL DEFAULT 'HEALTH',
+                        `createdAt` INTEGER NOT NULL
+                    )
+                """.trimIndent())
+                
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `habit_entries` (
+                        `habitId` INTEGER NOT NULL,
+                        `date` TEXT NOT NULL,
+                        `value` INTEGER NOT NULL,
+                        `notes` TEXT NOT NULL,
+                        `timestamp` INTEGER NOT NULL,
+                        PRIMARY KEY(`habitId`, `date`),
+                        FOREIGN KEY(`habitId`) REFERENCES `habits`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+                    )
+                """.trimIndent())
+                
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_habit_entries_habitId` ON `habit_entries` (`habitId`)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_habit_entries_date` ON `habit_entries` (`date`)")
+            }
+        }
+
+        val MIGRATION_17_18 = object : androidx.room.migration.Migration(17, 18) {
+            override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+                if (!hasColumn(database, "habits", "category")) {
+                    database.execSQL("ALTER TABLE habits ADD COLUMN category TEXT NOT NULL DEFAULT 'HEALTH'")
+                }
             }
         }
 
@@ -96,7 +147,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "reality_database"
                 )
-                .addMigrations(MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16)
+                .addMigrations(MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18)
                 .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance

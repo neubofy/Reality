@@ -700,6 +700,10 @@ class MainActivity : BaseActivity() {
                 startActivity(Intent(this, SettingsActivity::class.java), options.toBundle())
             })
             
+            menuItems.add(MenuItem(R.drawable.baseline_check_circle_24, "Habit Tracker") {
+                startActivity(Intent(this, HabitTrackerActivity::class.java))
+            })
+            
             if (featureManager.isHealthConnectEnabled()) {
                 menuItems.add(MenuItem(R.drawable.baseline_favorite_24, "Health Dashboard") {
                     startActivity(Intent(this, HealthDashboardActivity::class.java))
