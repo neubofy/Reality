@@ -136,6 +136,18 @@
             android:exported="false" />
         
         <activity
+            android:name=".ui.activity.HabitTrackerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Reality"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.activity.CreateHabitActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Reality"
+            android:screenOrientation="portrait" />
+        
+        <activity
             android:name=".ui.activity.StatisticsActivity"
             android:exported="false"
             android:theme="@style/Theme.Reality"

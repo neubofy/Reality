@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [CalendarEvent::class, AppGroupEntity::class, AppLimitEntity::class, ChatSession::class, ChatMessageEntity::class, TapasyaSession::class, DailyStats::class, NightlySession::class, NightlyStep::class, TaskListConfig::class], version = 16, exportSchema = false)
+@Database(entities = [CalendarEvent::class, AppGroupEntity::class, AppLimitEntity::class, ChatSession::class, ChatMessageEntity::class, TapasyaSession::class, DailyStats::class, NightlySession::class, NightlyStep::class, TaskListConfig::class, HabitEntity::class, HabitEntryEntity::class], version = 17, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun calendarEventDao(): CalendarEventDao
     abstract fun appGroupDao(): AppGroupDao
@@ -15,6 +15,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun dailyStatsDao(): DailyStatsDao
     abstract fun nightlyDao(): NightlyDao
     abstract fun taskListConfigDao(): TaskListConfigDao
+    abstract fun habitDao(): HabitDao
 
     companion object {
         val MIGRATION_10_11 = object : androidx.room.migration.Migration(10, 11) {
@@ -86,6 +87,47 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_16_17 = object : androidx.room.migration.Migration(16, 17) {
+            override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `habits` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `uuid` TEXT NOT NULL,
+                        `name` TEXT NOT NULL,
+                        `description` TEXT NOT NULL,
+                        `question` TEXT NOT NULL,
+                        `type` INTEGER NOT NULL,
+                        `targetValue` REAL NOT NULL,
+                        `targetType` INTEGER NOT NULL,
+                        `unit` TEXT NOT NULL,
+                        `freqNumerator` INTEGER NOT NULL,
+                        `freqDenominator` INTEGER NOT NULL,
+                        `color` INTEGER NOT NULL,
+                        `position` INTEGER NOT NULL,
+                        `isArchived` INTEGER NOT NULL,
+                        `autoSourceType` TEXT NOT NULL,
+                        `autoSourceTarget` REAL NOT NULL,
+                        `createdAt` INTEGER NOT NULL
+                    )
+                """.trimIndent())
+                
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `habit_entries` (
+                        `habitId` INTEGER NOT NULL,
+                        `date` TEXT NOT NULL,
+                        `value` INTEGER NOT NULL,
+                        `notes` TEXT NOT NULL,
+                        `timestamp` INTEGER NOT NULL,
+                        PRIMARY KEY(`habitId`, `date`),
+                        FOREIGN KEY(`habitId`) REFERENCES `habits`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+                    )
+                """.trimIndent())
+                
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_habit_entries_habitId` ON `habit_entries` (`habitId`)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_habit_entries_date` ON `habit_entries` (`date`)")
+            }
+        }
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -96,7 +138,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "reality_database"
                 )
-                .addMigrations(MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16)
+                .addMigrations(MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17)
                 .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance

@@ -35,6 +35,10 @@ class NightlyDataCollector(private val context: Context) {
         val totalPlannedMinutes = calendarEvents.sumOf { (it.endTime - it.startTime) / 60000 }
         val totalEffectiveMinutes = sessions.sumOf { it.effectiveTimeMs / 60000 }
         
+        val habitRepo = com.neubofy.reality.data.repository.HabitRepository(context)
+        val habitStatuses = habitRepo.getHabitsWithStatusForDate(date)
+        val completedHabits = habitStatuses.count { it.isCompleted }
+        
         DaySummary(
             date = date,
             calendarEvents = calendarEvents,
@@ -43,7 +47,9 @@ class NightlyDataCollector(private val context: Context) {
             tasksCompleted = taskStats.completedTasks,
             plannedEvents = plannedEvents,
             totalPlannedMinutes = totalPlannedMinutes,
-            totalEffectiveMinutes = totalEffectiveMinutes
+            totalEffectiveMinutes = totalEffectiveMinutes,
+            completedHabitsCount = completedHabits,
+            totalHabitsCount = habitStatuses.size
         )
     }
 }

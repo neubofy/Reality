@@ -45,6 +45,7 @@ object ToolRegistry {
     private val toolsList: List<AgentTool> = listOf(
         // Data Tools
         GamificationTool(),
+        HabitTool(),
         TapasyaTool(),
         TasksTool(),
         StudySessionsTool(),
@@ -182,6 +183,7 @@ object ToolRegistry {
     fun getToolIdForFunction(functionName: String): String? {
         return when (functionName) {
             "gamification", "get_xp_stats" -> "gamification"
+            "habit", "get_habits", "log_habit" -> "habit"
             "tapasya", "get_tapasya_sessions" -> "tapasya"
             "tasks", "get_tasks" -> "tasks"
             "study_sessions", "get_calendar_events" -> "study_sessions"

@@ -13,5 +13,7 @@ data class DaySummary(
     val tasksCompleted: List<String>,
     val plannedEvents: List<DbCalendarEvent> = emptyList(),
     val totalPlannedMinutes: Long = 0,
-    val totalEffectiveMinutes: Long = 0
+    val totalEffectiveMinutes: Long = 0,
+    val completedHabitsCount: Int = 0,
+    val totalHabitsCount: Int = 0
 )
