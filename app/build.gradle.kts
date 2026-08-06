@@ -122,7 +122,12 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14" // matches kotlin 1.9.24
+    }
     buildFeatures {
+        compose = true
         viewBinding = true
         buildConfig = true
     }
@@ -134,6 +139,16 @@ android {
 }
 
 dependencies {
+
+    // Compose
+    implementation(platform(libs.compose.bom))
+    implementation(libs.compose.ui)
+    implementation(libs.compose.ui.graphics)
+    implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.compose.material3)
+    implementation(libs.compose.activity)
+    debugImplementation(libs.compose.ui.tooling)
+    debugImplementation(libs.compose.ui.test.manifest)
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation(libs.androidx.core.ktx)

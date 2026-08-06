@@ -1,5 +1,6 @@
 
 [versions]
+composeBom = "2024.02.00"
 agp = "8.7.2"
 anychartAndroid = "1.1.5"
 api = "13.1.5"
@@ -23,6 +24,16 @@ crashlyticsPlugin = "3.0.1"
 firebaseBom = "32.8.0"
 
 [libraries]
+
+# Compose
+compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+compose-ui = { group = "androidx.compose.ui", name = "ui" }
+compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+compose-activity = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
+compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 anychart-android = { module = "com.github.AnyChart:AnyChart-Android", version.ref = "anychartAndroid" }
 api = { module = "dev.rikka.shizuku:api", version.ref = "api" }
