@@ -360,6 +360,7 @@ object XPManager {
         calculateTaskXP(context, fetchedTasks) // Updates taskXP
         calculateSessionXP(context, date, externalEvents) // Updates sessionXP
         val screenXP = calculateDistractionXP(context, date).first // Updates distractionXP
+        calculateHabitXP(context, date) // Updates habit bonus XP
         
         // Re-sum Tapasya XP
         val db = AppDatabase.getDatabase(context)
@@ -390,7 +391,13 @@ object XPManager {
         }
     }
 
-    // Removed private isTaskDue as logic is now embedded in calculateTaskXP per spec
+    suspend fun calculateHabitXP(context: Context, date: String): Int = withContext(Dispatchers.IO) {
+        val repo = com.neubofy.reality.data.repository.HabitRepository(context)
+        val dateObj = try { LocalDate.parse(date) } catch (e: Exception) { LocalDate.now() }
+        val habits = repo.getHabitsWithStatusForDate(dateObj)
+        val habitXP = habits.filter { it.isCompleted }.sumOf { 50 + (it.currentStreak * 10).coerceAtMost(50) }
+        return@withContext habitXP
+    }
 
     // --- Persistence & Updates ---
 
