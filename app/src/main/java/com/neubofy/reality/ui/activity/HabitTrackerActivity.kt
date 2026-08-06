@@ -11,6 +11,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -19,6 +20,8 @@ import com.neubofy.reality.data.db.HabitEntity
 import com.neubofy.reality.data.repository.HabitRepository
 import com.neubofy.reality.ui.adapter.HabitAdapter
 import com.neubofy.reality.ui.base.BaseActivity
+import com.neubofy.reality.ui.dialogs.HabitCheckInBottomSheet
+import com.neubofy.reality.utils.HabitEngine
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -31,6 +34,7 @@ class HabitTrackerActivity : BaseActivity() {
     private var selectedCategory: String = HabitEntity.CATEGORY_ALL
     private var allHabits: List<HabitRepository.HabitWithStatus> = emptyList()
 
+    private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var tvCurrentDate: TextView
     private lateinit var tvDateSubtext: TextView
     private lateinit var btnPrevDay: ImageButton
@@ -51,6 +55,7 @@ class HabitTrackerActivity : BaseActivity() {
         toolbar.title = "Habit Tracker"
         toolbar.setNavigationOnClickListener { finish() }
 
+        swipeRefresh = findViewById(R.id.swipe_refresh_habits)
         tvCurrentDate = findViewById(R.id.tv_current_date)
         tvDateSubtext = findViewById(R.id.tv_date_subtext)
         btnPrevDay = findViewById(R.id.btn_prev_day)
@@ -64,6 +69,14 @@ class HabitTrackerActivity : BaseActivity() {
         setupRecyclerView()
         setupDateNavigation()
         setupCategoryChips()
+
+        swipeRefresh.setOnRefreshListener {
+            lifecycleScope.launch {
+                HabitEngine.evaluateAutoHabits(applicationContext, selectedDate)
+                loadHabitsForSelectedDate()
+                swipeRefresh.isRefreshing = false
+            }
+        }
 
         btnOpenAnalytics.setOnClickListener {
             startActivity(Intent(this, ReflectionDetailActivity::class.java))
@@ -89,10 +102,20 @@ class HabitTrackerActivity : BaseActivity() {
                 }
             },
             onItemClick = { habitStatus ->
-                val intent = Intent(this, CreateHabitActivity::class.java).apply {
-                    putExtra("habit_id", habitStatus.habit.id)
-                }
-                startActivity(intent)
+                // Open Check-In BottomSheet Popup Modal
+                HabitCheckInBottomSheet(
+                    habitStatus = habitStatus,
+                    onSaved = { value, measurableVal, notes ->
+                        lifecycleScope.launch {
+                            if (measurableVal != null) {
+                                repo.setMeasurableValue(habitStatus.habit.id, selectedDate, measurableVal, notes)
+                            } else {
+                                repo.toggleHabit(habitStatus.habit.id, selectedDate)
+                            }
+                            loadHabitsForSelectedDate()
+                        }
+                    }
+                ).show(supportFragmentManager, "HabitCheckInBottomSheet")
             }
         )
         rvHabits.layoutManager = LinearLayoutManager(this)

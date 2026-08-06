@@ -465,6 +465,43 @@
                                 android:textColor="?attr/colorOnSurfaceVariant"/>
                         </LinearLayout>
                     </LinearLayout>
+
+                    <!-- Matrix Range Spinner & Divider -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="12dp"
+                        android:background="?attr/colorOutlineVariant" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="📅 Consistency Matrix"
+                            android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
+                            android:textStyle="bold" />
+
+                        <Spinner
+                            android:id="@+id/spinner_matrix_range"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:minWidth="100dp"
+                            android:background="@drawable/spinner_bg"
+                            android:spinnerMode="dropdown" />
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_habit_matrix"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

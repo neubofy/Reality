@@ -32,6 +32,7 @@ class ReflectionDetailActivity : BaseActivity() {
     private val dateRanges = arrayOf("7 Days", "14 Days", "30 Days")
     private var currentXpDays = 7
     private var currentStudyDays = 7
+    private var currentMatrixDays = 7
 
     override fun onCreate(savedInstanceState: Bundle?) {
         ThemeManager.applyTheme(this)
@@ -100,6 +101,19 @@ class ReflectionDetailActivity : BaseActivity() {
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
+
+        val matrixAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, arrayOf("7 Days", "30 Days"))
+        binding.spinnerMatrixRange.adapter = matrixAdapter
+        binding.spinnerMatrixRange.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                currentMatrixDays = if (position == 0) 7 else 30
+                loadHabitStats()
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        binding.rvHabitMatrix.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
+        binding.rvHabitMatrix.adapter = com.neubofy.reality.ui.adapter.HabitMatrixAdapter()
     }
     
     private fun setupCharts() {
@@ -322,23 +336,37 @@ class ReflectionDetailActivity : BaseActivity() {
 
     private fun loadHabitStats() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val repo = com.neubofy.reality.data.repository.HabitRepository(applicationContext)
-            val today = java.time.LocalDate.now()
-            val habits = repo.getHabitsWithStatusForDate(today)
+            try {
+                val db = AppDatabase.getDatabase(applicationContext)
+                val repo = com.neubofy.reality.data.repository.HabitRepository(applicationContext)
+                val today = java.time.LocalDate.now()
+                val habits = repo.getHabitsWithStatusForDate(today)
 
-            val completed = habits.count { it.isCompleted }
-            val total = habits.size
-            val avgScore = if (total > 0) (habits.sumOf { it.currentScore } / total * 100).toInt() else 100
-            val topStreak = habits.maxOfOrNull { it.currentStreak } ?: 0
+                val completed = habits.count { it.isCompleted }
+                val total = habits.size
+                val avgScore = if (total > 0) (habits.sumOf { it.currentScore } / total * 100).toInt() else 100
+                val topStreak = habits.maxOfOrNull { it.currentStreak } ?: 0
 
-            withContext(Dispatchers.Main) {
-                binding.tvHabitsCompletedToday.text = "$completed/$total"
-                binding.tvHabitAvgScore.text = "$avgScore%"
-                binding.tvHabitTopStreak.text = "🔥 $topStreak"
-                binding.btnOpenHabitTracker.setOnClickListener {
-                    startActivity(android.content.Intent(this@ReflectionDetailActivity, HabitTrackerActivity::class.java))
+                val days = currentMatrixDays
+                val matrixItems = habits.map { habitWithStatus ->
+                    val history = (0 until days).map { daysAgo ->
+                        val targetDate = today.minusDays((days - 1 - daysAgo).toLong())
+                        val dateStr = targetDate.format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE)
+                        db.habitDao().getEntry(habitWithStatus.habit.id, dateStr)
+                    }
+                    com.neubofy.reality.ui.adapter.HabitMatrixAdapter.HabitMatrixItem(habitWithStatus, history)
                 }
-            }
+
+                withContext(Dispatchers.Main) {
+                    binding.tvHabitsCompletedToday.text = "$completed/$total"
+                    binding.tvHabitAvgScore.text = "$avgScore%"
+                    binding.tvHabitTopStreak.text = "🔥 $topStreak"
+                    binding.btnOpenHabitTracker.setOnClickListener {
+                        startActivity(android.content.Intent(this@ReflectionDetailActivity, HabitTrackerActivity::class.java))
+                    }
+                    (binding.rvHabitMatrix.adapter as? com.neubofy.reality.ui.adapter.HabitMatrixAdapter)?.updateItems(matrixItems)
+                }
+            } catch (e: Exception) {}
         }
     }
     

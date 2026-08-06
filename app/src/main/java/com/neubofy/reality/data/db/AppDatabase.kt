@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [CalendarEvent::class, AppGroupEntity::class, AppLimitEntity::class, ChatSession::class, ChatMessageEntity::class, TapasyaSession::class, DailyStats::class, NightlySession::class, NightlyStep::class, TaskListConfig::class, HabitEntity::class, HabitEntryEntity::class], version = 17, exportSchema = false)
+@Database(entities = [CalendarEvent::class, AppGroupEntity::class, AppLimitEntity::class, ChatSession::class, ChatMessageEntity::class, TapasyaSession::class, DailyStats::class, NightlySession::class, NightlyStep::class, TaskListConfig::class, HabitEntity::class, HabitEntryEntity::class], version = 18, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun calendarEventDao(): CalendarEventDao
     abstract fun appGroupDao(): AppGroupDao
@@ -62,22 +62,22 @@ abstract class AppDatabase : RoomDatabase() {
                     database.execSQL("ALTER TABLE nightly_steps ADD COLUMN linkUrl TEXT")
                 }
             }
-            
-            private fun hasColumn(db: androidx.sqlite.db.SupportSQLiteDatabase, tableName: String, columnName: String): Boolean {
-                val cursor = db.query("PRAGMA table_info($tableName)")
-                try {
-                    val nameIndex = cursor.getColumnIndex("name")
-                    if (nameIndex == -1) return false
-                    while (cursor.moveToNext()) {
-                        if (cursor.getString(nameIndex) == columnName) {
-                            return true
-                        }
+        }
+
+        private fun hasColumn(db: androidx.sqlite.db.SupportSQLiteDatabase, tableName: String, columnName: String): Boolean {
+            val cursor = db.query("PRAGMA table_info($tableName)")
+            try {
+                val nameIndex = cursor.getColumnIndex("name")
+                if (nameIndex == -1) return false
+                while (cursor.moveToNext()) {
+                    if (cursor.getString(nameIndex) == columnName) {
+                        return true
                     }
-                } finally {
-                    cursor.close()
                 }
-                return false
+            } finally {
+                cursor.close()
             }
+            return false
         }
 
         val MIGRATION_15_16 = object : androidx.room.migration.Migration(15, 16) {
@@ -129,6 +129,14 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_17_18 = object : androidx.room.migration.Migration(17, 18) {
+            override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+                if (!hasColumn(database, "habits", "category")) {
+                    database.execSQL("ALTER TABLE habits ADD COLUMN category TEXT NOT NULL DEFAULT 'HEALTH'")
+                }
+            }
+        }
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -139,7 +147,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "reality_database"
                 )
-                .addMigrations(MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17)
+                .addMigrations(MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18)
                 .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance
