@@ -1,6 +1,6 @@
-name = "realityproxy"
+name = "reality-subscription-management"
 main = "worker.js"
-compatibility_date = "2026-07-02"
+compatibility_date = "2026-08-07"
 workers_dev = false
 
 # Records every request and console.log in the dashboard
