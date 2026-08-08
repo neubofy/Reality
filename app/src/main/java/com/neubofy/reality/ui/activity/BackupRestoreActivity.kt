@@ -1,227 +1,139 @@
 package com.neubofy.reality.ui.activity
 
+import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import com.neubofy.reality.ui.base.BaseActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.materialswitch.MaterialSwitch
-import com.neubofy.reality.databinding.ActivityBackupRestoreBinding
 import com.neubofy.reality.google.GoogleAuthManager
+import com.neubofy.reality.ui.base.BaseActivity
+import com.neubofy.reality.ui.theme.RealityTheme
 import com.neubofy.reality.utils.BackupManager
-import com.neubofy.reality.utils.ThemeManager
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 class BackupRestoreActivity : BaseActivity() {
 
-    private lateinit var binding: ActivityBackupRestoreBinding
+    private var cachedBackupInfo by mutableStateOf<BackupManager.BackupInfo?>(null)
+    private var inProgress by mutableStateOf(false)
+    private var progressText by mutableStateOf("")
+    private var progressValue by mutableStateOf(0f)
+    private var isSignedIn by mutableStateOf(false)
+    private var signedInEmail by mutableStateOf("")
+    private var isLoadingBackup by mutableStateOf(false)
+    private var backupError by mutableStateOf<String?>(null)
 
-    // Backup toggles
-    private val backupToggles = mutableMapOf<BackupManager.BackupCategory, MaterialSwitch>()
-    // Restore toggles (built from available backup)
-    private val restoreToggles = mutableMapOf<BackupManager.BackupCategory, MaterialSwitch>()
+    // Using maps for toggles directly in state
+    private val backupTogglesState = mutableStateMapOf<BackupManager.BackupCategory, Boolean>()
+    private val restoreTogglesState = mutableStateMapOf<BackupManager.BackupCategory, Boolean>()
 
-    // Cached backup info
-    private var cachedBackupInfo: BackupManager.BackupInfo? = null
-
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
-        ThemeManager.applyTheme(this)
-        ThemeManager.applyAccentTheme(this)
         super.onCreate(savedInstanceState)
 
-        enableEdgeToEdge()
-        binding = ActivityBackupRestoreBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+        // Initialize backup toggles to true
+        BackupManager.BackupCategory.values().forEach {
+            backupTogglesState[it] = true
         }
 
-        setupUI()
+        setContent {
+            RealityTheme {
+                Scaffold(
+                    topBar = {
+                        TopAppBar(
+                            title = { Text("Backup & Restore") },
+                            navigationIcon = {
+                                IconButton(onClick = { finish() }) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                                }
+                            },
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                titleContentColor = MaterialTheme.colorScheme.onSurface
+                            )
+                        )
+                    }
+                ) { paddingValues ->
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        BackupRestoreScreen()
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
         checkSignInStatus()
         loadBackupInfo()
     }
 
-    private fun setupUI() {
-        binding.btnBack.setOnClickListener { finish() }
-
-        // Build category toggles for Backup section
-        buildCategoryToggles(
-            binding.backupCategoriesContainer,
-            backupToggles,
-            BackupManager.BackupCategory.entries.toSet()
-        )
-
-        // Select All / Deselect All for Backup
-        binding.btnSelectAll.setOnClickListener {
-            backupToggles.values.forEach { it.isChecked = true }
-        }
-        binding.btnDeselectAll.setOnClickListener {
-            backupToggles.values.forEach { it.isChecked = false }
-        }
-
-        // Select All / Deselect All for Restore
-        binding.btnRestoreSelectAll.setOnClickListener {
-            restoreToggles.values.forEach { it.isChecked = true }
-        }
-        binding.btnRestoreDeselectAll.setOnClickListener {
-            restoreToggles.values.forEach { it.isChecked = false }
-        }
-
-        // Backup button
-        binding.btnBackupNow.setOnClickListener {
-            val selected = getSelectedBackupCategories()
-            if (selected.isEmpty()) {
-                Toast.makeText(this, "Select at least one category to backup", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            performBackup(selected)
-        }
-
-        // Restore button
-        binding.btnRestoreNow.setOnClickListener {
-            val selected = getSelectedRestoreCategories()
-            if (selected.isEmpty()) {
-                Toast.makeText(this, "Select at least one category to restore", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            showRestoreConfirmation(selected)
-        }
-
-        // Sign-in button
-        binding.btnSignIn.setOnClickListener {
-            lifecycleScope.launch {
-                try {
-                    android.widget.Toast.makeText(this@BackupRestoreActivity, "Please sign in from the Profile page first.", android.widget.Toast.LENGTH_LONG).show()
-                    val result = false
-                    if (result) {
-                        checkSignInStatus()
-                        loadBackupInfo()
-                        Toast.makeText(this@BackupRestoreActivity, "Signed in!", Toast.LENGTH_SHORT).show()
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(this@BackupRestoreActivity, "Sign-in failed: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
-
-    /**
-     * Build MaterialSwitch toggles for categories.
-     */
-    private fun buildCategoryToggles(
-        container: LinearLayout,
-        toggleMap: MutableMap<BackupManager.BackupCategory, MaterialSwitch>,
-        categories: Set<BackupManager.BackupCategory>
-    ) {
-        container.removeAllViews()
-        toggleMap.clear()
-
-        for (category in categories) {
-            val switchView = MaterialSwitch(this).apply {
-                text = "${category.icon}  ${category.displayName}"
-                isChecked = true
-                textSize = 14f
-                setPadding(8, 8, 8, 8)
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    bottomMargin = 2
-                }
-            }
-            container.addView(switchView)
-            toggleMap[category] = switchView
-        }
-    }
-
-    private fun getSelectedBackupCategories(): Set<BackupManager.BackupCategory> {
-        return backupToggles.filter { it.value.isChecked }.keys
-    }
-
-    private fun getSelectedRestoreCategories(): Set<BackupManager.BackupCategory> {
-        return restoreToggles.filter { it.value.isChecked }.keys
-    }
-
     private fun checkSignInStatus() {
-        val signedIn = GoogleAuthManager.isFullWorkspaceConnected(this)
-        binding.cardSignIn.visibility = if (signedIn) View.GONE else View.VISIBLE
-        binding.btnBackupNow.isEnabled = signedIn
-        binding.btnRestoreNow.isEnabled = signedIn
-
-        if (signedIn) {
-            val email = GoogleAuthManager.getUserEmail(this) ?: ""
-            binding.tvSignedInAs.visibility = View.VISIBLE
-            binding.tvSignedInAs.text = "Signed in as: $email"
-        } else {
-            binding.tvSignedInAs.visibility = View.GONE
+        isSignedIn = GoogleAuthManager.isFullWorkspaceConnected(this)
+        if (isSignedIn) {
+            signedInEmail = GoogleAuthManager.getUserEmail(this) ?: ""
         }
     }
 
     private fun loadBackupInfo() {
         if (!GoogleAuthManager.isFullWorkspaceConnected(this)) return
 
-        binding.tvNoBackup.visibility = View.GONE
-        binding.layoutBackupInfo.visibility = View.GONE
-        binding.restoreCategoriesSection.visibility = View.GONE
-        binding.tvLoadingBackup.visibility = View.VISIBLE
+        isLoadingBackup = true
+        backupError = null
 
         lifecycleScope.launch {
             try {
                 val info = BackupManager.getBackupInfo(this@BackupRestoreActivity)
-                cachedBackupInfo = info
 
                 runOnUiThread {
-                    binding.tvLoadingBackup.visibility = View.GONE
+                    cachedBackupInfo = info
+                    isLoadingBackup = false
 
                     if (info.exists) {
-                        binding.layoutBackupInfo.visibility = View.VISIBLE
-                        binding.tvNoBackup.visibility = View.GONE
-
-                        val dateFormat = SimpleDateFormat("MMM dd, yyyy 'at' hh:mm a", Locale.getDefault())
-                        binding.tvBackupDate.text = "📅  ${dateFormat.format(Date(info.timestamp))}"
-                        binding.tvBackupSize.text = "📦  ${formatSize(info.sizeBytes)}"
-                        binding.tvBackupVersion.text = "📱  App v${info.appVersion}"
-
-                        // Build restore category toggles from available categories in backup
-                        val availableCategories = info.categories.mapNotNull { name ->
+                        info.categories.mapNotNull { name ->
                             try { BackupManager.BackupCategory.valueOf(name) } catch (_: Exception) { null }
-                        }.toSet()
-
-                        if (availableCategories.isNotEmpty()) {
-                            binding.restoreCategoriesSection.visibility = View.VISIBLE
-                            buildCategoryToggles(
-                                binding.restoreCategoriesContainer,
-                                restoreToggles,
-                                availableCategories
-                            )
+                        }.forEach {
+                            if (!restoreTogglesState.containsKey(it)) {
+                                restoreTogglesState[it] = true
+                            }
                         }
-                    } else {
-                        binding.layoutBackupInfo.visibility = View.GONE
-                        binding.tvNoBackup.visibility = View.VISIBLE
-                        binding.restoreCategoriesSection.visibility = View.GONE
                     }
                 }
             } catch (e: com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException) {
                 runOnUiThread {
-                    binding.tvLoadingBackup.visibility = View.GONE
+                    isLoadingBackup = false
                     startActivity(e.intent)
                 }
             } catch (e: Exception) {
                 runOnUiThread {
-                    binding.tvLoadingBackup.visibility = View.GONE
-                    binding.tvNoBackup.visibility = View.VISIBLE
-                    binding.tvNoBackup.text = "⚠️ Could not check backup status"
+                    isLoadingBackup = false
+                    backupError = "⚠️ Could not check backup status"
                 }
             }
         }
@@ -237,8 +149,8 @@ class BackupRestoreActivity : BaseActivity() {
                     categories
                 ) { progress, status ->
                     runOnUiThread {
-                        binding.progressBar.progress = (progress * 100).toInt()
-                        binding.tvProgressStatus.text = status
+                        progressValue = progress
+                        progressText = status
                     }
                 }
 
@@ -273,9 +185,6 @@ class BackupRestoreActivity : BaseActivity() {
             .setTitle("⚠️ Restore from Backup?")
             .setMessage("The following categories will be restored, overwriting current data:\n\n$catNames\n\nThis cannot be undone. Continue?")
             .setPositiveButton("Restore") { _, _ ->
-                // We should prompt for password first if it exists, but we don't know yet.
-                // BackupRestoreActivity starts performRestore directly.
-                // We will prompt if decryption fails
                 performRestore(categories)
             }
             .setNegativeButton("Cancel", null)
@@ -292,8 +201,8 @@ class BackupRestoreActivity : BaseActivity() {
                     categories = categories
                 ) { progress, status ->
                     runOnUiThread {
-                        binding.progressBar.progress = (progress * 100).toInt()
-                        binding.tvProgressStatus.text = status
+                        progressValue = progress
+                        progressText = status
                     }
                 }
 
@@ -324,14 +233,10 @@ class BackupRestoreActivity : BaseActivity() {
         }
     }
 
-    private fun setOperationInProgress(inProgress: Boolean, statusText: String = "") {
-        binding.cardProgress.visibility = if (inProgress) View.VISIBLE else View.GONE
-        binding.btnBackupNow.isEnabled = !inProgress
-        binding.btnRestoreNow.isEnabled = !inProgress
-        binding.progressBar.progress = 0
-        if (statusText.isNotEmpty()) {
-            binding.tvProgressStatus.text = statusText
-        }
+    private fun setOperationInProgress(active: Boolean, status: String = "") {
+        inProgress = active
+        progressValue = 0f
+        progressText = status
     }
 
     private fun formatSize(bytes: Long): String {
@@ -342,4 +247,164 @@ class BackupRestoreActivity : BaseActivity() {
         }
     }
 
+    @Composable
+    fun BackupRestoreScreen() {
+        val context = LocalContext.current
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Sign in prompt
+            if (!isSignedIn) {
+                item {
+                    GlassCard {
+                        Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("⚠️ Google Drive Required", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("You need to sign in with Google to backup or restore data.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(onClick = {
+                                val intent = Intent(context, ProfileActivity::class.java)
+                                context.startActivity(intent)
+                            }) {
+                                Text("Sign In")
+                            }
+                        }
+                    }
+                }
+            } else {
+                item {
+                    Text("Signed in as: $signedInEmail", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
+                }
+            }
+
+            // Backup Card
+            item {
+                GlassCard {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Create Backup", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                        Text("Save your settings and schedules to Google Drive", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Divider(modifier = Modifier.padding(vertical = 12.dp))
+
+                        Text("Select what to backup:", style = MaterialTheme.typography.labelLarge)
+                        BackupManager.BackupCategory.values().forEach { category ->
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().clickable {
+                                backupTogglesState[category] = !(backupTogglesState[category] ?: true)
+                            }.padding(vertical = 4.dp)) {
+                                Checkbox(
+                                    checked = backupTogglesState[category] ?: true,
+                                    onCheckedChange = { backupTogglesState[category] = it },
+                                    enabled = !inProgress
+                                )
+                                Text("${category.icon} ${category.displayName}", style = MaterialTheme.typography.bodyMedium)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = {
+                                val selected = backupTogglesState.filter { it.value }.keys
+                                performBackup(selected)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = isSignedIn && !inProgress && backupTogglesState.any { it.value }
+                        ) {
+                            Text("Backup Now")
+                        }
+                    }
+                }
+            }
+
+            // Restore Card
+            item {
+                GlassCard {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Restore from Backup", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                        Text("Download and restore your saved data", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Divider(modifier = Modifier.padding(vertical = 12.dp))
+
+                        if (isLoadingBackup) {
+                            Text("🔄 Checking for backups...", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                        } else if (backupError != null) {
+                            Text(backupError!!, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                        } else if (cachedBackupInfo?.exists == true) {
+                            val info = cachedBackupInfo!!
+                            val dateFormat = SimpleDateFormat("MMM dd, yyyy 'at' hh:mm a", Locale.getDefault())
+
+                            Text("Last Backup", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(bottom = 4.dp))
+                            Text("📅  ${dateFormat.format(Date(info.timestamp))}", style = MaterialTheme.typography.bodyMedium)
+                            Text("📦  ${formatSize(info.sizeBytes)}", style = MaterialTheme.typography.bodyMedium)
+                            Text("📱  App v${info.appVersion}", style = MaterialTheme.typography.bodyMedium)
+
+                            Divider(modifier = Modifier.padding(vertical = 12.dp))
+                            Text("Select what to restore:", style = MaterialTheme.typography.labelLarge)
+
+                            restoreTogglesState.keys.forEach { category ->
+                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().clickable {
+                                    restoreTogglesState[category] = !(restoreTogglesState[category] ?: true)
+                                }.padding(vertical = 4.dp)) {
+                                    Checkbox(
+                                        checked = restoreTogglesState[category] ?: true,
+                                        onCheckedChange = { restoreTogglesState[category] = it },
+                                        enabled = !inProgress
+                                    )
+                                    Text("${category.icon} ${category.displayName}", style = MaterialTheme.typography.bodyMedium)
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedButton(
+                                onClick = {
+                                    val selected = restoreTogglesState.filter { it.value }.keys
+                                    showRestoreConfirmation(selected)
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = isSignedIn && !inProgress && restoreTogglesState.any { it.value }
+                            ) {
+                                Text("Restore Now")
+                            }
+
+                        } else {
+                            Text("No backup found on Google Drive", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                        }
+                    }
+                }
+            }
+
+            // Progress Card
+            if (inProgress) {
+                item {
+                    GlassCard {
+                        Column(modifier = Modifier.fillMaxWidth().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            LinearProgressIndicator(progress = { progressValue }, modifier = Modifier.fillMaxWidth(), trackColor = MaterialTheme.colorScheme.surfaceVariant)
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(progressText, style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+            }
+
+            // Footer
+            item {
+                Text(
+                    "🔒 Your backup is stored in a hidden folder on Google Drive. Only this app can access it. Each backup replaces the previous one.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 16.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun GlassCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+    ) {
+        Column(content = content)
+    }
 }

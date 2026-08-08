@@ -138,6 +138,10 @@ android {
 }
 
 dependencies {
+    implementation("com.google.accompanist:accompanist-drawablepainter:0.34.0")
+
+    implementation("androidx.compose.ui:ui-viewbinding")
+
     val composeBom = platform("androidx.compose:compose-bom:2024.02.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
