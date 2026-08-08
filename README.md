@@ -155,9 +155,7 @@ Parsing:        GSON, JSoup, Markwon
 | **Google APIs** | google-api-client-android | 2.2.0 | OAuth2 + service calls |
 | | Tasks API | v1-rev20210709 | Task management |
 | | Calendar API | v3-rev20231123 | Event scheduling |
-| | Docs API | v1-rev20230929 | Document creation |
 | | Drive API | v3-rev20230520 | File management |
-| | Sheets API | v4-rev20230815 | Data logging |
 | **Health** | Health Connect Client | 1.1.0-alpha07 | Fitness tracking |
 | **Database** | Room | 2.5.2 | Local persistence |
 | **Background** | WorkManager | 2.8.1 | Scheduled tasks |
