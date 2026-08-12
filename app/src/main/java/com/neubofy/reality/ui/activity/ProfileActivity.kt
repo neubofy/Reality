@@ -37,9 +37,6 @@ class ProfileActivity : BaseActivity() {
     
     private val PREF_NAME = "google_connector_prefs"
     private val NIGHTLY_PREFS = "nightly_prefs"
-    private val KEY_TASKS_CONNECTED = "tasks_connected"
-    private val KEY_DRIVE_CONNECTED = "drive_connected"
-    private val KEY_CALENDAR_CONNECTED = "calendar_connected"
     
     private var pendingAction: (() -> Unit)? = null
     private var pendingServiceName: String? = null
@@ -123,6 +120,34 @@ class ProfileActivity : BaseActivity() {
     private fun setupProfileCard() {
         binding.btnSignInOut.setOnClickListener {
             if (GoogleAuthManager.isSignedIn(this)) {
+                // Unregister from worker before signing out
+                val userId = com.neubofy.reality.utils.IdentityManager.getUserId(this)
+                val backupPassword = com.neubofy.reality.utils.IdentityManager.getBackupPassword(this)
+                val workerUrl = com.neubofy.reality.BuildConfig.NOTIFICATION_WORKER_URL
+
+                if (userId.isNotEmpty() && backupPassword.isNotEmpty()) {
+                    com.neubofy.reality.services.RealityFCMService.unregisterTokenFromWorker(
+                        this, workerUrl, userId, backupPassword
+                    )
+                    
+                    val credential = GoogleAuthManager.getGoogleCredential(this)
+                    if (credential != null) {
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            try {
+                                credential.refreshToken()
+                                val token = credential.accessToken
+                                if (token != null) {
+                                    com.neubofy.reality.services.RealityFCMService.unregisterCalendarWebhook(
+                                        this@ProfileActivity, token
+                                    )
+                                }
+                            } catch (e: Exception) {
+                                TerminalLogger.log("PROFILE: Error refreshing token for unregister: ${e.message}")
+                            }
+                        }
+                    }
+                }
+
                 GoogleAuthManager.signOut(this)
                 com.neubofy.reality.utils.SecurePreferences.get(this@ProfileActivity, "reality_features").edit()
                     .putBoolean("reality_pro_basic_sign_in", false).apply()
@@ -131,13 +156,7 @@ class ProfileActivity : BaseActivity() {
                 TerminalLogger.log("PROFILE: Signed out")
                 Toast.makeText(this, "Signed out", Toast.LENGTH_SHORT).show()
             } else {
-                val prefs = com.neubofy.reality.utils.SecurePreferences.get(this, "google_connector_prefs")
-                val tasksConnected = prefs.getBoolean(KEY_TASKS_CONNECTED, false)
-                val driveConnected = prefs.getBoolean(KEY_DRIVE_CONNECTED, false)
-                val calendarConnected = prefs.getBoolean(KEY_CALENDAR_CONNECTED, false)
-                val isAllConnected = tasksConnected && driveConnected && calendarConnected
-                
-                com.neubofy.reality.google.GoogleSignInHelper.startSignInFlow(this, isAllConnected, forceBasicScope = false) {
+                com.neubofy.reality.google.GoogleSignInHelper.startSignInFlow(this, false, forceBasicScope = false) {
                     updateUI()
                 }
             }
@@ -150,6 +169,34 @@ class ProfileActivity : BaseActivity() {
                 .setPositiveButton("Delete") { _, _ ->
                     val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
                     if (user != null) {
+                        // Unregister from worker before deleting
+                        val userId = com.neubofy.reality.utils.IdentityManager.getUserId(this)
+                        val backupPassword = com.neubofy.reality.utils.IdentityManager.getBackupPassword(this)
+                        val workerUrl = com.neubofy.reality.BuildConfig.NOTIFICATION_WORKER_URL
+
+                        if (userId.isNotEmpty() && backupPassword.isNotEmpty()) {
+                            com.neubofy.reality.services.RealityFCMService.unregisterTokenFromWorker(
+                                this, workerUrl, userId, backupPassword
+                            )
+                            
+                            val credential = GoogleAuthManager.getGoogleCredential(this)
+                            if (credential != null) {
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    try {
+                                        credential.refreshToken()
+                                        val token = credential.accessToken
+                                        if (token != null) {
+                                            com.neubofy.reality.services.RealityFCMService.unregisterCalendarWebhook(
+                                                this@ProfileActivity, token
+                                            )
+                                        }
+                                    } catch (e: Exception) {
+                                        TerminalLogger.log("PROFILE: Error refreshing token for unregister: ${e.message}")
+                                    }
+                                }
+                            }
+                        }
+
                         user.delete().addOnCompleteListener { task ->
                             lifecycleScope.launch {
                                 if (task.isSuccessful) {
@@ -178,65 +225,107 @@ class ProfileActivity : BaseActivity() {
     }
 
     private fun setupConnectors() {
-        // Tasks connector - Simple list test
-        binding.btnConnectTasks.setOnClickListener {
-            connectAndTestService("Tasks", KEY_TASKS_CONNECTED, REQUEST_AUTH_TASKS) {
-                val email = GoogleAuthManager.getUserEmail(this@ProfileActivity)
-                val credential = GoogleAuthManager.getGoogleCredential(this)
-                    ?: throw IllegalStateException("Not signed in - email missing")
+        val userId = com.neubofy.reality.utils.IdentityManager.getUserId(this)
+        val backupPassword = com.neubofy.reality.utils.IdentityManager.getBackupPassword(this)
+        val workerUrl = com.neubofy.reality.BuildConfig.NOTIFICATION_WORKER_URL
+
+        // FCM Token Registration
+        binding.btnRegisterFcmToken.setOnClickListener {
+            val isRegistered = com.neubofy.reality.services.RealityFCMService.isFcmTokenRegistered(this)
+            val dialog = showLoadingDialog("Processing FCM Registration...")
+            
+            if (isRegistered) {
+                com.neubofy.reality.services.RealityFCMService.unregisterTokenFromWorker(
+                    this, workerUrl, userId, backupPassword
+                ) { success, error ->
+                    dialog.dismiss()
+                    if (success) {
+                        Toast.makeText(this, "FCM Token unregistered", Toast.LENGTH_SHORT).show()
+                        updateUI()
+                    } else {
+                        Toast.makeText(this, "Failed to unregister: $error", Toast.LENGTH_LONG).show()
+                    }
+                }
+            } else {
+                val token = getSharedPreferences("reality_prefs", MODE_PRIVATE)
+                    .getString(com.neubofy.reality.services.RealityFCMService.PREF_FCM_TOKEN, null)
+                    
+                if (token.isNullOrEmpty()) {
+                    dialog.dismiss()
+                    Toast.makeText(this, "FCM token not available yet", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
                 
-                val tasksService = com.google.api.services.tasks.Tasks.Builder(
-                    GoogleAuthManager.getHttpTransport(),
-                    GoogleAuthManager.getJsonFactory(),
-                    credential
-                ).setApplicationName("com.neubofy.reality").build()
-                
-                val taskLists = tasksService.tasklists().list().execute()
-                val count = taskLists.items?.size ?: 0
-                "Found $count task list(s)"
+                com.neubofy.reality.services.RealityFCMService.registerTokenWithWorker(
+                    this, workerUrl, userId, backupPassword, token
+                ) { success, error ->
+                    dialog.dismiss()
+                    if (success) {
+                        Toast.makeText(this, "FCM Token registered", Toast.LENGTH_SHORT).show()
+                        updateUI()
+                    } else {
+                        Toast.makeText(this, "Failed to register: $error", Toast.LENGTH_LONG).show()
+                    }
+                }
             }
         }
         
-        // Drive connector - Simple list test
-        binding.btnConnectDrive.setOnClickListener {
-            connectAndTestService("Drive", KEY_DRIVE_CONNECTED, REQUEST_AUTH_DRIVE) {
-                val email = GoogleAuthManager.getUserEmail(this@ProfileActivity)
-                val credential = GoogleAuthManager.getGoogleCredential(this)
-                    ?: throw IllegalStateException("Not signed in - email missing")
-                
-                val driveService = com.google.api.services.drive.Drive.Builder(
-                    GoogleAuthManager.getHttpTransport(),
-                    GoogleAuthManager.getJsonFactory(),
-                    credential
-                ).setApplicationName("com.neubofy.reality").build()
-                
-                val files = driveService.files().list()
-                    .setPageSize(10)
-                    .setFields("files(id, name)")
-                    .execute()
-                val count = files.files?.size ?: 0
-                "Found $count file(s) in Drive"
+        // Calendar Webhook Registration
+        binding.btnRegisterCalendarSync.setOnClickListener {
+            val isRegistered = com.neubofy.reality.services.RealityFCMService.isCalendarChannelRegistered(this)
+            
+            val credential = GoogleAuthManager.getGoogleCredential(this)
+            if (credential == null) {
+                Toast.makeText(this, "Please sign in first", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
-        }
-        
-        // Calendar connector - List calendars
-        binding.btnConnectCalendar.setOnClickListener {
-            connectAndTestService("Calendar", KEY_CALENDAR_CONNECTED, REQUEST_AUTH_CALENDAR) {
-                val email = GoogleAuthManager.getUserEmail(this@ProfileActivity)
-                val credential = GoogleAuthManager.getGoogleCredential(this)
-                    ?: throw IllegalStateException("Not signed in - email missing")
-                
-                val calendarService = com.google.api.services.calendar.Calendar.Builder(
-                    GoogleAuthManager.getHttpTransport(),
-                    GoogleAuthManager.getJsonFactory(),
-                    credential
-                ).setApplicationName("com.neubofy.reality").build()
-                
-                val events = calendarService.events().list("primary")
-                    .setMaxResults(10)
-                    .execute()
-                val count = events.items?.size ?: 0
-                "Found $count upcoming event(s) in primary calendar"
+            
+            val dialog = showLoadingDialog("Processing Calendar Registration...")
+            
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    credential.refreshToken()
+                    val token = credential.accessToken
+                    
+                    if (token == null) {
+                        withContext(Dispatchers.Main) {
+                            dialog.dismiss()
+                            Toast.makeText(this@ProfileActivity, "Failed to get access token", Toast.LENGTH_SHORT).show()
+                        }
+                        return@launch
+                    }
+                    
+                    if (isRegistered) {
+                        com.neubofy.reality.services.RealityFCMService.unregisterCalendarWebhook(
+                            this@ProfileActivity, token
+                        ) { success, error ->
+                            dialog.dismiss()
+                            if (success) {
+                                Toast.makeText(this@ProfileActivity, "Calendar sync unregistered", Toast.LENGTH_SHORT).show()
+                                updateUI()
+                            } else {
+                                Toast.makeText(this@ProfileActivity, "Failed to unregister: $error", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    } else {
+                        com.neubofy.reality.services.RealityFCMService.registerCalendarWebhook(
+                            this@ProfileActivity, workerUrl, userId, backupPassword, token
+                        ) { success, error ->
+                            dialog.dismiss()
+                            if (success) {
+                                Toast.makeText(this@ProfileActivity, "Calendar sync registered", Toast.LENGTH_SHORT).show()
+                                updateUI()
+                            } else {
+                                Toast.makeText(this@ProfileActivity, "Failed to register: $error", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        dialog.dismiss()
+                        Toast.makeText(this@ProfileActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
             }
         }
     }
@@ -317,12 +406,6 @@ class ProfileActivity : BaseActivity() {
         // Handle User ID logic
         val email = GoogleAuthManager.getUserEmail(this) ?: ""
 
-        val prefs = com.neubofy.reality.utils.SecurePreferences.get(this, "google_connector_prefs")
-        val tasksConnected = prefs.getBoolean(KEY_TASKS_CONNECTED, false)
-        val driveConnected = prefs.getBoolean(KEY_DRIVE_CONNECTED, false)
-        val calendarConnected = prefs.getBoolean(KEY_CALENDAR_CONNECTED, false)
-        val isAllConnected = tasksConnected && driveConnected && calendarConnected
-
         val cardSecureIdentity = findViewById<com.google.android.material.card.MaterialCardView>(R.id.card_secure_identity)
         if (isSignedIn && email.isNotEmpty()) {
             val userId = com.neubofy.reality.utils.IdentityManager.getUserId(this)
@@ -353,13 +436,8 @@ class ProfileActivity : BaseActivity() {
             binding.tvUserName.text = name
             binding.tvUserEmail.text = email
 
-            if (isAllConnected) {
-                binding.btnSignInOut.text = "Signed in"
-                binding.btnSignInOut.setIconResource(R.drawable.baseline_logout_24)
-            } else {
-                binding.btnSignInOut.text = "Sign Out"
-                binding.btnSignInOut.setIconResource(R.drawable.baseline_logout_24)
-            }
+            binding.btnSignInOut.text = "Signed in"
+            binding.btnSignInOut.setIconResource(R.drawable.baseline_logout_24)
             
             try {
                 if (!photoUrl.isNullOrEmpty()) {
@@ -375,11 +453,10 @@ class ProfileActivity : BaseActivity() {
                 TerminalLogger.log("PROFILE: Image load error: ${e.message}")
             }
             
-            // Show connectors
-            binding.tvConnectorsTitle.visibility = View.VISIBLE
-            binding.cardTasks.visibility = View.VISIBLE
-            binding.cardDrive.visibility = View.VISIBLE
-            binding.cardCalendar.visibility = View.VISIBLE
+            // Show Sync Services
+            binding.tvSyncServicesTitle.visibility = View.VISIBLE
+            binding.cardCalendarSync.visibility = View.VISIBLE
+            binding.cardFcmToken.visibility = View.VISIBLE
             
             // Show Detailed Setup Sections
             binding.tvSetupTitle.visibility = View.VISIBLE
@@ -388,10 +465,28 @@ class ProfileActivity : BaseActivity() {
             binding.btnEraseAllSetup.visibility = View.VISIBLE
             binding.btnDeleteAccount.visibility = View.VISIBLE
             
-            // Update connector statuses
-            updateConnectorStatus(binding.tvTasksStatus, binding.btnConnectTasks, KEY_TASKS_CONNECTED)
-            updateConnectorStatus(binding.tvDriveStatus, binding.btnConnectDrive, KEY_DRIVE_CONNECTED)
-            updateConnectorStatus(binding.tvCalendarStatus, binding.btnConnectCalendar, KEY_CALENDAR_CONNECTED)
+            // Update Sync Services status
+            val isCalendarRegistered = com.neubofy.reality.services.RealityFCMService.isCalendarChannelRegistered(this)
+            if (isCalendarRegistered) {
+                binding.tvCalendarSyncStatus.text = "Registered ✓"
+                binding.tvCalendarSyncStatus.setTextColor(getColor(R.color.md_theme_primary))
+                binding.btnRegisterCalendarSync.text = "Unregister"
+            } else {
+                binding.tvCalendarSyncStatus.text = "Not registered"
+                binding.tvCalendarSyncStatus.setTextColor(getColor(R.color.md_theme_onSurfaceVariant))
+                binding.btnRegisterCalendarSync.text = "Register"
+            }
+
+            val isFcmRegistered = com.neubofy.reality.services.RealityFCMService.isFcmTokenRegistered(this)
+            if (isFcmRegistered) {
+                binding.tvFcmTokenStatus.text = "Registered ✓"
+                binding.tvFcmTokenStatus.setTextColor(getColor(R.color.md_theme_primary))
+                binding.btnRegisterFcmToken.text = "Unregister"
+            } else {
+                binding.tvFcmTokenStatus.text = "Not registered"
+                binding.tvFcmTokenStatus.setTextColor(getColor(R.color.md_theme_onSurfaceVariant))
+                binding.btnRegisterFcmToken.text = "Register"
+            }
             
         } else {
             binding.tvUserName.text = "Not signed in"
@@ -401,11 +496,10 @@ class ProfileActivity : BaseActivity() {
             binding.ivProfile.setImageResource(R.drawable.baseline_account_circle_24)
             binding.ivProfile.imageTintList = androidx.core.content.ContextCompat.getColorStateList(this, R.color.md_theme_primary)
             
-            // Hide connectors
-            binding.tvConnectorsTitle.visibility = View.GONE
-            binding.cardTasks.visibility = View.GONE
-            binding.cardDrive.visibility = View.GONE
-            binding.cardCalendar.visibility = View.GONE
+            // Hide Sync Services
+            binding.tvSyncServicesTitle.visibility = View.GONE
+            binding.cardCalendarSync.visibility = View.GONE
+            binding.cardFcmToken.visibility = View.GONE
 
             // Hide Detailed Setup
             binding.tvSetupTitle.visibility = View.GONE
@@ -416,24 +510,8 @@ class ProfileActivity : BaseActivity() {
         }
     }
     
-    private fun updateConnectorStatus(
-        statusView: android.widget.TextView,
-        button: com.google.android.material.button.MaterialButton,
-        prefKey: String
-    ) {
-        val isConnected = com.neubofy.reality.utils.SecurePreferences.get(this, PREF_NAME).getBoolean(prefKey, false)
-        if (isConnected) {
-            statusView.text = "Connected ✓"
-            statusView.setTextColor(getColor(R.color.md_theme_primary))
-            button.text = "Test"
-        } else {
-            statusView.text = "Not connected"
-            statusView.setTextColor(getColor(R.color.md_theme_onSurfaceVariant))
-            button.text = "Connect"
-        }
-    }
-    
     private fun setConnected(prefKey: String, connected: Boolean) {
+        // Kept for backward compatibility if needed elsewhere
         com.neubofy.reality.utils.SecurePreferences.get(this, PREF_NAME).edit().putBoolean(prefKey, connected).apply()
     }
     
@@ -1099,5 +1177,27 @@ private fun useExistingSheet() {
         private const val REQUEST_AUTH_DRIVE = 1002
         private const val REQUEST_AUTH_DOCS = 1003
         private const val REQUEST_AUTH_CALENDAR = 1004
+    }
+
+    private fun showLoadingDialog(message: String): androidx.appcompat.app.AlertDialog {
+        val padding = (16 * resources.displayMetrics.density).toInt()
+        val layout = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            setPadding(padding, padding, padding, padding)
+            gravity = android.view.Gravity.CENTER_VERTICAL
+            addView(android.widget.ProgressBar(this@ProfileActivity).apply {
+                isIndeterminate = true
+            })
+            addView(android.widget.TextView(this@ProfileActivity).apply {
+                text = message
+                textSize = 16f
+                setPadding(padding, 0, 0, 0)
+            })
+        }
+        return com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setView(layout)
+            .setCancelable(false)
+            .create()
+            .apply { show() }
     }
 }

@@ -53,12 +53,6 @@ class ScheduleListActivity : BaseActivity() {
         setupDateHeader()
         setupHourGrid()
         loadSchedules()
-        
-        if (intent.getBooleanExtra("OPEN_SETTINGS", false)) {
-            binding.root.post { showSyncSettingsDialog() }
-        }
-
-
     }
     
     private fun setupToolbar() {
@@ -71,19 +65,7 @@ class ScheduleListActivity : BaseActivity() {
         binding.fabAddSchedule.setOnClickListener { showAddScheduleDialog() }
     }
     
-    override fun onCreateOptionsMenu(menu: android.view.Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_schedule_list, menu)
-        return true
-    }
-    
-    override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
-        return if (item.itemId == R.id.action_settings) {
-            showSyncSettingsDialog()
-            true
-        } else {
-            super.onOptionsItemSelected(item)
-        }
-    }
+
     
     private fun setupSwipeRefresh() {
         binding.swipeRefresh.setColorSchemeResources(
@@ -543,104 +525,9 @@ class ScheduleListActivity : BaseActivity() {
         picker.show(supportFragmentManager, "time_picker")
     }
 
-    private fun showSyncSettingsDialog() {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_calendar_settings, null)
-        val switchAutoSync = dialogView.findViewById<com.google.android.material.switchmaterial.SwitchMaterial>(R.id.switchAutoSync)
-        val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
-            .setView(dialogView)
-            .show()
-            
-        val isAutoSync = prefs.getBoolean("calendar_sync_auto_enabled", true)
-        
-        val realityPrefs = getSharedPreferences("reality_prefs", android.content.Context.MODE_PRIVATE)
-        val currentFcmToken = realityPrefs.getString(com.neubofy.reality.services.RealityFCMService.PREF_FCM_TOKEN, null)
-        val registeredFcmToken = realityPrefs.getString("registered_fcm_token", null)
-
-        if (isAutoSync && currentFcmToken != null && currentFcmToken != registeredFcmToken) {
-            // Token changed (key rotated), force the user to toggle it off and on to re-register
-            com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
-                .setTitle("Sync Key Rotated")
-                .setMessage("Your device's Google Play Services sync key was recently rotated. Please toggle Auto-Sync OFF and then ON again to re-establish the connection.")
-                .setPositiveButton("OK", null)
-                .show()
-                
-            switchAutoSync.isChecked = false
-            prefs.saveBoolean("calendar_sync_auto_enabled", false)
-        } else {
-            switchAutoSync.isChecked = isAutoSync
-        }
-
-        // Auto-sync toggle (enables 15-min heartbeat sync AND sets up real-time sync on toggle ON)
-        switchAutoSync.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                if (!com.neubofy.reality.google.GoogleAuthManager.isFullWorkspaceConnected(this)) {
-                    com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
-                        .setTitle("Full Connection Required")
-                        .setMessage("Auto-Sync requires a full connection to Google Calendar. Please go to the Profile page, sign out, and sign in again with Full Connection.")
-                        .setPositiveButton("Go to Profile") { _, _ ->
-                            val intent = android.content.Intent(this, ProfileActivity::class.java)
-                            intent.flags = android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
-                            startActivity(intent)
-                        }
-                        .setNegativeButton("Cancel", null)
-                        .show()
-                    switchAutoSync.isChecked = false
-                    return@setOnCheckedChangeListener
-                }
-                prefs.saveBoolean("calendar_sync_auto_enabled", true)
-                val isSignedIn = com.neubofy.reality.google.GoogleAuthManager.isSignedIn(this)
-                val userId = if (isSignedIn) com.neubofy.reality.utils.IdentityManager.getUserId(this) else null
-                val connectionSecret = if (isSignedIn) com.neubofy.reality.utils.IdentityManager.getConnectionSecret(this) else null
-                val fcmToken = getSharedPreferences("reality_prefs", android.content.Context.MODE_PRIVATE)
-                    .getString(com.neubofy.reality.services.RealityFCMService.PREF_FCM_TOKEN, null)
-                val workerUrl = com.neubofy.reality.BuildConfig.NOTIFICATION_WORKER_URL
-
-                // Fetch Google access token for webhook registration
-                val googleAuthPrefs = com.neubofy.reality.utils.SecurePreferences.get(this, "google_auth_prefs")
-                val googleAccessToken = googleAuthPrefs.getString("access_token", null)
-
-                if (userId.isNullOrEmpty() || connectionSecret.isNullOrEmpty() || googleAccessToken.isNullOrEmpty()) {
-                    android.widget.Toast.makeText(this, "Sign in to your Google/Reality account first.", android.widget.Toast.LENGTH_SHORT).show()
-                    switchAutoSync.isChecked = false
-                    return@setOnCheckedChangeListener
-                }
-
-                if (fcmToken.isNullOrEmpty()) {
-                    android.widget.Toast.makeText(this, "Waiting for device token... try again in a moment.", android.widget.Toast.LENGTH_SHORT).show()
-                    switchAutoSync.isChecked = false
-                    return@setOnCheckedChangeListener
-                }
-                if (workerUrl.isEmpty()) {
-                    android.widget.Toast.makeText(this, "Notification service not configured.", android.widget.Toast.LENGTH_SHORT).show()
-                    switchAutoSync.isChecked = false
-                    return@setOnCheckedChangeListener
-                }
-
-                // 1. Register FCM token with notification worker
-                com.neubofy.reality.services.RealityFCMService.registerTokenWithWorker(applicationContext, workerUrl, userId, connectionSecret, fcmToken)
-                
-                // 2. Register Webhook Watch channel with Google Calendar API
-                com.neubofy.reality.services.RealityFCMService.registerCalendarWebhook(applicationContext, workerUrl, userId, googleAccessToken)
-
-                android.widget.Toast.makeText(this, "\uD83D\uDD14 Real-time sync setup started...", android.widget.Toast.LENGTH_SHORT).show()
-            } else {
-                prefs.saveBoolean("calendar_sync_auto_enabled", false)
-            }
-        }
-    }
-
-
-
     private fun syncAndReload() {
-
-        val isAutoSync = prefs.getBoolean("calendar_sync_auto_enabled", true)
-        if (isAutoSync) {
-            val workRequest = androidx.work.OneTimeWorkRequestBuilder<com.neubofy.reality.workers.CalendarSyncWorker>().build()
-            androidx.work.WorkManager.getInstance(applicationContext).enqueue(workRequest)
-            binding.scrollView.postDelayed({ loadSchedules() }, 2000)
-        } else {
-            loadSchedules()
-        }
+        // Just reload schedules - auto-sync logic is handled by webhook now
+        loadSchedules()
     }
 
     override fun onResume() {

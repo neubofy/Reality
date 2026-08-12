@@ -214,146 +214,23 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Connectors Section Title -->
+            <!-- Sync Services Section -->
             <TextView
-                android:id="@+id/tv_connectors_title"
+                android:id="@+id/tv_sync_services_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Available Services"
-                android:textSize="16sp"
+                android:text="Sync Services"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="?attr/colorPrimary"
-        android:fontFamily="monospace"
-                android:layout_marginBottom="12dp"
+                android:fontFamily="monospace"
+                android:layout_marginBottom="16dp"
                 android:layout_marginStart="4dp"
                 android:visibility="gone"/>
 
-            <!-- Tasks Connector -->
+            <!-- Calendar Channel Sync Card -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_tasks"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp"
-                android:visibility="gone">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/baseline_task_alt_24"
-                        app:tint="?attr/colorPrimary"/>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="12dp"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Google Tasks"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorPrimary"
-        android:fontFamily="monospace"/>
-
-                        <TextView
-                            android:id="@+id/tv_tasks_status"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Not connected"
-                            android:textSize="12sp"
-                            android:textColor="?attr/colorOnSurfaceVariant"/>
-
-                    </LinearLayout>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_connect_tasks"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:text="Connect"/>
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Drive Connector -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_drive"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp"
-                android:visibility="gone">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/baseline_cloud_24"
-                        app:tint="?attr/colorPrimary"/>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="12dp"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Google Drive"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorPrimary"
-        android:fontFamily="monospace"/>
-
-                        <TextView
-                            android:id="@+id/tv_drive_status"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Not connected"
-                            android:textSize="12sp"
-                            android:textColor="?attr/colorOnSurfaceVariant"/>
-
-                    </LinearLayout>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_connect_drive"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:text="Connect"/>
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-
-            <!-- Calendar Connector -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_calendar"
+                android:id="@+id/card_calendar_sync"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
@@ -385,31 +262,86 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Google Calendar"
+                            android:text="Google Calendar Auto-Sync"
                             android:textSize="16sp"
                             android:textStyle="bold"
                             android:textColor="?attr/colorPrimary"
-        android:fontFamily="monospace"/>
+                            android:fontFamily="monospace"/>
 
                         <TextView
-                            android:id="@+id/tv_calendar_status"
+                            android:id="@+id/tv_calendar_sync_status"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Not connected"
+                            android:text="Not registered"
                             android:textSize="12sp"
                             android:textColor="?attr/colorOnSurfaceVariant"/>
-
                     </LinearLayout>
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_connect_calendar"
+                        android:id="@+id/btn_register_calendar_sync"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         style="@style/Widget.Material3.Button.TonalButton"
-                        android:text="Connect"/>
-
+                        android:text="Register"/>
                 </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
+            <!-- FCM Token Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_fcm_token"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="0dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/baseline_notifications_24"
+                        app:tint="?attr/colorPrimary"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Push Notification Token"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorPrimary"
+                            android:fontFamily="monospace"/>
+
+                        <TextView
+                            android:id="@+id/tv_fcm_token_status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Not registered"
+                            android:textSize="12sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_register_fcm_token"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:text="Register"/>
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <!-- Divider -->
