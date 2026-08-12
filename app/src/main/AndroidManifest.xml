@@ -449,6 +449,15 @@
         </receiver>
 
         <receiver
+            android:name=".receivers.AppUpdateReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
             android:name=".receivers.ScheduleTransitionReceiver"
             android:exported="false" />
 
