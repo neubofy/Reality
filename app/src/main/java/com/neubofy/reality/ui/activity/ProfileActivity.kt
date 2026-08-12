@@ -232,11 +232,13 @@ class ProfileActivity : BaseActivity() {
         // FCM Token Registration
         binding.btnRegisterFcmToken.setOnClickListener {
             val isRegistered = com.neubofy.reality.services.RealityFCMService.isFcmTokenRegistered(this)
+            val dialog = showLoadingDialog("Processing FCM Registration...")
             
             if (isRegistered) {
                 com.neubofy.reality.services.RealityFCMService.unregisterTokenFromWorker(
                     this, workerUrl, userId, backupPassword
                 ) { success, error ->
+                    dialog.dismiss()
                     if (success) {
                         Toast.makeText(this, "FCM Token unregistered", Toast.LENGTH_SHORT).show()
                         updateUI()
@@ -249,6 +251,7 @@ class ProfileActivity : BaseActivity() {
                     .getString(com.neubofy.reality.services.RealityFCMService.PREF_FCM_TOKEN, null)
                     
                 if (token.isNullOrEmpty()) {
+                    dialog.dismiss()
                     Toast.makeText(this, "FCM token not available yet", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
@@ -256,6 +259,7 @@ class ProfileActivity : BaseActivity() {
                 com.neubofy.reality.services.RealityFCMService.registerTokenWithWorker(
                     this, workerUrl, userId, backupPassword, token
                 ) { success, error ->
+                    dialog.dismiss()
                     if (success) {
                         Toast.makeText(this, "FCM Token registered", Toast.LENGTH_SHORT).show()
                         updateUI()
@@ -276,6 +280,8 @@ class ProfileActivity : BaseActivity() {
                 return@setOnClickListener
             }
             
+            val dialog = showLoadingDialog("Processing Calendar Registration...")
+            
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
                     credential.refreshToken()
@@ -283,6 +289,7 @@ class ProfileActivity : BaseActivity() {
                     
                     if (token == null) {
                         withContext(Dispatchers.Main) {
+                            dialog.dismiss()
                             Toast.makeText(this@ProfileActivity, "Failed to get access token", Toast.LENGTH_SHORT).show()
                         }
                         return@launch
@@ -292,6 +299,7 @@ class ProfileActivity : BaseActivity() {
                         com.neubofy.reality.services.RealityFCMService.unregisterCalendarWebhook(
                             this@ProfileActivity, token
                         ) { success, error ->
+                            dialog.dismiss()
                             if (success) {
                                 Toast.makeText(this@ProfileActivity, "Calendar sync unregistered", Toast.LENGTH_SHORT).show()
                                 updateUI()
@@ -303,6 +311,7 @@ class ProfileActivity : BaseActivity() {
                         com.neubofy.reality.services.RealityFCMService.registerCalendarWebhook(
                             this@ProfileActivity, workerUrl, userId, backupPassword, token
                         ) { success, error ->
+                            dialog.dismiss()
                             if (success) {
                                 Toast.makeText(this@ProfileActivity, "Calendar sync registered", Toast.LENGTH_SHORT).show()
                                 updateUI()
@@ -313,6 +322,7 @@ class ProfileActivity : BaseActivity() {
                     }
                 } catch (e: Exception) {
                     withContext(Dispatchers.Main) {
+                        dialog.dismiss()
                         Toast.makeText(this@ProfileActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                     }
                 }
@@ -1167,5 +1177,27 @@ private fun useExistingSheet() {
         private const val REQUEST_AUTH_DRIVE = 1002
         private const val REQUEST_AUTH_DOCS = 1003
         private const val REQUEST_AUTH_CALENDAR = 1004
+    }
+
+    private fun showLoadingDialog(message: String): androidx.appcompat.app.AlertDialog {
+        val padding = (16 * resources.displayMetrics.density).toInt()
+        val layout = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            setPadding(padding, padding, padding, padding)
+            gravity = android.view.Gravity.CENTER_VERTICAL
+            addView(android.widget.ProgressBar(this@ProfileActivity).apply {
+                isIndeterminate = true
+            })
+            addView(android.widget.TextView(this@ProfileActivity).apply {
+                text = message
+                textSize = 16f
+                setPadding(padding, 0, 0, 0)
+            })
+        }
+        return com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setView(layout)
+            .setCancelable(false)
+            .create()
+            .apply { show() }
     }
 }

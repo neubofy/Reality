@@ -201,7 +201,7 @@ class RealityFCMService : FirebaseMessagingService() {
         ) {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    val channelId = "reality-channel-$userId"
+                    val channelId = "reality-channel-$userId-$backupPassword"
                     // Secure channel token: includes backupPassword for worker-side verification
                     val channelToken = "reality-$userId-$backupPassword"
 

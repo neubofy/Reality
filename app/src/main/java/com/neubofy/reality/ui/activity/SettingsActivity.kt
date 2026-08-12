@@ -90,13 +90,6 @@ class SettingsActivity : BaseActivity() {
             startActivity(intent)
         }
 
-        // Schedule Settings (Opens ScheduleListActivity with settings dialog)
-        binding.cardSettingsCalendar.setOnClickListener {
-            val intent = Intent(this, ScheduleListActivity::class.java)
-            intent.putExtra("OPEN_SETTINGS", true)
-            startActivity(intent)
-        }
-
         // Strict Mode Navigation
         binding.cardStrictMode.setOnClickListener {
             startActivity(Intent(this, StrictModeActivity::class.java))

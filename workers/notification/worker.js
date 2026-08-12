@@ -228,7 +228,8 @@ export default {
 
       // Channel token format: "reality-{userId}-{backupPassword}"
       if (!channelToken.startsWith("reality-")) {
-        return new Response("Invalid token format", { status: 403 });
+        console.warn(`[SECURITY] Webhook rejected: Invalid token format. Returning 410 Gone to tell Google to stop sending.`);
+        return new Response("Invalid token format", { status: 410 });
       }
 
       // Parse userId and backupPassword from token
@@ -242,14 +243,14 @@ export default {
       const receivedBackupPassword = tokenWithoutPrefix.substring(separatorIndex + 1);
 
       if (!userId || !receivedBackupPassword) {
-        return new Response("Could not extract credentials from token", { status: 400 });
+        return new Response("Could not extract credentials from token", { status: 410 });
       }
 
       // Cryptographic verification: regenerate expected backupPassword and compare
       const verified = await verifyBackupPassword(userId, receivedBackupPassword, env);
       if (!verified) {
-        console.warn(`[SECURITY] Webhook rejected: Invalid backupPassword for userId: ${userId.substring(0, 8)}...`);
-        return new Response("Unauthorized: Invalid credentials", { status: 403 });
+        console.warn(`[SECURITY] Webhook rejected: Invalid backupPassword for userId: ${userId.substring(0, 8)}... Returning 410 Gone to tell Google to stop sending.`);
+        return new Response("Unauthorized: Invalid credentials", { status: 410 });
       }
 
       // Look up user's FCM token from D1
