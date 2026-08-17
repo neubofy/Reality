@@ -2,6 +2,8 @@ name: Deploy Elite Member Worker
 
 on:
   push:
+    branches:
+      - 'main'
     paths:
       - 'workers/elitemember/**'
   workflow_dispatch:
