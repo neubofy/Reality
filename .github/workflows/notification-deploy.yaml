@@ -2,6 +2,8 @@ name: Deploy Notification Worker
 
 on:
   push:
+    branches:
+      - 'main'
     paths:
       - 'workers/notification/**'
   workflow_dispatch:       # Enable manual trigger from GitHub UI
