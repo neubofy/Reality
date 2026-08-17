@@ -2,6 +2,8 @@ name: Deploy Identity Worker
 
 on:
   push:
+    branches:
+      - 'main'
     paths:
       - 'workers/identity/**'
   workflow_dispatch:     # This enables the "Run workflow" button for manual deployment
