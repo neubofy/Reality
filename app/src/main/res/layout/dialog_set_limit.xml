@@ -27,15 +27,33 @@
             android:textAppearance="@style/TextAppearance.Material3.DisplaySmall"
             android:textColor="?attr/colorPrimary"/>
 
-        <com.google.android.material.slider.Slider
-            android:id="@+id/seekBarLimit"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:valueFrom="0"
-            android:valueTo="300"
-            android:stepSize="15"
-            android:value="60"/>
+            android:gravity="center"
+            android:orientation="horizontal">
+            <NumberPicker
+                android:id="@+id/npHours"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="h "
+                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                android:textColor="?attr/colorPrimary" />
+            <NumberPicker
+                android:id="@+id/npMinutes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="m "
+                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                android:textColor="?attr/colorPrimary" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"
