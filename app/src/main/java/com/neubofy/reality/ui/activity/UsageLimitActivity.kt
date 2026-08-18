@@ -67,7 +67,14 @@ class UsageLimitActivity : BaseActivity() {
         val hours = usageData.limitInMinutes / 60
         val mins = usageData.limitInMinutes % 60
         binding.tvCurrentLimit.text = "${hours}h ${mins}m"
-        binding.sliderLimit.value = usageData.limitInMinutes.toFloat().coerceIn(0f, 480f) // Max 8 hours
+
+        binding.npHours.minValue = 0
+        binding.npHours.maxValue = 16
+        binding.npHours.value = hours.coerceIn(0, 16)
+
+        binding.npMinutes.minValue = 0
+        binding.npMinutes.maxValue = 59
+        binding.npMinutes.value = mins.coerceIn(0, 59)
         
         binding.switchEnable.setOnCheckedChangeListener { _, isChecked ->
             if (!isChecked && !StrictLockUtils.isModificationAllowed(this)) {
@@ -80,29 +87,25 @@ class UsageLimitActivity : BaseActivity() {
             saveData()
         }
         
-        binding.sliderLimit.addOnChangeListener { _, value, fromUser ->
-            if (fromUser) {
-                 if (!StrictLockUtils.isModificationAllowed(this)) {
-                     // If trying to increase limit (relax restriction) -> Allowed? 
-                     // Usually Strict Mode prevents relaxing. Increasing limit = relaxing.
-                     // But here value is limit. Increasing limit = More time allowed = Relaxing.
-                     // So check strict mode.
-                     // Wait, StrictLockUtils logic: strict mode prevents modifying schedules.
-                     // Here we treat it strictly.
-                     if (value > usageData.limitInMinutes) {
-                         // Relaxing
-                         Toast.makeText(this, "Increase limit locked by Strict Mode.", Toast.LENGTH_SHORT).show()
-                         binding.sliderLimit.value = usageData.limitInMinutes.toFloat()
-                         return@addOnChangeListener
-                     }
-                 }
-                 usageData.limitInMinutes = value.toInt()
-                 val h = usageData.limitInMinutes / 60
-                 val m = usageData.limitInMinutes % 60
-                 binding.tvCurrentLimit.text = "${h}h ${m}m"
-                 saveData()
+        val onValueChangeListener = android.widget.NumberPicker.OnValueChangeListener { _, _, _ ->
+            val value = (binding.npHours.value * 60) + binding.npMinutes.value
+            if (!StrictLockUtils.isModificationAllowed(this)) {
+                if (value > usageData.limitInMinutes) {
+                    Toast.makeText(this, "Increase limit locked by Strict Mode.", Toast.LENGTH_SHORT).show()
+                    binding.npHours.value = usageData.limitInMinutes / 60
+                    binding.npMinutes.value = usageData.limitInMinutes % 60
+                    return@OnValueChangeListener
+                }
             }
+            usageData.limitInMinutes = value
+            val h = usageData.limitInMinutes / 60
+            val m = usageData.limitInMinutes % 60
+            binding.tvCurrentLimit.text = "${h}h ${m}m"
+            saveData()
         }
+
+        binding.npHours.setOnValueChangedListener(onValueChangeListener)
+        binding.npMinutes.setOnValueChangedListener(onValueChangeListener)
     }
 
     private val scope = kotlinx.coroutines.MainScope()
@@ -173,34 +176,61 @@ class UsageLimitActivity : BaseActivity() {
          }
          
          val tvLimit = TextView(this).apply {
-             text = "Limit: ${item.limitMins} mins"
+             text = "Limit: ${item.limitMins / 60}h ${item.limitMins % 60}m"
              textSize = 18f
              setTextColor(android.graphics.Color.WHITE)
              gravity = android.view.Gravity.CENTER
          }
          
-         val seekBar = SeekBar(this).apply {
-             max = 300 // 5 hours
-             progress = item.limitMins
+         val pickerLayout = android.widget.LinearLayout(this).apply {
+             orientation = android.widget.LinearLayout.HORIZONTAL
+             gravity = android.view.Gravity.CENTER
          }
          
-         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                 val p = (progress / 5) * 5 // Step 5
-                 tvLimit.text = "Limit: $p mins"
-             }
-             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-         })
+         val npHours = android.widget.NumberPicker(this).apply {
+             minValue = 0
+             maxValue = 16
+             value = item.limitMins / 60
+         }
+
+         val tvHours = TextView(this).apply {
+             text = " h "
+             textSize = 18f
+             setTextColor(android.graphics.Color.WHITE)
+         }
+
+         val npMinutes = android.widget.NumberPicker(this).apply {
+             minValue = 0
+             maxValue = 59
+             value = item.limitMins % 60
+         }
+
+         val tvMinutes = TextView(this).apply {
+             text = " m "
+             textSize = 18f
+             setTextColor(android.graphics.Color.WHITE)
+         }
+
+         pickerLayout.addView(npHours)
+         pickerLayout.addView(tvHours)
+         pickerLayout.addView(npMinutes)
+         pickerLayout.addView(tvMinutes)
+
+         val onValueChangeListener = android.widget.NumberPicker.OnValueChangeListener { _, _, _ ->
+             tvLimit.text = "Limit: ${npHours.value}h ${npMinutes.value}m"
+         }
+
+         npHours.setOnValueChangedListener(onValueChangeListener)
+         npMinutes.setOnValueChangedListener(onValueChangeListener)
          
          layout.addView(tvLimit)
-         layout.addView(seekBar)
+         layout.addView(pickerLayout)
          
          MaterialAlertDialogBuilder(this)
              .setTitle("Set Limit for ${item.appName}")
              .setView(layout)
              .setPositiveButton("Save") { _, _ ->
-                 val newLimit = (seekBar.progress / 5) * 5
+                 val newLimit = (npHours.value * 60) + npMinutes.value
                  if (newLimit < item.limitMins && item.limitMins > 0 && !StrictLockUtils.isModificationAllowed(this)) {
                       // Increasing restriction (lower limit) is ALLOWED.
                  }

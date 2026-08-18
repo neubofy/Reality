@@ -249,16 +249,21 @@ class AppLimitsFragment : Fragment() {
         }
         
         // Bind UI
-        dialogBinding.seekBarLimit.valueFrom = 0f
-        dialogBinding.seekBarLimit.valueTo = 480f
-        dialogBinding.seekBarLimit.stepSize = 15f
-        dialogBinding.seekBarLimit.value = currentLimit.toFloat()
+        dialogBinding.npHours.minValue = 0
+        dialogBinding.npHours.maxValue = 16
+        dialogBinding.npHours.value = currentLimit / 60
+
+        dialogBinding.npMinutes.minValue = 0
+        dialogBinding.npMinutes.maxValue = 59
+        dialogBinding.npMinutes.value = currentLimit % 60
+
         dialogBinding.tvLimitValue.text = "${currentLimit / 60}h ${currentLimit % 60}m"
         dialogBinding.cbStrict.isChecked = isStrict
         
         if (isLocked) {
             // Disable all UI elements when locked
-            dialogBinding.seekBarLimit.isEnabled = false
+            dialogBinding.npHours.isEnabled = false
+            dialogBinding.npMinutes.isEnabled = false
             dialogBinding.cbStrict.isEnabled = false
             dialogBinding.cbStrict.isClickable = false
             dialogBinding.btnAddPeriod.isEnabled = false
@@ -271,11 +276,14 @@ class AppLimitsFragment : Fragment() {
             }
         }
         
-        dialogBinding.seekBarLimit.addOnChangeListener { _, value, _ ->
-            currentLimit = value.toInt()
-            dialogBinding.tvLimitValue.text = "${currentLimit / 60}h ${currentLimit % 60}m"
+        val onValueChangeListener = android.widget.NumberPicker.OnValueChangeListener { _, _, _ ->
+            currentLimit = (dialogBinding.npHours.value * 60) + dialogBinding.npMinutes.value
+            dialogBinding.tvLimitValue.text = "${dialogBinding.npHours.value}h ${dialogBinding.npMinutes.value}m"
         }
         
+        dialogBinding.npHours.setOnValueChangedListener(onValueChangeListener)
+        dialogBinding.npMinutes.setOnValueChangedListener(onValueChangeListener)
+
         // Chips Logic
         fun refreshChips() {
             dialogBinding.chipGroupPeriods.removeAllViews()

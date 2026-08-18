@@ -125,7 +125,13 @@ class GroupsFragment : Fragment() {
             dialogBinding.etGroupName.setText(group.name)
             
             val limit = group.limitInMinutes
-            dialogBinding.sliderLimit.progress = limit
+            dialogBinding.npHours.minValue = 0
+            dialogBinding.npHours.maxValue = 16
+            dialogBinding.npHours.value = limit / 60
+
+            dialogBinding.npMinutes.minValue = 0
+            dialogBinding.npMinutes.maxValue = 59
+            dialogBinding.npMinutes.value = limit % 60
             dialogBinding.tvLimitValue.text = "${limit / 60}h ${limit % 60}m"
             
             dialogBinding.cbStrict.isChecked = group.isStrict
@@ -160,21 +166,26 @@ class GroupsFragment : Fragment() {
             }
         } else {
              dialogBinding.tvLimitValue.text = "1h 30m"
-             dialogBinding.sliderLimit.progress = 90
+             dialogBinding.npHours.minValue = 0
+             dialogBinding.npHours.maxValue = 16
+             dialogBinding.npHours.value = 1
+
+             dialogBinding.npMinutes.minValue = 0
+             dialogBinding.npMinutes.maxValue = 59
+             dialogBinding.npMinutes.value = 30
         }
         
         updateActivePeriodText(dialogBinding, activePeriods)
 
         // Interactions
-        dialogBinding.sliderLimit.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                val h = progress / 60
-                val m = progress % 60
-                dialogBinding.tvLimitValue.text = "${h}h ${m}m"
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
+        val onValueChangeListener = android.widget.NumberPicker.OnValueChangeListener { _, _, _ ->
+            val h = dialogBinding.npHours.value
+            val m = dialogBinding.npMinutes.value
+            dialogBinding.tvLimitValue.text = "${h}h ${m}m"
+        }
+
+        dialogBinding.npHours.setOnValueChangedListener(onValueChangeListener)
+        dialogBinding.npMinutes.setOnValueChangedListener(onValueChangeListener)
 
         dialogBinding.btnSelectApps.setOnClickListener {
             val intent = Intent(requireContext(), SelectAppsActivity::class.java)
@@ -198,7 +209,8 @@ class GroupsFragment : Fragment() {
         // Strict Mode Locking
         if (isLocked) {
              dialogBinding.etGroupName.isEnabled = false
-             dialogBinding.sliderLimit.isEnabled = false
+             dialogBinding.npHours.isEnabled = false
+             dialogBinding.npMinutes.isEnabled = false
              dialogBinding.cbStrict.isEnabled = false
              dialogBinding.cbStrict.isClickable = false
              dialogBinding.btnSelectApps.isEnabled = false
@@ -224,7 +236,7 @@ class GroupsFragment : Fragment() {
                 }
                 
                 val name = dialogBinding.etGroupName.text.toString()
-                val limit = dialogBinding.sliderLimit.progress
+                val limit = (dialogBinding.npHours.value * 60) + dialogBinding.npMinutes.value
                 val isStrict = dialogBinding.cbStrict.isChecked
                 
                 if (name.isBlank()) {
