@@ -27,7 +27,6 @@ Reality features the industry's most robust "Strict Mode." Once active, it is im
 *   **Adaptive Reminders:** Smart notifications that nudge you back to work without being annoying.
 *   **Deep Focus Mode:** Block everything except essential apps for deep work sessions.
 *   **Website Blocking:** Automatically detects and blocks distracting websites in any browser.
-*   **Detailed Analytics:** Visualize your time reclaimed with beautiful, privacy-safe charts.
 
 **Why Reality is the #1 Choice:**
 Most blockers treat you like a child. Reality treats you like a professional who needs a tool that works. It is the only app that combines **Military-Grade Security** with **Total Privacy**.

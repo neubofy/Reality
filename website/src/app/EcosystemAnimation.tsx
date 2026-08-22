@@ -95,7 +95,7 @@ export default function EcosystemAnimation() {
                </div>
                <div>
                  <h3 className="text-lg font-bold text-white">Tapasya Web</h3>
-                 <p className="text-xs text-gray-400 mt-2 font-mono">Connected web portal for distraction-free deep work and analytics.</p>
+                 <p className="text-xs text-gray-400 mt-2 font-mono">Connected web portal for distraction-free deep work.</p>
                </div>
             </div>
 

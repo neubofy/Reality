@@ -116,7 +116,7 @@ export default async function Home() {
               </h2>
               
               <p className="text-gray-400 text-lg max-w-xl leading-relaxed">
-                Reality is not another bypassable app timer. It is a local-first, zero-tamper productivity operating system featuring secure on-device analytics, BYOC sync, and private AI.
+                Reality is not another bypassable app timer. It is a local-first, zero-tamper productivity operating system featuring secure on-device metrics, BYOC sync, and private AI.
               </p>
 
               <div className="flex flex-wrap gap-4 pt-2">

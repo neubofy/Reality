@@ -27,7 +27,7 @@ class RealityApp: Application() {
     
     // HeartbeatWorker completely removed. Replaced by Event-Driven Triggers (Screen-On + Reminders)
     
-    // Start Firebase Analytics passively in the background so it never blocks startup
+    // Start Firebase passively in the background so it never blocks startup
     kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
         try {
             com.google.firebase.FirebaseApp.initializeApp(this@RealityApp)
