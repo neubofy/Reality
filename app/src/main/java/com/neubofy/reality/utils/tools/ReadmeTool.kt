@@ -19,7 +19,7 @@ class ReadmeTool : AgentTool {
 
     override suspend fun execute(context: Context, args: JSONObject): String {
         return try {
-            val url = java.net.URL("https://raw.githubusercontent.com/neubofy/Reality/main/README.md")
+            val url = java.net.URL("https://raw.githubusercontent.com/kishankumarkishan573-web/Reality/main/README.md")
             val content = url.readText()
             JSONObject().apply {
                 put("success", true)
