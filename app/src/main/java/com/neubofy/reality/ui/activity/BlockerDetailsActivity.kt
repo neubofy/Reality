@@ -184,6 +184,125 @@ class BlockerDetailsActivity : BaseActivity() {
                 }
 
                 item {
+                    var strictData by remember { mutableStateOf(savedPreferencesLoader.getStrictModeData()) }
+
+                    val isLocked = strictData.isEnabled && strictData.isOverlayConfigLocked
+
+                    GlassCard {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                "Manage Overlay Settings",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(bottom = 12.dp)
+                            )
+
+                            Text(
+                                "Reset Interval for Overlay Attempts: ${strictData.overlayResetIntervalMins} mins",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                listOf(1, 3, 5, 10, 15, 30).forEach { mins ->
+                                    FilterChip(
+                                        selected = strictData.overlayResetIntervalMins == mins,
+                                        onClick = {
+                                            if (isLocked) {
+                                                android.widget.Toast.makeText(context, "Cannot edit overlay settings when Strict Lock is active!", android.widget.Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                val updated = strictData.copy(overlayResetIntervalMins = mins)
+                                                strictData = updated
+                                                savedPreferencesLoader.saveStrictModeData(updated)
+                                                val intent = android.content.Intent(com.neubofy.reality.services.AppBlockerService.INTENT_ACTION_REFRESH_FOCUS_MODE).apply { setPackage(context.packageName) }
+                                                context.sendBroadcast(intent)
+                                            }
+                                        },
+                                        label = { Text("${mins}m", fontSize = 12.sp) }
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                "Base Persistent Overlay Duration: ${strictData.overlayBaseDurationSecs}s",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                listOf(15, 30, 60, 120).forEach { secs ->
+                                    FilterChip(
+                                        selected = strictData.overlayBaseDurationSecs == secs,
+                                        onClick = {
+                                            if (isLocked) {
+                                                android.widget.Toast.makeText(context, "Cannot edit overlay settings when Strict Lock is active!", android.widget.Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                val updated = strictData.copy(overlayBaseDurationSecs = secs)
+                                                strictData = updated
+                                                savedPreferencesLoader.saveStrictModeData(updated)
+                                                val intent = android.content.Intent(com.neubofy.reality.services.AppBlockerService.INTENT_ACTION_REFRESH_FOCUS_MODE).apply { setPackage(context.packageName) }
+                                                context.sendBroadcast(intent)
+                                            }
+                                        },
+                                        label = { Text("${secs}s", fontSize = 12.sp) }
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        "Lock Overlay Settings",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        "Prevent editing overlay interval settings when Strict Mode is enabled.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                Switch(
+                                    checked = strictData.isOverlayConfigLocked,
+                                    onCheckedChange = { checked ->
+                                        if (strictData.isEnabled && strictData.isOverlayConfigLocked && !checked) {
+                                            android.widget.Toast.makeText(context, "Cannot unlock overlay settings when Strict Lock is active!", android.widget.Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            val updated = strictData.copy(isOverlayConfigLocked = checked)
+                                            strictData = updated
+                                            savedPreferencesLoader.saveStrictModeData(updated)
+                                            val intent = android.content.Intent(com.neubofy.reality.services.AppBlockerService.INTENT_ACTION_REFRESH_FOCUS_MODE).apply { setPackage(context.packageName) }
+                                            context.sendBroadcast(intent)
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                item {
                     Text("Active Blockers", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 }
 

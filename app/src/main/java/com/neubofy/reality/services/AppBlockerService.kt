@@ -57,7 +57,7 @@ class AppBlockerService : BaseBlockingService() {
     private val systemStateManager by lazy { SystemStateManager(this) }
     
     // Settings Protection Manager (SettingsBox checks, Penalty Overlay)
-    private val settingsProtectionManager by lazy { SettingsProtectionManager(this, serviceScope, handler) }
+    val settingsProtectionManager by lazy { SettingsProtectionManager(this, serviceScope, handler) }
     
     // Threading
     private val serviceScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Default + kotlinx.coroutines.SupervisorJob())
@@ -566,23 +566,9 @@ class AppBlockerService : BaseBlockingService() {
         lastBlockedPackage = packageName
         lastBlockTime = System.currentTimeMillis()
         
-        // Launch Block Activity
-        try {
-            performGlobalAction(GLOBAL_ACTION_HOME) // Force app to background
-            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                val intent = Intent(this, com.neubofy.reality.ui.activity.BlockActivity::class.java).apply {
-                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION)
-                     putExtra("pkg", packageName)
-                     putExtra("reason", reason)
-                }
-                try {
-                    startActivity(intent)
-                } catch(e: Exception) {}
-            }, 300)
-        } catch (e: Exception) {
-            // Fallback if activity fails
-            performGlobalAction(GLOBAL_ACTION_HOME)
-            Toast.makeText(this, reason, Toast.LENGTH_SHORT).show()
+        // Show Strict Mode Mindful Overlay Screen
+        handler.post {
+            settingsProtectionManager.showPenaltyOverlay(reason ?: "Blocked by Reality")
         }
         
         lastPackage = ""

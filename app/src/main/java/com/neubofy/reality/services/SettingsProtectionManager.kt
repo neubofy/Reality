@@ -132,11 +132,9 @@ class SettingsProtectionManager(
             if (blockResult.shouldBlock) {
                 TerminalLogger.log("SETTINGS_BOX: BLOCKING ${currentClass.substringAfterLast(".")} - ${blockResult.reason}")
                 
-                val penaltyDuration = calculatePenaltyDuration()
-                
                 // UI Operations MUST be on Main Thread
                 withContext(Dispatchers.Main) {
-                     showPenaltyOverlay(blockResult.reason, penaltyDuration)
+                     showPenaltyOverlay(blockResult.reason)
                 }
             }
             
@@ -145,7 +143,7 @@ class SettingsProtectionManager(
         }
     }
 
-    private fun showPenaltyOverlay(reason: String, durationSecs: Int = 30) {
+    fun showPenaltyOverlay(reason: String, durationSecs: Int = calculatePenaltyDuration()) {
         if (penaltyOverlay != null) return
         try {
             // IMMEDIATELY kill Settings and go HOME
@@ -179,8 +177,24 @@ class SettingsProtectionManager(
             
             val tvTimer = penaltyOverlay?.findViewById<TextView>(R.id.tvPenaltyTimer)
             val tvReason = penaltyOverlay?.findViewById<TextView>(R.id.tvPenaltyReason)
+            val tvMessage = penaltyOverlay?.findViewById<TextView>(R.id.tvPenaltyMessage)
             
             tvReason?.text = "Reason: $reason"
+
+            // Custom Message Logic (migrated from BlockActivity)
+            val messages = service.savedPreferencesLoader.getBlockMessages()
+            val tag = when {
+                reason.contains("Focus", ignoreCase = true) -> "FOCUS"
+                reason.contains("Bedtime", ignoreCase = true) -> "BEDTIME"
+                reason.contains("Limit", ignoreCase = true) -> "LIMIT"
+                else -> "ALL"
+            }
+            val validMessages = messages.filter { it.tags.contains("ALL") || it.tags.contains(tag) }
+            if (validMessages.isNotEmpty()) {
+                tvMessage?.text = validMessages.random().message
+            } else {
+                tvMessage?.text = "Stay Focused."
+            }
             
             penaltyTimer = object : CountDownTimer(durationSecs * 1000L, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
@@ -215,9 +229,11 @@ class SettingsProtectionManager(
 
     private fun calculatePenaltyDuration(): Int {
         val now = System.currentTimeMillis()
-        val fiveMinutes = 5 * 60 * 1000L
+        val strictData = service.savedPreferencesLoader.getStrictModeData()
+        val resetIntervalMs = (strictData.overlayResetIntervalMins.takeIf { it > 0 } ?: 5) * 60 * 1000L
+        val baseDuration = strictData.overlayBaseDurationSecs.takeIf { it > 0 } ?: 30
         
-        if (now - service.learnedSettingsPages.lastPenaltyTime < fiveMinutes) {
+        if (now - service.learnedSettingsPages.lastPenaltyTime < resetIntervalMs) {
             service.learnedSettingsPages.consecutiveAttempts++
         } else {
             service.learnedSettingsPages.consecutiveAttempts = 1
@@ -227,13 +243,14 @@ class SettingsProtectionManager(
             service.savedPreferencesLoader.saveLearnedSettingsPages(service.learnedSettingsPages)
         }
         
-        // Escalating penalties: 30s → 60s → 120s → 180s → 300s (5 min max)
-        return when (service.learnedSettingsPages.consecutiveAttempts) {
-            1 -> 30      // 30 seconds
-            2 -> 60      // 1 minute
-            3 -> 120     // 2 minutes
-            4 -> 180     // 3 minutes
-            else -> 300  // 5 minutes max
+        // Escalating penalties based on baseDuration up to 300s (5 min max limit)
+        val calculated = when (service.learnedSettingsPages.consecutiveAttempts) {
+            1 -> baseDuration
+            2 -> baseDuration * 2
+            3 -> baseDuration * 4
+            4 -> baseDuration * 6
+            else -> 300
         }
+        return calculated.coerceAtMost(300)
     }
 }
