@@ -229,9 +229,11 @@ class SettingsProtectionManager(
 
     private fun calculatePenaltyDuration(): Int {
         val now = System.currentTimeMillis()
-        val fiveMinutes = 5 * 60 * 1000L
+        val strictData = service.savedPreferencesLoader.getStrictModeData()
+        val resetIntervalMs = (strictData.overlayResetIntervalMins.takeIf { it > 0 } ?: 5) * 60 * 1000L
+        val baseDuration = strictData.overlayBaseDurationSecs.takeIf { it > 0 } ?: 30
         
-        if (now - service.learnedSettingsPages.lastPenaltyTime < fiveMinutes) {
+        if (now - service.learnedSettingsPages.lastPenaltyTime < resetIntervalMs) {
             service.learnedSettingsPages.consecutiveAttempts++
         } else {
             service.learnedSettingsPages.consecutiveAttempts = 1
@@ -241,13 +243,14 @@ class SettingsProtectionManager(
             service.savedPreferencesLoader.saveLearnedSettingsPages(service.learnedSettingsPages)
         }
         
-        // Escalating penalties: 30s → 60s → 120s → 180s → 300s (5 min max)
-        return when (service.learnedSettingsPages.consecutiveAttempts) {
-            1 -> 30      // 30 seconds
-            2 -> 60      // 1 minute
-            3 -> 120     // 2 minutes
-            4 -> 180     // 3 minutes
-            else -> 300  // 5 minutes max
+        // Escalating penalties based on baseDuration up to 300s (5 min max limit)
+        val calculated = when (service.learnedSettingsPages.consecutiveAttempts) {
+            1 -> baseDuration
+            2 -> baseDuration * 2
+            3 -> baseDuration * 4
+            4 -> baseDuration * 6
+            else -> 300
         }
+        return calculated.coerceAtMost(300)
     }
 }
