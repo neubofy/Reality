@@ -31,12 +31,14 @@
             android:layout_marginTop="16dp" />
         
         <TextView
+            android:id="@+id/tvPenaltyMessage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="This page is blocked by Strict Mode"
-            android:textSize="16sp"
+            android:textSize="18sp"
             android:textColor="@android:color/white"
-            android:alpha="0.9"
+            android:textStyle="bold"
+            android:gravity="center"
             android:layout_marginTop="8dp" />
         
         <TextView

@@ -11,7 +11,7 @@ export default function ReadmePage() {
   const [readmeContent, setReadmeContent] = useState('');
 
   useEffect(() => {
-    fetch('https://raw.githubusercontent.com/neubofy/Reality/main/README.md')
+    fetch('https://raw.githubusercontent.com/kishankumarkishan573-web/Reality/main/README.md')
       .then((res) => res.text())
       .then((text) => setReadmeContent(text))
       .catch(() => setReadmeContent('Failed to load README.'));

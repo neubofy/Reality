@@ -46,9 +46,9 @@ import java.net.URLEncoder
 class AboutActivity : BaseActivity() {
 
     companion object {
-        const val ABOUT_MD_URL = "https://raw.githubusercontent.com/neubofy/Reality/main/ABOUT.md"
+        const val ABOUT_MD_URL = "https://raw.githubusercontent.com/kishankumarkishan573-web/Reality/main/ABOUT.md"
         const val GITHUB_PROFILE = "https://github.com/pawanwashudev-official"
-        const val GITHUB_REPO = "https://github.com/neubofy/Reality"
+        const val GITHUB_REPO = "https://github.com/kishankumarkishan573-web/Reality"
         const val TELEGRAM = "https://t.me/pawanwashudev"
         const val WHATSAPP = "https://wa.me/pawanwashudev"
         const val INSTAGRAM = "https://instagram.com/pawanwashudev"
@@ -94,7 +94,7 @@ class AboutActivity : BaseActivity() {
     private fun reportIssue(titleBoxText: String, descBoxText: String) {
         val title = URLEncoder.encode(titleBoxText, "UTF-8")
         val body = URLEncoder.encode(descBoxText, "UTF-8")
-        val url = "https://github.com/neubofy/Reality/issues/new?title=$title&body=$body"
+        val url = "https://github.com/kishankumarkishan573-web/Reality/issues/new?title=$title&body=$body"
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         try {
             startActivity(intent)

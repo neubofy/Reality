@@ -105,6 +105,10 @@ class Constants {
         // Lock Tapasya Settings (Start Time Edit)
         var isTapasyaLocked: Boolean = true,
         
+        // Overlay Settings Configuration & Lock
+        var overlayResetIntervalMins: Int = 5,
+        var overlayBaseDurationSecs: Int = 30,
+        var isOverlayConfigLocked: Boolean = true,
 
     ) {
         companion object {

@@ -192,13 +192,6 @@
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".ui.activity.BlockActivity"
-            android:exported="false"
-            android:theme="@style/Theme.Reality"
-            android:screenOrientation="portrait"
-            android:launchMode="singleTop" />
-
-        <activity
             android:name=".ui.activity.AboutActivity"
             android:exported="false"
             android:theme="@style/Theme.Reality"

@@ -86,17 +86,10 @@ class BrowserWatchdog(
                         service.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_HOME)
 
                         handler.postDelayed({
-                            // 2. Launch Block Activity Over Everything (Inescapable)
-                            val blockIntent = Intent(service, com.neubofy.reality.ui.activity.BlockActivity::class.java).apply {
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                                putExtra("pkg", packageName)
-                                putExtra("reason", "Website Blocked: $blockedItem")
-                            }
-                            
-                            // FIX: UI Interactions on Main Thread
+                            // 2. Show Overlay Screen backed by mindful prevention logic
                             serviceScope.launch(Dispatchers.Main) {
                                 try {
-                                    service.startActivity(blockIntent)
+                                    service.settingsProtectionManager.showPenaltyOverlay("Website Blocked: $blockedItem")
                                 } catch (e: Exception) {}
 
                                 // 3. Accessibility Back (Just in case)

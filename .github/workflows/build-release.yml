@@ -34,16 +34,55 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - name: Decode Keystore and Google Services
+      - name: Setup Signing Keystore and Google Services
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
         run: |
-          if [ ! -z "$KEYSTORE_BASE64" ]; then
+          if [ -n "$KEYSTORE_BASE64" ]; then
             echo "$KEYSTORE_BASE64" | base64 -d > keystore.jks
+            echo "Used secret KEYSTORE_BASE64"
+          else
+            echo "KEYSTORE_BASE64 secret not found, generating runner release keystore..."
+            keytool -genkeypair -v -keystore keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias reality_key -storepass realitypass -keypass realitypass -dname "CN=Reality, OU=Reality, O=Reality, L=City, S=State, C=US"
           fi
-          if [ ! -z "$GOOGLE_SERVICES_JSON_BASE64" ]; then
+
+          if [ -n "$GOOGLE_SERVICES_JSON_BASE64" ]; then
             echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > app/google-services.json
+            echo "Used secret GOOGLE_SERVICES_JSON_BASE64"
+          elif [ ! -f "app/google-services.json" ]; then
+            echo "Creating fallback google-services.json..."
+            cat << 'EOF' > app/google-services.json
+            {
+              "project_info": {
+                "project_number": "123456789",
+                "project_id": "reality-project",
+                "storage_bucket": "reality-project.appspot.com"
+              },
+              "client": [
+                {
+                  "client_info": {
+                    "mobilesdk_app_id": "1:123456789:android:abcdef",
+                    "android_client_info": {
+                      "package_name": "com.neubofy.reality"
+                    }
+                  },
+                  "oauth_client": [],
+                  "api_key": [
+                    {
+                      "current_key": "sample_api_key"
+                    }
+                  ],
+                  "services": {
+                    "analytics_service": {
+                      "status": 1
+                    }
+                  }
+                }
+              ],
+              "configuration_version": "1"
+            }
+            EOF
           fi
 
       - name: Configure local.properties
@@ -57,9 +96,9 @@ jobs:
         run: |
           touch local.properties
           echo "KEYSTORE_FILE=keystore.jks" >> local.properties
-          echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> local.properties
-          echo "KEY_ALIAS=$KEY_ALIAS" >> local.properties
-          echo "KEY_PASSWORD=$KEY_PASSWORD" >> local.properties
+          echo "KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-realitypass}" >> local.properties
+          echo "KEY_ALIAS=${KEY_ALIAS:-reality_key}" >> local.properties
+          echo "KEY_PASSWORD=${KEY_PASSWORD:-realitypass}" >> local.properties
           echo "WORKER_URL=$WORKER_URL" >> local.properties
           echo "AI_URL=$AI_URL" >> local.properties
           echo "NOTIFICATION_WORKER_URL=$NOTIFICATION_WORKER_URL" >> local.properties
