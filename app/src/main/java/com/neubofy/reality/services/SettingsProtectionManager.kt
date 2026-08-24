@@ -132,11 +132,9 @@ class SettingsProtectionManager(
             if (blockResult.shouldBlock) {
                 TerminalLogger.log("SETTINGS_BOX: BLOCKING ${currentClass.substringAfterLast(".")} - ${blockResult.reason}")
                 
-                val penaltyDuration = calculatePenaltyDuration()
-                
                 // UI Operations MUST be on Main Thread
                 withContext(Dispatchers.Main) {
-                     showPenaltyOverlay(blockResult.reason, penaltyDuration)
+                     showPenaltyOverlay(blockResult.reason)
                 }
             }
             
@@ -145,7 +143,7 @@ class SettingsProtectionManager(
         }
     }
 
-    private fun showPenaltyOverlay(reason: String, durationSecs: Int = 30) {
+    fun showPenaltyOverlay(reason: String, durationSecs: Int = calculatePenaltyDuration()) {
         if (penaltyOverlay != null) return
         try {
             // IMMEDIATELY kill Settings and go HOME
@@ -179,8 +177,24 @@ class SettingsProtectionManager(
             
             val tvTimer = penaltyOverlay?.findViewById<TextView>(R.id.tvPenaltyTimer)
             val tvReason = penaltyOverlay?.findViewById<TextView>(R.id.tvPenaltyReason)
+            val tvMessage = penaltyOverlay?.findViewById<TextView>(R.id.tvPenaltyMessage)
             
             tvReason?.text = "Reason: $reason"
+
+            // Custom Message Logic (migrated from BlockActivity)
+            val messages = service.savedPreferencesLoader.getBlockMessages()
+            val tag = when {
+                reason.contains("Focus", ignoreCase = true) -> "FOCUS"
+                reason.contains("Bedtime", ignoreCase = true) -> "BEDTIME"
+                reason.contains("Limit", ignoreCase = true) -> "LIMIT"
+                else -> "ALL"
+            }
+            val validMessages = messages.filter { it.tags.contains("ALL") || it.tags.contains(tag) }
+            if (validMessages.isNotEmpty()) {
+                tvMessage?.text = validMessages.random().message
+            } else {
+                tvMessage?.text = "Stay Focused."
+            }
             
             penaltyTimer = object : CountDownTimer(durationSecs * 1000L, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
