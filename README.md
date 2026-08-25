@@ -1,25 +1,16 @@
 <div align="center">
 
-<img src="https://res.cloudinary.com/dnh4fonis/image/upload/v1781091079/ck39669alz53z3vkeiaq.png" width="180" alt="Reality Logo" style="border-radius: 20px; margin-bottom: 20px;">
+<img src="https://res.cloudinary.com/dnh4fonis/image/upload/v1781091079/ck39669alz53z3vkeiaq.png" width="160" alt="Reality Logo" style="border-radius: 20px; margin-bottom: 20px;">
 
 # Reality
-### The Intelligent Life OS
+### Reality: Deep Focus & Routine Engine
 
 **Developed by Pawan Washudev | Neubofy**
 
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/neubofy/Reality?style=for-the-badge&color=orange)](https://github.com/neubofy/Reality/releases)
-[![GitHub All Releases](https://img.shields.io/github/downloads/neubofy/Reality/total?style=for-the-badge&color=success)](https://github.com/neubofy/Reality/releases)
-[![License](https://img.shields.io/badge/License-Custom-blue.svg?style=for-the-badge)](#%EF%B8%8F-legal--license)
-[![Platform](https://img.shields.io/badge/Platform-Android-green.svg?style=for-the-badge)](https://www.android.com)
-[![Privacy](https://img.shields.io/badge/Privacy-First-teal.svg?style=for-the-badge)]()
-[![AI](https://img.shields.io/badge/AI-Deployed%20on%20Own%20server-purple.svg?style=for-the-badge)]()
-[![Ads](https://img.shields.io/badge/Ads-ZERO-red.svg?style=for-the-badge)]()
-
-> **"Stop managing your life. Start commanding it."**
-
-### 🌟 99.9% Source-Available • No Ads • Privacy-First • Privacy-Preserving Hosted AI
-
-<p>While advanced features (like Neural Protocol, Gamification, and Google Workspace Sync) require a yearly Reality Elite Member subscription to support ongoing maintenance, the app remains 99.9% source-available. However, building custom APKs for distribution or cloning is strictly prohibited, and the codebase is strictly source-available for review only.</p>
+[![GitHub release](https://img.shields.io/github/v/release/neubofy/Reality?style=flat-square&color=orange)](https://github.com/neubofy/Reality/releases)
+[![Platform](https://img.shields.io/badge/Platform-Android-green.svg?style=flat-square)](https://www.android.com)
+[![Privacy](https://img.shields.io/badge/Privacy-Local--First-teal.svg?style=flat-square)]()
+[![Ads](https://img.shields.io/badge/Ads-ZERO-red.svg?style=flat-square)]()
 
 [**🌐 Official Website**](https://reality.neubofy.in) • [**⬇️ Download Latest APK**](https://reality.neubofy.in/download)
 
@@ -27,155 +18,145 @@
 
 ---
 
-## 🎯 EXECUTIVE SUMMARY
+## 💡 About Reality
 
-**Reality** is a military-grade productivity operating system designed to eliminate digital distractions and act as a relentless partner in achieving your goals. It is not just an app blocker; it is an intelligent, completely integrated local-first system that merges task management, calendar sync, screen-time control, sleep tracking, and agentic AI.
+**Reality** is an all-in-one, local-first Android app designed to build self-discipline, eliminate digital distractions, and streamline your daily routine.
 
----
+Unlike apps that lock essential tools behind forced popups, **Reality is designed to work smoothly right out of the box without any subscription barriers or pushy upgrade prompts**. 
 
-## 🏗️ SYSTEM REQUIREMENTS & SETUP
-
-### Device Requirements
-* **RAM**: 256MB minimum (typical footprint runs around 50–100MB).
-* **Storage**: 150MB for installation and SQLite database space.
-* **Battery**: Less than 1% battery drain due to optimized, native accessibility hooks.
-* **Connectivity**: Core features are completely offline; Google Sync and AI assistant tasks require network access.
-
-### Setup Instructions
-1. **Initial Security Intro**: Proceed through the onboarding cards in [SecurityIntroActivity.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/SecurityIntroActivity.kt).
-2. **Grant Core Android Permissions**: Run through the permission checks in [PermissionManagerActivity.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/PermissionManagerActivity.kt) to configure:
-   * **Accessibility Service** (for real-time window tracking and blocker overlays).
-   * **System Alert Window** (to render custom lockscreens over restricted apps).
-   * **Usage Statistics** (to calculate focus grades and screen time trends).
-3. **Configure the App Blocklist**: Select and group apps you want to restrict in [UnifiedBlocklistActivity.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/UnifiedBlocklistActivity.kt) or [SelectAppsActivity.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/SelectAppsActivity.kt).
-4. **Set Up Google Workspace Sync (Optional)**: Input your Google OAuth credentials in the Settings panel ([GoogleAuthManager.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/google/GoogleAuthManager.kt)) to link Drive, Calendar, Docs, and Tasks directly.
+* **Modular Feature Toggles**: By default, advanced integrations are kept disabled so the app stays clean and lightweight for everyday use.
+* **On-Demand Permissions**: In Reality, you only grant permissions when you actually need them. As you toggle on additional tools in the settings panel, the Permission Manager dynamically guides you to allow only what is necessary for that specific feature.
+* **Separated Sign-In Flow**: 
+  * If you choose to support development by purchasing an optional **Reality Elite Membership**, you only perform a standard, quick Google login on the Elite page.
+  * Deep integrations (such as the Nightly Protocol, automated Calendar sync, Gamification, and Drive backups) require additional workspace permissions. To keep your access transparent and completely in your control, you link those permissions separately from the **Profile Page** using the same Google account.
 
 ---
 
-## 🏆 CORE FEATURES DEEP-DIVE
+## 🏗️ System Requirements & Setup
 
-### 1. **🚫 App Blocker & Strict Mode**
-Reality operates a zero-tamper blocking system driven by Android's native APIs, ensuring you cannot simply disable focus features mid-session.
-* **Under the Hood**: Window transitions are monitored inside [AppBlockerService.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/services/AppBlockerService.kt). Each window change checks app state against configuration logic in [RealityBlocker.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/blockers/RealityBlocker.kt).
-* **Bypass Prevention features**:
-  * **Device Admin Enforcement**: Prevents uninstallation by locking device admin permissions in [StrictModeActivity.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/StrictModeActivity.kt).
-  * **Anti-Tamper Checking**: Flags clock changes and timezone manipulation to prevent bypassing schedules.
-  * **System Settings Blocking**: Intercepts settings submenus to disable force-stop shortcuts.
-  * **Ratchet Cooldowns**: Locks the configuration interface behind custom time penalties or verification checks if you attempt to override rules.
+### Device Footprint
+* **RAM**: 256MB minimum (typical footprint runs lightweight around 50–100MB).
+* **Storage**: ~150MB for application and local SQLite database files.
+* **Battery**: Less than 1% daily drain due to native Android accessibility optimizations.
+* **Connectivity**: Core focus tools work 100% offline; cloud backup and AI assistant features require network access.
 
-### 2. **⚡ Tapasya (Neural Focus Timer)**
-Tapasya enforces deep, uninterrupted focus blocks instead of acting as a simple, passive timer.
-* **Under the Hood**: Managed via [TapasyaService.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/services/TapasyaService.kt) and [TapasyaManager.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/services/TapasyaManager.kt). Enforces a full-screen Amoled focus theme [AmoledFocusActivity.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/AmoledFocusActivity.kt) to limit visual clutter.
-* **Discipline Rules**:
-  * Tracks focus sessions in strict 15-minute chunks ("Effective Time").
-  * Distractions (opening unapproved apps or exiting early) immediately trigger session penalties and void progress.
-  * Generates and reads secure, encrypted QR codes ([QRScannerActivity.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/QRScannerActivity.kt)) to sync session states externally.
-
-### 3. **🌙 The Nightly Protocol (6 Unified Steps)**
-An automated evening reflection and planning workflow run via WorkManager in [NightlyWorker.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/workers/NightlyWorker.kt) and coordinated in [NightlyActivity.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/NightlyActivity.kt).
-* **Step 1: Fetch Analytics**: Gathers daily app usage, calendar logs, and fitness metrics.
-* **Step 2: Create Diary**: AI reads metrics and asks personalized reflection questions ([NightlyPromptsActivity.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/NightlyPromptsActivity.kt)).
-* **Step 3: Save Today Analytics**: Grades your evening responses, computes daily scores, and awards XP.
-* **Step 4: Create Plan**: Autonomously drafts tomorrow's plan layout inside Google Drive.
-* **Step 5: Apply Plan**: Parses your plan and maps it to Google Tasks, Calendar events, and morning alarms.
-* **Step 6: Report & Finalize**: Generates a professional progress report PDF and logs data to Google Sheets.
-
-### 4. **🛌 Bedtime & Sleep Tracking**
-A local Sleep and Bedtime manager ([SmartSleepActivity.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/SmartSleepActivity.kt) / [BedtimeActivity.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/BedtimeActivity.kt)) designed to optimize circadian alignment.
-* **Under the Hood**: Uses [HealthManager.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/health/HealthManager.kt) to integrate natively with Android Health Connect.
-* **Integration**: Pulls daily sleep metrics, active energy burn, and steps to evaluate your biological readiness without using external cloud wearables. A Quick Settings tile ([RealitySleepTileService.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/services/RealitySleepTileService.kt)) enables starting bedtime routines with a single swipe.
-
-### 5. **🔔 Math-Based Wakeup Alarms**
-Wakeup Alarms designed to prevent snoozing and sleep-inertia bypasses.
-* **Under the Hood**: Alarms are scheduled by [AlarmService.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/services/AlarmService.kt) and triggered via [WakeupAlarmService.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/services/WakeupAlarmService.kt).
-* **Anti-Oversleep Logic**:
-  * Renders a math problem layout in [WakeupAlarmRingingActivity.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/WakeupAlarmRingingActivity.kt).
-  * Auto-scales problem difficulty depending on how early the alarm rings (earlier alarms produce complex arithmetic).
-  * Automatically handles snooze restrictions and overrides standard volume buttons.
-
-### 6. **🤖 Reality Intelligence Assistant (Jarvis-Like AI)**
-Reality integrates a local-first agent designed for in-app command execution and private support, rather than a generic text-generation bot.
-* **Under the Hood**: Runs within [AIChatActivity.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/AIChatActivity.kt) and [PopupAIChatActivity.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/PopupAIChatActivity.kt). Initial system configuration and prompt customization are managed in [AISettingsActivity.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/AISettingsActivity.kt).
-* **Capabilities**:
-  * Utilizes Model Context Protocol (MCP) tool registrations defined in [ToolRegistry.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/utils/ToolRegistry.kt) to execute actions like alarm changes, task additions, and app blocks.
-  * Leverages a local context sliding window using [ConversationMemoryManager.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/utils/ConversationMemoryManager.kt) to count tokens locally.
-  * Connects to private, secure edge servers ([workers/identity/worker.js](https://github.com/neubofy/Reality/blob/main/workers/identity/worker.js)) with BYOK (Bring-Your-Own-Key) support.
-
-### 7. **🎨 Cinematic Theme Customization**
-A fully customized UI rendering module allows personalizing fonts, layouts, and gradients to make your Life OS look premium.
-* **Under the Hood**: Managed inside [AppearanceActivity.kt](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/ui/activity/AppearanceActivity.kt), customizing active styling maps, dark amoled mode parameters, and dynamic font scales.
+### Getting Started
+1. **Security Intro**: Step through the quick onboarding flow in `SecurityIntroActivity.kt`.
+2. **Grant Basic Permissions**: Visit `PermissionManagerActivity.kt` to allow:
+   * **Accessibility Service**: Enables real-time window tracking and blocker overlays.
+   * **System Alert Window**: Allows rendering focus reminders over blocked apps.
+   * **Usage Statistics**: Calculates focus grades and screen time trends.
+3. **Configure Blocklists**: Choose distracting apps to block in `UnifiedBlocklistActivity.kt` or `SelectAppsActivity.kt`.
+4. **Enable Optional Features**: Toggle advanced tools as needed in Settings, granting extra permissions only as your workflow grows.
 
 ---
 
-## 🔒 ZERO-TRUST SECURITY & DATA OWNERSHIP
+## 🌟 Flagship Feature: The 6-Step Nightly Protocol
 
-### Bring Your Own Cloud (BYOK) Setup Guide
-Reality works without developer servers. You can host your own sync endpoints using a custom Google Cloud Console project.
+The core rhythm of Reality revolves around the **Nightly Protocol**—an automated evening workflow coordinated via Android WorkManager (`NightlyWorker.kt` and `NightlyActivity.kt`) that helps you close out your day with intention and prepare for tomorrow:
 
-**Required OAuth Scopes:**
-- `.../auth/calendar.events` (To block apps based on meetings)
-- `.../auth/drive.file` (To create and read Nightly plans)
-- `.../auth/tasks` (To create tasks)
-- `.../auth/userinfo.email` and `.../auth/userinfo.profile` and `openid` (For Identity)
-
-**To Setup Your Keys, read the Step-by-Step BYOK Setup Guide on our official website:**
-[https://reality.neubofy.in/#byok-setup](https://reality.neubofy.in/#byok-setup)
-
-**Where to save credentials in Reality:**
-1. Open the Reality App on your Android device.
-2. Go to the **Elite Page** or the **Profile Page**.
-3. Tap the **Settings/Cloud Icon** in the top right corner.
-4. Paste your Client ID and Client Secret and tap Save.
-5. Click **Connect** on any Google service to authenticate!
-
-### Secure Identity & Encryption
-* Encrypted database storage is implemented via [Room](https://github.com/neubofy/Reality/blob/main/app/src/main/java/com/neubofy/reality/data/) and Android's native `EncryptedSharedPreferences`.
-* Backups and keys are secured deterministically using JIT calculations at the Cloudflare edge ([workers/identity/worker.js](https://github.com/neubofy/Reality/blob/main/workers/identity/worker.js)) to safeguard keys against physical client-side memory extraction.
+* **Step 1: Activity Aggregation** — Gathers daily app usage, calendar logs, and fitness metrics into a clean summary.
+* **Step 2: Guided Reflection Diary** — Prompts you with thoughtful, contextual journaling questions tailored to your day (`NightlyPromptsActivity.kt`).
+* **Step 3: Analytics & XP Scoring** — Grades evening reflection consistency, computes daily scores, and awards XP.
+* **Step 4: Smart Tomorrow Plan** — Autonomously structures a draft schedule for the next day directly inside your Google Drive.
+* **Step 5: Automated Schedule Sync** — Parses your approved plan and maps it to Google Tasks, Google Calendar events, and morning alarms.
+* **Step 6: Archiving & Daily Summary** — Exports a clean PDF summary report and appends your daily progress directly into Google Sheets.
 
 ---
 
-## 🏗️ DEEP TECHNICAL ARCHITECTURE
+## 🏆 Key Features
+
+### 1. 🚫 App Blocker & Strict Mode
+A dependable blocking system built directly on native Android APIs to prevent impulsive unlocks during study or deep-work sessions.
+* Monitored seamlessly in `AppBlockerService.kt` and verified via `RealityBlocker.kt`.
+* Optional anti-bypass controls via Device Admin (`StrictModeActivity.kt`), anti-tamper clock checking, and lockout cooldown timers.
+
+### 2. ⚡ Tapasya (Deep Focus Timer)
+A distraction-free focus timer built for sustained work and study sessions.
+* Managed through `TapasyaService.kt` and `TapasyaManager.kt`.
+* Features a distraction-free AMOLED black mode (`AmoledFocusActivity.kt`) with strict 15-minute effective work tracking and encrypted QR code session exports (`QRScannerActivity.kt`).
+
+### 3. 🛌 Bedtime & Sleep Tracking
+A local-first bedtime companion designed to encourage consistent sleep habits.
+* Integrates directly with Android Health Connect via `HealthManager.kt` to read rest and activity without requiring third-party cloud wearables.
+* Includes a convenient Quick Settings tile (`RealitySleepTileService.kt`) to trigger your wind-down routine with a single swipe.
+
+### 4. 🔔 Math Wake-Up Alarms
+A morning alarm designed to break sleep inertia and stop unconscious snoozing.
+* Scheduled by `AlarmService.kt` and managed in `WakeupAlarmService.kt`.
+* Renders a clean arithmetic problem (`WakeupAlarmRingingActivity.kt`) with auto-scaling difficulty based on how early you wake up.
+
+### 5. 🤖 In-App Assistant (Tool Agent)
+A local-first assistant that executes practical in-app actions rather than just generating chat text.
+* Runs in `AIChatActivity.kt` and `PopupAIChatActivity.kt`, configured via `AISettingsActivity.kt`.
+* Uses Model Context Protocol (MCP) tool registrations (`ToolRegistry.kt`) to adjust alarms, add tasks, and manage app blocks directly on your device.
+
+### 6. 🎨 Custom Appearance & Themes
+Tailor the look and feel of the app to match your setup in `AppearanceActivity.kt` with custom fonts, AMOLED dark palettes, and Material3 styling.
+
+---
+
+## 🔒 Privacy, BYOK & Cloud Sync
+
+Reality is built local-first: your habits, journal logs, and history stay inside an encrypted Room database on your device.
+
+### Bring Your Own Keys (BYOK)
+You can sync your workflow directly through your own Google Cloud Console project without passing data through external developer servers.
+
+**Required OAuth Scopes for Full Sync:**
+* `https://www.googleapis.com/auth/calendar.events` — To coordinate focus blocks with your calendar schedule.
+* `https://www.googleapis.com/auth/drive.file` — To create and store Nightly Protocol plan documents.
+* `https://www.googleapis.com/auth/tasks` — To create and manage your daily task lists.
+* `https://www.googleapis.com/auth/userinfo.email`, `https://www.googleapis.com/auth/userinfo.profile`, `openid` — For profile identity and authentication.
+
+**Setting Up Your Cloud Keys:**
+1. Open Reality on your Android device.
+2. Navigate to the **Profile Page** or the **Elite Page**.
+3. Tap the **Settings / Cloud** icon in the top-right corner.
+4. Paste your custom Client ID and Client Secret, then tap **Save**.
+5. Tap **Connect** to link your workspace directly.
+
+---
+
+## 🏗️ Technical Architecture
 
 ### Technology Stack
-```
-Platform:       Android 8.0+ (API 26 to 36)
-Language:       Kotlin 100% (type-safe)
-UI Framework:   AndroidX + Material3
-Database:       Room ORM + SQLite
-Threading:      Coroutines (Kotlin Flow)
-Networking:     OkHttp + Retrofit (Google APIs)
-Background:     WorkManager + AlarmManager
-Logging:        Terminal Logger (custom)
-Parsing:        GSON, JSoup, Markwon
-```
+Platform:        Android 8.0+ (API 26 to 36)
+Language:        Kotlin 100% (Type-Safe)
+UI Framework:    AndroidX + Material3
+Database:        Room ORM + SQLite (Encrypted)
+Threading:       Kotlin Coroutines + Flow
+Networking:      OkHttp + Retrofit
+Background:      WorkManager + AlarmManager
+Parsers:         GSON, JSoup, Markwon
 
 ### Key Libraries
-| Category | Library | Version | Purpose |
-|----------|---------|---------|---------|
-| **Google APIs** | google-api-client-android | 2.2.0 | OAuth2 + service calls |
-| | Tasks API | v1-rev20210709 | Task management |
-| | Calendar API | v3-rev20231123 | Event scheduling |
-| | Drive API | v3-rev20230520 | File management |
-| **Health** | Health Connect Client | 1.1.0-alpha07 | Fitness tracking |
-| **Database** | Room | 2.5.2 | Local persistence |
-| **Background** | WorkManager | 2.8.1 | Scheduled tasks |
-| **UI** | Material3 | Latest | Design system |
-| **Markdown** | Markwon | 4.6.2 | Content rendering |
-| **JSoup** | JSoup | 1.17.2 | HTML parsing |
+| Category | Library | Purpose |
+| :--- | :--- | :--- |
+| **Google APIs** | google-api-client-android, Tasks, Calendar, Drive | Direct Workspace synchronization |
+| **Health** | Health Connect Client | Native fitness and sleep metrics |
+| **Database** | Room ORM | Secure local data persistence |
+| **Background** | WorkManager & AlarmManager | Scheduled routines and precise alarms |
+| **Markdown** | Markwon | High-performance text rendering |
 
 ---
 
-## 📞 SUPPORT & COMMUNITY
+## 📞 Support & Contact Options
 
-- **GitHub**: https://github.com/neubofy/Reality
-- **Website**: https://reality.neubofy.in
-- **Email**: support@neubofy.in
-- **Telegram / WhatsApp / Instagram / LinkedIn**: @pawanwashudev
-- **Issues**: Report bugs on GitHub
-- **Contributing**: PRs welcome for features/improvements
+Feel free to reach out for feature suggestions, feedback, or bug reports:
+
+* **Official Website**: [reality.neubofy.in](https://reality.neubofy.in)
+* **Email**: [support@neubofy.in](mailto:support@neubofy.in)
+* **GitHub Issues**: [Report a Bug / Request a Feature](https://github.com/neubofy/Reality/issues)
+* **Telegram**: [@pawanwashudev](https://t.me/pawanwashudev)
+* **WhatsApp**: [@pawanwashudev](https://wa.me/pawanwashudev)
+* **Instagram**: [@pawanwashudev](https://instagram.com/pawanwashudev)
+* **LinkedIn**: [@pawanwashudev](https://linkedin.com/in/pawanwashudev)
 
 ---
 
-## ⚖️ Legal & License
+## ⚖️ Source Availability & Terms
 
-This application is strictly source-available for review purposes only. We do not allow anyone to clone this repository, modify the app, or build and distribute their own version. It is strictly prohibited to make your own version of the app or to claim ownership. App stores or individuals are allowed to distribute the exact pre-compiled APK obtained directly from our GitHub release page. Our AI crawlers continuously scan the internet. If unauthorized distribution or cloning is detected, strict legal action will be taken.
+Reality is source-available for security review, transparency, and personal study. 
+
+You are welcome to inspect and learn from the codebase. However, unauthorized cloning, commercial redistribution, or publishing modified builds is strictly prohibited. Official pre-compiled APKs are distributed directly via our [GitHub Releases](https://github.com/neubofy/Reality/releases) and [official website](https://reality.neubofy.in).
