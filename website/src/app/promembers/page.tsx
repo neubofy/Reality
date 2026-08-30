@@ -200,6 +200,16 @@ export default async function ProMembersPage({ searchParams }: PageProps) {
             Live directory of Reality Elite Member active users.
           </p>
 
+          <div className="max-w-2xl mx-auto mb-8 bg-white/5 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-white/10 flex flex-col text-left">
+            <p className="text-sm text-gray-300 font-bold mb-1">🔓 100% Transparent</p>
+            <p className="text-xs text-gray-400 mb-2">This page is fully source-available. Support development while maintaining 100% data privacy.</p>
+            <ul className="list-disc pl-6 space-y-1 text-xs text-gray-400">
+              <li>View code: <a href="https://github.com/neubofy/Reality" className="text-neural-cyan hover:underline">https://github.com/neubofy/Reality</a></li>
+              <li>Report issues: <a href="https://github.com/neubofy/Reality/issues" className="text-neural-cyan hover:underline">https://github.com/neubofy/Reality/issues</a></li>
+              <li>Audit infrastructure: All Cloudflare Workers, CI/CD, and APIs are public</li>
+            </ul>
+          </div>
+
           <div className="flex justify-center gap-6">
             <div className="flex flex-col items-center p-4 bg-neural-card/50 border border-gray-800 rounded-xl min-w-[120px]">
               <Database className="text-neural-cyan mb-2" size={24} />

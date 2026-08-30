@@ -38,10 +38,24 @@ export default function TermsOfService() {
               <div>
                 <h3 className="text-md font-bold text-white mb-2">Source-Available License Restrictions</h3>
                 <p className="text-xs text-gray-400 leading-relaxed">
-                  Reality is source-available strictly for audit and security review purposes. You are prohibited from cloning, rebranding, custom-compiling, or distributing secondary versions of this application. pre-compiled binaries can only be shared in their original unmodified state from the official GitHub Release channel.
+                  Reality is 100% source-available strictly for audit and security review. All infrastructure code (Cloudflare Workers, website, CI/CD, billing logic) is auditable. You are prohibited from cloning, rebranding, custom-compiling, or distributing secondary versions.
                 </p>
               </div>
             </div>
+
+            <section className="space-y-4 mb-10 mt-6">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2 border-b border-gray-800 pb-2">
+                Infrastructure Transparency
+              </h2>
+              <p className="text-sm text-gray-400">All infrastructure is visible on GitHub:</p>
+              <ul className="list-disc pl-6 space-y-2 text-sm text-gray-400">
+                <li>Cloudflare Workers: AI inference, JIT cryptography, edge functions</li>
+                <li>Website: Next.js source code, deployment config, API routes</li>
+                <li>CI/CD: GitHub Actions workflows for APK builds and releases</li>
+                <li>Subscription Management: Billing logic and payment processing</li>
+                <li>No developer-controlled backend servers process user data.</li>
+              </ul>
+            </section>
 
             {/* Detailed sections */}
             <section className="space-y-4">
@@ -117,6 +131,16 @@ export default function TermsOfService() {
               <p className="text-sm text-gray-400">
                 For license auditing requests or inquiries: <a href="mailto:support@neubofy.in" className="text-neural-cyan hover:underline">support@neubofy.in</a>
               </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-white border-b border-gray-800 pb-2">🔓 100% Transparent</h2>
+              <p className="text-sm text-gray-400">This page is fully source-available.</p>
+              <ul className="list-disc pl-6 space-y-2 text-sm text-gray-400">
+                <li>View code: <a href="https://github.com/neubofy/Reality" className="text-neural-cyan hover:underline">https://github.com/neubofy/Reality</a></li>
+                <li>Report issues: <a href="https://github.com/neubofy/Reality/issues" className="text-neural-cyan hover:underline">https://github.com/neubofy/Reality/issues</a></li>
+                <li>Audit infrastructure: All Cloudflare Workers, CI/CD, and APIs are public</li>
+              </ul>
             </section>
 
           </div>
