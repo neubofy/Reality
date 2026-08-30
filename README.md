@@ -10,9 +10,14 @@
 [![GitHub release](https://img.shields.io/github/v/release/neubofy/Reality?style=flat-square&color=orange)](https://github.com/neubofy/Reality/releases)
 [![Platform](https://img.shields.io/badge/Platform-Android-green.svg?style=flat-square)](https://www.android.com)
 [![Privacy](https://img.shields.io/badge/Privacy-Local--First-teal.svg?style=flat-square)]()
+[![Open Source](https://img.shields.io/badge/Source--Available-100%25-blue.svg?style=flat-square)]()
 [![Ads](https://img.shields.io/badge/Ads-ZERO-red.svg?style=flat-square)]()
 
-[**🌐 Official Website**](https://reality.neubofy.in) • [**⬇️ Download Latest APK**](https://reality.neubofy.in/download)
+### 🌟 100% Source-Available • Zero Ads • Privacy-First • Transparent AI
+
+**[🌐 Official Website](https://reality.neubofy.in)** • **[📥 Download Latest APK](https://reality.neubofy.in/download)** • **[🎯 Tapashya Web Focus Timer](https://reality.neubofy.in/tapashya)** • **[👑 Elite Membership](https://reality.neubofy.in/promembers)**
+
+**[🔒 Privacy Policy](https://reality.neubofy.in/privacypolicy)** • **[📜 Terms of Service](https://reality.neubofy.in/termsofservice)**
 
 </div>
 
@@ -24,11 +29,18 @@
 
 Unlike apps that lock essential tools behind forced popups, **Reality is designed to work smoothly right out of the box without any subscription barriers or pushy upgrade prompts**. 
 
+**What makes Reality truly unique:**
+* **100% Source-Available**: Every line of code is open for public audit on GitHub. No hidden backend servers processing your data.
+* **Open-Source Infrastructure**: The AI worker runs on Cloudflare Workers, website, APK builds, and subscription management—all visible in this repository.
+* **Zero-Server Architecture**: Reality processes all data locally on your device. Your habits, journals, and calendar data never pass through Neubofy servers.
+* **Transparent AI**: Our Reality Intelligence Assistant uses open-source heavy models like Ollama with LLaMA on your device, while leveraging Cloudflare Worker edge servers for speed and privacy.
+* **Bring Your Own Cloud (BYOC)**: You sync directly through your own Google Cloud OAuth credentials—zero developer involvement.
+
 * **Modular Feature Toggles**: By default, advanced integrations are kept disabled so the app stays clean and lightweight for everyday use.
-* **On-Demand Permissions**: In Reality, you only grant permissions when you actually need them. As you toggle on additional tools in the settings panel, the Permission Manager dynamically guides you to allow only what is necessary for that specific feature.
+* **On-Demand Permissions**: In Reality, you only grant permissions when you actually need them. As you toggle on additional tools in the settings panel, the Permission Manager dynamically guides you through each required step.
 * **Separated Sign-In Flow**: 
-  * If you choose to support development by purchasing an optional **Reality Elite Membership**, you only perform a standard, quick Google login on the Elite page.
-  * Deep integrations (such as the Nightly Protocol, automated Calendar sync, Gamification, and Drive backups) require additional workspace permissions. To keep your access transparent and completely in your control, you link those permissions separately from the **Profile Page** using the same Google account.
+  * If you choose to support development by purchasing an optional **Reality Elite Membership** (https://reality.neubofy.in/promembers), you only perform a standard, quick Google login on the Elite page.
+  * Deep integrations (such as the Nightly Protocol, automated Calendar sync, Gamification, and Drive backups) require additional workspace permissions. To keep your access transparent and complete, you configure your own Google Cloud keys instead of authenticating through our backend.
 
 ---
 
@@ -53,7 +65,7 @@ Unlike apps that lock essential tools behind forced popups, **Reality is designe
 
 ## 🌟 Flagship Feature: The 6-Step Nightly Protocol
 
-The core rhythm of Reality revolves around the **Nightly Protocol**—an automated evening workflow coordinated via Android WorkManager (`NightlyWorker.kt` and `NightlyActivity.kt`) that helps you close out your day with intention and prepare for tomorrow:
+The core rhythm of Reality revolves around the **Nightly Protocol**—an automated evening workflow coordinated via Android WorkManager (`NightlyWorker.kt` and `NightlyActivity.kt`) that helps you reflect, plan, and execute with precision.
 
 * **Step 1: Activity Aggregation** — Gathers daily app usage, calendar logs, and fitness metrics into a clean summary.
 * **Step 2: Guided Reflection Diary** — Prompts you with thoughtful, contextual journaling questions tailored to your day (`NightlyPromptsActivity.kt`).
@@ -74,7 +86,8 @@ A dependable blocking system built directly on native Android APIs to prevent im
 ### 2. ⚡ Tapasya (Deep Focus Timer)
 A distraction-free focus timer built for sustained work and study sessions.
 * Managed through `TapasyaService.kt` and `TapasyaManager.kt`.
-* Features a distraction-free AMOLED black mode (`AmoledFocusActivity.kt`) with strict 15-minute effective work tracking and encrypted QR code session exports (`QRScannerActivity.kt`).
+* Features a distraction-free AMOLED black mode (`AmoledFocusActivity.kt`) with strict 15-minute effective work tracking.
+* **Cross-Platform Sync**: Use the web timer at [**reality.neubofy.in/tapashya**](https://reality.neubofy.in/tapashya) and sync back to your Android app using QR code scanning (`QRScannerActivity.kt`) with encrypted session exports.
 
 ### 3. 🛌 Bedtime & Sleep Tracking
 A local-first bedtime companion designed to encourage consistent sleep habits.
@@ -90,17 +103,18 @@ A morning alarm designed to break sleep inertia and stop unconscious snoozing.
 A local-first assistant that executes practical in-app actions rather than just generating chat text.
 * Runs in `AIChatActivity.kt` and `PopupAIChatActivity.kt`, configured via `AISettingsActivity.kt`.
 * Uses Model Context Protocol (MCP) tool registrations (`ToolRegistry.kt`) to adjust alarms, add tasks, and manage app blocks directly on your device.
+* **AI Architecture**: Uses open-source heavy models on-device (like Ollama with LLaMA) for privacy, while leveraging Cloudflare Worker edge servers for speed and inference acceleration.
 
 ### 6. 🎨 Custom Appearance & Themes
 Tailor the look and feel of the app to match your setup in `AppearanceActivity.kt` with custom fonts, AMOLED dark palettes, and Material3 styling.
 
 ---
 
-## 🔒 Privacy, BYOK & Cloud Sync
+## 🔒 Privacy, BYOC & Cloud Sync
 
 Reality is built local-first: your habits, journal logs, and history stay inside an encrypted Room database on your device.
 
-### Bring Your Own Keys (BYOK)
+### Bring Your Own Cloud (BYOC) Architecture
 You can sync your workflow directly through your own Google Cloud Console project without passing data through external developer servers.
 
 **Required OAuth Scopes for Full Sync:**
@@ -111,16 +125,23 @@ You can sync your workflow directly through your own Google Cloud Console projec
 
 **Setting Up Your Cloud Keys:**
 1. Open Reality on your Android device.
-2. Navigate to the **Profile Page** or the **Elite Page**.
+2. Navigate to the **Profile Page** or the **Elite Page** (https://reality.neubofy.in/promembers).
 3. Tap the **Settings / Cloud** icon in the top-right corner.
 4. Paste your custom Client ID and Client Secret, then tap **Save**.
 5. Tap **Connect** to link your workspace directly.
+
+### Cloudflare Edge Workers & JIT Cryptography
+To ensure maximum security and prevent physical device-level data extraction:
+* Deterministic encryption keys are computed Just-In-Time on Cloudflare Workers edge nodes.
+* These workers execute HMAC-SHA256 calculations using secret peppers and transient login tokens.
+* No database, configuration files, or user data are persisted on edge servers—only cryptographic operations are performed.
 
 ---
 
 ## 🏗️ Technical Architecture
 
 ### Technology Stack
+```
 Platform:        Android 8.0+ (API 26 to 36)
 Language:        Kotlin 100% (Type-Safe)
 UI Framework:    AndroidX + Material3
@@ -129,6 +150,9 @@ Threading:       Kotlin Coroutines + Flow
 Networking:      OkHttp + Retrofit
 Background:      WorkManager + AlarmManager
 Parsers:         GSON, JSoup, Markwon
+Web Stack:       Next.js + React + TypeScript (Website & Tapashya Timer)
+AI Infrastructure: Cloudflare Workers (JIT Cryptography & Inference)
+```
 
 ### Key Libraries
 | Category | Library | Purpose |
@@ -138,6 +162,13 @@ Parsers:         GSON, JSoup, Markwon
 | **Database** | Room ORM | Secure local data persistence |
 | **Background** | WorkManager & AlarmManager | Scheduled routines and precise alarms |
 | **Markdown** | Markwon | High-performance text rendering |
+| **Web AI Timer** | Next.js, Tailwind CSS | Tapashya web interface with QR sync |
+
+### Build & Deployment
+* **GitHub Actions Workflow**: Automated APK builds and direct uploads to GitHub Releases.
+* **Website Hosting**: Next.js app deployed to Vercel.
+* **Cloudflare Workers**: Open-source AI inference and JIT cryptography endpoints.
+* **All workflows and scripts are visible in this repository**—zero hidden CI/CD magic.
 
 ---
 
@@ -145,7 +176,11 @@ Parsers:         GSON, JSoup, Markwon
 
 Feel free to reach out for feature suggestions, feedback, or bug reports:
 
-* **Official Website**: [reality.neubofy.in](https://reality.neubofy.in)
+* **Official Website**: [https://reality.neubofy.in](https://reality.neubofy.in)
+* **Privacy Policy**: [https://reality.neubofy.in/privacypolicy](https://reality.neubofy.in/privacypolicy)
+* **Terms of Service**: [https://reality.neubofy.in/termsofservice](https://reality.neubofy.in/termsofservice)
+* **Elite Membership**: [https://reality.neubofy.in/promembers](https://reality.neubofy.in/promembers)
+* **Tapashya Web Timer**: [https://reality.neubofy.in/tapashya](https://reality.neubofy.in/tapashya)
 * **Email**: [support@neubofy.in](mailto:support@neubofy.in)
 * **GitHub Issues**: [Report a Bug / Request a Feature](https://github.com/neubofy/Reality/issues)
 * **Telegram**: [@pawanwashudev](https://t.me/pawanwashudev)
@@ -157,6 +192,38 @@ Feel free to reach out for feature suggestions, feedback, or bug reports:
 
 ## ⚖️ Source Availability & Terms
 
-Reality is source-available for security review, transparency, and personal study. 
+Reality is **100% source-available** for transparency, security review, and personal study. 
 
-You are welcome to inspect and learn from the codebase. However, unauthorized cloning, commercial redistribution, or publishing modified builds is strictly prohibited. Official pre-compiled APKs are distributed directly via our [GitHub Releases](https://github.com/neubofy/Reality/releases) and [official website](https://reality.neubofy.in).
+**Key principles:**
+* You are welcome to inspect, learn from, and audit the entire codebase for security vulnerabilities.
+* Unauthorized cloning, commercial redistribution, or publishing modified builds is strictly prohibited.
+* Official pre-compiled APKs are distributed only through [reality.neubofy.in/download](https://reality.neubofy.in/download) and GitHub Releases.
+* All infrastructure code (Cloudflare Workers, website, CI/CD workflows, subscription management) is visible in this repository.
+
+**For complete legal details, see [Terms of Service](https://reality.neubofy.in/termsofservice).**
+
+---
+
+## 🚀 Why This Matters
+
+Reality represents a new standard for mobile productivity:
+* **No Data Harvesting**: Your focus metrics, journal entries, and reflections are yours alone—never monetized or analyzed by Neubofy.
+* **Verifiable Privacy**: With source code available, security researchers and users can independently verify our privacy claims.
+* **True Local-First Architecture**: Unlike many "privacy-first" apps, Reality has zero backend servers analyzing your behavior.
+* **Transparent Monetization**: The optional Reality Elite Membership (https://reality.neubofy.in/promembers) is the only revenue model—no hidden data sales or premium feature paywalls.
+
+---
+
+## 📊 Community & Contribution
+
+This is an open-source project developed by Pawan Washudev. While we don't accept code contributions (source-available model), we deeply value:
+* Security audit reports
+* Bug reports via GitHub Issues
+* Feature requests and feedback
+* Documentation improvements
+
+> **"Stop managing your life. Start commanding it."** — Built by someone who lost control of their own fingers, designed for those who want it back.
+
+---
+
+**Made with ❤️ by Pawan Washudev @ Neubofy**
