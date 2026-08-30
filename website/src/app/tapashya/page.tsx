@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import { Settings, Play, Pause, Square, RotateCcw, X, Trash2, Edit2, QrCode, ArrowLeft, ChevronLeft, ChevronRight, Calendar, Maximize2, Minimize2, Clock, Github } from 'lucide-react';
+import { Settings, Play, Pause, Square, RotateCcw, X, Trash2, Edit2, QrCode, ArrowLeft, ChevronLeft, ChevronRight, Calendar, Maximize2, Minimize2, Clock, GitFork } from 'lucide-react';
 import Link from 'next/link';
 
 
@@ -787,7 +787,7 @@ export default function TapashyaPage() {
             )}
 
             <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 shadow-2xl shadow-black/80 border border-white/10 flex items-start gap-3 mt-6 mb-2">
-              <Github size={18} className="text-[#00E5FF] mt-0.5" />
+              <GitFork size={18} className="text-[#00E5FF] mt-0.5" />
               <div>
                 <p className="text-sm text-gray-300 font-bold">100% Open Source</p>
                 <p className="text-xs text-gray-400">This timer and all sync features are auditable on GitHub. No external servers process your data.</p>
