@@ -250,26 +250,26 @@ export default async function Home() {
          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
                <h2 className="text-3xl font-extrabold text-white">Reality Intelligence Assistant</h2>
-               <p className="text-gray-400 mt-2">Open-Source AI with Transparent Edge Acceleration</p>
+               <p className="text-gray-400 mt-2">Open-Source AI with Transparent Edge Architecture</p>
             </div>
 
             <div className="bg-neural-card p-4 sm:p-8 rounded-2xl border border-gray-800 shadow-lg space-y-6">
                <div className="grid md:grid-cols-2 gap-8">
                   <div className="space-y-4">
                      <h3 className="text-xl font-bold text-neural-cyan flex items-center gap-2">
-                        <Brain size={24} /> On-Device Models
+                        <Brain size={24} /> Cloudflare AI Workers
                      </h3>
                      <p className="text-gray-300 text-sm leading-relaxed">
-                        Reality runs open-source GPT-OSS 20B and 120B models directly on your device. Your conversations, journal reflections, and task requests never leave your phone.
+                        We do not provide the option to run AI models locally. Instead, open-source GPT-OSS 20B and 120B models are processed via Cloudflare Workers. We also provide the option for users to use Gemini models by providing their own API key. Your conversations, journal reflections, and task requests are processed with complete privacy and we do not store any chats.
                      </p>
                      <ul className="space-y-2 text-gray-400 text-sm">
                         <li className="flex items-start gap-2">
                            <CheckCircle size={16} className="text-neural-cyan mt-0.5 shrink-0" />
-                           <span>Complete data privacy</span>
+                           <span>Complete data privacy, like local models</span>
                         </li>
                         <li className="flex items-start gap-2">
                            <CheckCircle size={16} className="text-neural-cyan mt-0.5 shrink-0" />
-                           <span>Works 100% offline</span>
+                           <span>Zero load on your device</span>
                         </li>
                         <li className="flex items-start gap-2">
                            <CheckCircle size={16} className="text-neural-cyan mt-0.5 shrink-0" />
@@ -280,15 +280,15 @@ export default async function Home() {
 
                   <div className="space-y-4">
                      <h3 className="text-xl font-bold text-neural-purple flex items-center gap-2">
-                        <Zap size={24} /> Cloudflare Edge Acceleration
+                        <Zap size={24} /> Cloudflare Edge Speed
                      </h3>
                      <p className="text-gray-300 text-sm leading-relaxed">
-                        For faster inference on complex tasks, Reality optionally leverages Cloudflare Workers for JIT cryptography and model acceleration. <strong>No data is stored or logged on edge servers.</strong>
+                        By relying on Cloudflare AI Workers, Reality provides inference speed on complex tasks, as well as JIT cryptography. <strong>No data is stored or logged on edge servers.</strong>
                      </p>
                      <ul className="space-y-2 text-gray-400 text-sm">
                         <li className="flex items-start gap-2">
                            <CheckCircle size={16} className="text-neural-purple mt-0.5 shrink-0" />
-                           <span>Speed optimization only</span>
+                           <span>Leveraging Edge server speed</span>
                         </li>
                         <li className="flex items-start gap-2">
                            <CheckCircle size={16} className="text-neural-purple mt-0.5 shrink-0" />
@@ -430,7 +430,7 @@ Once I have the keys, tell me to open the Reality App -> Go to the Elite Page or
           <li><strong>Database ORM:</strong> Room SQLite mapping schemas locally in the app namespace.</li>
           <li><strong>On-Device Encryption:</strong> Stored locally using Android Native EncryptedSharedPreferences.</li>
           <li><strong>Google APIs Integration:</strong> Uses Google OAuth client credentials of application type Desktop Application to directly write and sync metrics to the user's personal Google Cloud workspace.</li>
-          <li><strong>AI Models:</strong> Open-source GPT-OSS 20B and 120B models run on-device for complete privacy.</li>
+          <li><strong>AI Models:</strong> Open-source GPT-OSS 20B and 120B models run via Cloudflare Workers for zero device load and complete privacy (no chats or data are stored). Users can also bring their own Gemini API key for local API routing.</li>
           <li><strong>JIT Edge Cryptography:</strong> JIT encryption keys and identity parameters are generated using Cloudflare Workers edge nodes executing HMAC-SHA256 calculations locally with secret peppers.</li>
           <li><strong>Blocker Hook Loop:</strong> Leverages DeviceAdminReceiver to lock uninstalls and AccessibilityService callbacks to catch window package modifications, redirecting target distractions.</li>
           <li><strong>Assistant Engine:</strong> Runs using the Model Context Protocol (MCP) tool routing mapped to JVM registries.</li>
