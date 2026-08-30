@@ -37,7 +37,7 @@ Unlike apps that lock essential tools behind forced popups, **Reality is designe
 * **100% Source-Available**: Every line of code is open for public audit on GitHub. No hidden backend servers processing your data.
 * **Open-Source Infrastructure**: The AI worker runs on Cloudflare Workers, website, APK builds, and subscription management—all visible in this repository.
 * **Zero-Server Architecture**: Reality processes all data locally on your device. Your habits, journals, and calendar data never pass through Neubofy servers.
-* **Transparent AI with Cloudflare Speed**: Our Reality Intelligence Assistant uses open-source heavy models (**GPT-OSS 20B and 120B**) on your device for complete data privacy, while leveraging Cloudflare Worker edge servers for inference speed and performance optimization.
+* **Transparent AI with Cloudflare Workers**: Our Reality Intelligence Assistant uses open-source heavy models (**GPT-OSS 20B and 120B**) via Cloudflare Worker edge servers rather than locally on device. We also support bringing your own Gemini API key. This architecture provides complete privacy like a local model—no chats or data are stored—while ensuring zero load on your device and leveraging Cloudflare edge server speed.
 * **Bring Your Own Cloud (BYOC)**: You sync directly through your own Google Cloud OAuth credentials—zero developer involvement.
 
 * **Modular Feature Toggles**: By default, advanced integrations are kept disabled so the app stays clean and lightweight for everyday use.
@@ -108,9 +108,9 @@ A local-first assistant that executes practical in-app actions rather than just 
 * Runs in `AIChatActivity.kt` and `PopupAIChatActivity.kt`, configured via `AISettingsActivity.kt`.
 * Uses Model Context Protocol (MCP) tool registrations (`ToolRegistry.kt`) to adjust alarms, add tasks, and manage app blocks directly on your device.
 * **AI Architecture**: 
-  - **On-Device Models**: Runs open-source GPT-OSS 20B and 120B models locally on your device for complete data privacy
-  - **Cloudflare Edge Inference**: Leverages Cloudflare Worker edge servers for inference acceleration and speed optimization
-  - **Zero Data Collection**: Your conversations and AI interactions never leave your device or are stored on developer servers
+  - **Cloudflare Edge Models**: We do not provide the option to run AI models locally. Instead, open-source GPT-OSS 20B and 120B models are processed via Cloudflare Workers. You can also opt to use Gemini models directly by providing your own API key.
+  - **Zero Device Load & Edge Speed**: This architecture provides the speed of Cloudflare edge servers with zero processing load on your device.
+  - **Complete Privacy**: This setup gives complete privacy just like a local model. We do not store any chats or data, and zero personal information is logged on developer servers.
 
 ### 6. 🎨 Custom Appearance & Themes
 Tailor the look and feel of the app to match your setup in `AppearanceActivity.kt` with custom fonts, AMOLED dark palettes, and Material3 styling.
@@ -158,9 +158,9 @@ Threading:       Kotlin Coroutines + Flow
 Networking:      OkHttp + Retrofit
 Background:      WorkManager + AlarmManager
 Parsers:         GSON, JSoup, Markwon
-AI Models:       GPT-OSS 20B & 120B (On-Device)
+AI Models:       GPT-OSS 20B & 120B (Cloudflare Workers)
 Web Stack:       Next.js + React + TypeScript (Website & Tapashya Timer)
-Edge Inference:  Cloudflare Workers (JIT Cryptography & AI Acceleration)
+Edge Inference:  Cloudflare Workers (JIT Cryptography & AI Models)
 ```
 
 ### Key Libraries
