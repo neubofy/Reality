@@ -80,8 +80,7 @@ export default function PrivacyPolicy() {
                 To prevent physical data extractions or credential modifications from the client device:
               </p>
               <ul className="list-disc pl-6 space-y-2 text-sm text-gray-400">
-                <li>HMAC-SHA256 calculations are run Just-In-Time on Cloudflare Workers edge nodes.</li>
-                <li>These edge servers only compute deterministic cryptographic hash keys using secret peppers and transient logins. No database or configuration metrics are logged or kept on edge node filesystems.</li>
+                <li>To prevent physical data extraction, deterministic encryption keys are computed Just-In-Time on Cloudflare Workers edge nodes using HMAC-SHA256. <strong>No data is stored or logged on edge servers</strong>—only cryptographic operations and optional inference acceleration.</li>
               </ul>
             </section>
 
@@ -114,7 +113,7 @@ export default function PrivacyPolicy() {
             <section className="space-y-4">
               <h2 className="text-2xl font-bold text-white border-b border-gray-800 pb-2">6. Source-Available Integrity</h2>
               <p className="text-sm text-gray-400">
-                Reality is a source-available codebase. Every line of implementation is open for public audit on GitHub. We provide this transparency so you can verify that no backend relays or telemetry tracking is added.
+                Every line of implementation—app, website, AI workers, CI/CD workflows, and subscription management—is open for public audit on GitHub.
               </p>
             </section>
 
@@ -151,6 +150,16 @@ export default function PrivacyPolicy() {
               <p className="text-sm text-gray-400">
                 For security audits or privacy queries, reach out directly: <a href="mailto:support@neubofy.in" className="text-neural-cyan hover:underline">support@neubofy.in</a>
               </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-white border-b border-gray-800 pb-2">🔓 100% Transparent</h2>
+              <p className="text-sm text-gray-400">This page is fully source-available.</p>
+              <ul className="list-disc pl-6 space-y-2 text-sm text-gray-400">
+                <li>View code: <a href="https://github.com/neubofy/Reality" className="text-neural-cyan hover:underline">https://github.com/neubofy/Reality</a></li>
+                <li>Report issues: <a href="https://github.com/neubofy/Reality/issues" className="text-neural-cyan hover:underline">https://github.com/neubofy/Reality/issues</a></li>
+                <li>Audit infrastructure: All Cloudflare Workers, CI/CD, and APIs are public</li>
+              </ul>
             </section>
 
           </div>

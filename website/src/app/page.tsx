@@ -33,7 +33,7 @@ import {
   Layers,
   RefreshCw,
   FolderLock,
-  Github,
+  GitFork,
   AlertCircle
 } from 'lucide-react';
 
@@ -131,7 +131,7 @@ export default async function Home() {
                     <span className="font-mono text-sm">v{latestVersion}</span>
                  </div>
                  <div className="flex items-center gap-2 text-gray-400 bg-neural-card/50 px-4 py-2 rounded-lg border border-gray-800">
-                    <Github size={18} className="text-neural-cyan" />
+                    <GitFork size={18} className="text-neural-cyan" />
                     <span className="font-mono text-sm">Open Source</span>
                  </div>
               </div>
@@ -178,7 +178,7 @@ export default async function Home() {
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <a href="https://github.com/neubofy/Reality" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-neural-cyan hover:text-neural-cyan/80 font-mono text-xs bg-neural-card/50 px-3 py-1 rounded border border-neural-cyan/20">
-                  <Github size={14} /> View Source on GitHub
+                  <GitFork size={14} /> View Source on GitHub
                 </a>
               </div>
             </div>
@@ -307,7 +307,7 @@ export default async function Home() {
                      All infrastructure code, AI worker implementations, and encryption logic are visible in the GitHub repository for independent security audits.
                   </p>
                   <a href="https://github.com/neubofy/Reality" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-neural-cyan hover:text-white font-mono text-sm bg-neural-card px-4 py-2 rounded border border-neural-cyan/20 transition-colors">
-                     <Github size={16} /> Audit AI Workers on GitHub
+                     <GitFork size={16} /> Audit AI Workers on GitHub
                   </a>
                </div>
             </div>

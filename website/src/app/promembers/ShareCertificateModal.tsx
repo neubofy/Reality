@@ -241,7 +241,7 @@ export default function ShareCertificateModal({ isOpen, onClose, preVerifiedMemb
                   Your support keeps Reality alive and growing. Because of members like you, we can continue building a deeply private, source-available productivity OS without depending on traditional crowdfunding.
                 </p>
                 <p className="text-gray-300 text-sm leading-relaxed">
-                  With <span className="text-yellow-400 font-semibold">Reality Elite</span>, you unlock true agentic AI, unlimited sleep tracking, cloud backup, and much more — while the core app stays 99.9% open and private.
+                  With <span className="text-yellow-400 font-semibold">Reality Elite</span>, you unlock true agentic AI, unlimited sleep tracking, cloud backup, and much more — while the core app stays 100% open and private.
                 </p>
                 <div className="mt-5 pt-5 border-t border-gray-800 flex items-center justify-between">
                   <div>

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import { Settings, Play, Pause, Square, RotateCcw, X, Trash2, Edit2, QrCode, ArrowLeft, ChevronLeft, ChevronRight, Calendar, Maximize2, Minimize2, Clock } from 'lucide-react';
+import { Settings, Play, Pause, Square, RotateCcw, X, Trash2, Edit2, QrCode, ArrowLeft, ChevronLeft, ChevronRight, Calendar, Maximize2, Minimize2, Clock, GitFork } from 'lucide-react';
 import Link from 'next/link';
 
 
@@ -650,7 +650,7 @@ export default function TapashyaPage() {
             <Link href="/" className="p-2 -ml-2 rounded-full hover:bg-white/20 transition-colors text-gray-300">
               <ArrowLeft size={24} />
             </Link>
-            <h1 className="text-2xl font-bold tracking-tight text-[#00E5FF] font-mono">Neural Focus</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-[#00E5FF] font-mono">Neural Focus | <span className="text-sm">100% Source-Available Timer | Sync with Android App</span></h1>
           </div>
           <div className="flex gap-2">
             {!calendarConnected ? (
@@ -785,6 +785,14 @@ export default function TapashyaPage() {
                     })}
                 </div>
             )}
+
+            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 shadow-2xl shadow-black/80 border border-white/10 flex items-start gap-3 mt-6 mb-2">
+              <GitFork size={18} className="text-[#00E5FF] mt-0.5" />
+              <div>
+                <p className="text-sm text-gray-300 font-bold">100% Open Source</p>
+                <p className="text-xs text-gray-400">This timer and all sync features are auditable on GitHub. No external servers process your data.</p>
+              </div>
+            </div>
         </div>
 
         {/* Session History Section */}
@@ -881,6 +889,16 @@ export default function TapashyaPage() {
                         </div>
                     ));
                 })()}
+            </div>
+
+            <div className="mt-8 bg-white/5 backdrop-blur-md rounded-2xl p-4 shadow-2xl shadow-black/80 border border-white/10">
+              <p className="text-sm text-gray-300 font-bold mb-1">🔓 100% Transparent</p>
+              <p className="text-xs text-gray-400 mb-2">This page is fully source-available.</p>
+              <ul className="list-disc pl-6 space-y-1 text-xs text-gray-400">
+                <li>View code: <a href="https://github.com/neubofy/Reality" className="text-neural-cyan hover:underline">https://github.com/neubofy/Reality</a></li>
+                <li>Report issues: <a href="https://github.com/neubofy/Reality/issues" className="text-neural-cyan hover:underline">https://github.com/neubofy/Reality/issues</a></li>
+                <li>Audit infrastructure: All Cloudflare Workers, CI/CD, and APIs are public</li>
+              </ul>
             </div>
         </div>
 
