@@ -10,14 +10,18 @@
 [![GitHub release](https://img.shields.io/github/v/release/neubofy/Reality?style=flat-square&color=orange)](https://github.com/neubofy/Reality/releases)
 [![Platform](https://img.shields.io/badge/Platform-Android-green.svg?style=flat-square)](https://www.android.com)
 [![Privacy](https://img.shields.io/badge/Privacy-Local--First-teal.svg?style=flat-square)]()
-[![Open Source](https://img.shields.io/badge/Source--Available-100%25-blue.svg?style=flat-square)]()
+[![Source Available](https://img.shields.io/badge/Source_Available-100%25-blue.svg?style=flat-square)]()
 [![Ads](https://img.shields.io/badge/Ads-ZERO-red.svg?style=flat-square)]()
 
 ### 🌟 100% Source-Available • Zero Ads • Privacy-First • Transparent AI
 
-**[🌐 Official Website](https://reality.neubofy.in)** • **[📥 Download Latest APK](https://reality.neubofy.in/download)** • **[🎯 Tapashya Web Focus Timer](https://reality.neubofy.in/tapashya)** • **[👑 Elite Membership](https://reality.neubofy.in/promembers)**
-
-**[🔒 Privacy Policy](https://reality.neubofy.in/privacypolicy)** • **[📜 Terms of Service](https://reality.neubofy.in/termsofservice)**
+**Key Links:**
+- **[🌐 Official Website](https://reality.neubofy.in)**
+- **[📥 Download APK](https://reality.neubofy.in/download)**
+- **[🎯 Tapashya Web Timer](https://reality.neubofy.in/tapashya)**
+- **[👑 Elite Membership](https://reality.neubofy.in/promembers)**
+- **[🔒 Privacy Policy](https://reality.neubofy.in/privacypolicy)**
+- **[📜 Terms of Service](https://reality.neubofy.in/termsofservice)**
 
 </div>
 
@@ -33,7 +37,7 @@ Unlike apps that lock essential tools behind forced popups, **Reality is designe
 * **100% Source-Available**: Every line of code is open for public audit on GitHub. No hidden backend servers processing your data.
 * **Open-Source Infrastructure**: The AI worker runs on Cloudflare Workers, website, APK builds, and subscription management—all visible in this repository.
 * **Zero-Server Architecture**: Reality processes all data locally on your device. Your habits, journals, and calendar data never pass through Neubofy servers.
-* **Transparent AI**: Our Reality Intelligence Assistant uses open-source heavy models like Ollama with LLaMA on your device, while leveraging Cloudflare Worker edge servers for speed and privacy.
+* **Transparent AI with Cloudflare Speed**: Our Reality Intelligence Assistant uses open-source heavy models (**GPT-OSS 20B and 120B**) on your device for complete data privacy, while leveraging Cloudflare Worker edge servers for inference speed and performance optimization.
 * **Bring Your Own Cloud (BYOC)**: You sync directly through your own Google Cloud OAuth credentials—zero developer involvement.
 
 * **Modular Feature Toggles**: By default, advanced integrations are kept disabled so the app stays clean and lightweight for everyday use.
@@ -99,11 +103,14 @@ A morning alarm designed to break sleep inertia and stop unconscious snoozing.
 * Scheduled by `AlarmService.kt` and managed in `WakeupAlarmService.kt`.
 * Renders a clean arithmetic problem (`WakeupAlarmRingingActivity.kt`) with auto-scaling difficulty based on how early you wake up.
 
-### 5. 🤖 In-App Assistant (Tool Agent)
+### 5. 🤖 Reality Intelligence Assistant (Tool Agent)
 A local-first assistant that executes practical in-app actions rather than just generating chat text.
 * Runs in `AIChatActivity.kt` and `PopupAIChatActivity.kt`, configured via `AISettingsActivity.kt`.
 * Uses Model Context Protocol (MCP) tool registrations (`ToolRegistry.kt`) to adjust alarms, add tasks, and manage app blocks directly on your device.
-* **AI Architecture**: Uses open-source heavy models on-device (like Ollama with LLaMA) for privacy, while leveraging Cloudflare Worker edge servers for speed and inference acceleration.
+* **AI Architecture**: 
+  - **On-Device Models**: Runs open-source GPT-OSS 20B and 120B models locally on your device for complete data privacy
+  - **Cloudflare Edge Inference**: Leverages Cloudflare Worker edge servers for inference acceleration and speed optimization
+  - **Zero Data Collection**: Your conversations and AI interactions never leave your device or are stored on developer servers
 
 ### 6. 🎨 Custom Appearance & Themes
 Tailor the look and feel of the app to match your setup in `AppearanceActivity.kt` with custom fonts, AMOLED dark palettes, and Material3 styling.
@@ -134,7 +141,8 @@ You can sync your workflow directly through your own Google Cloud Console projec
 To ensure maximum security and prevent physical device-level data extraction:
 * Deterministic encryption keys are computed Just-In-Time on Cloudflare Workers edge nodes.
 * These workers execute HMAC-SHA256 calculations using secret peppers and transient login tokens.
-* No database, configuration files, or user data are persisted on edge servers—only cryptographic operations are performed.
+* **No database, configuration files, or user data are persisted on edge servers**—only cryptographic operations and AI inference acceleration are performed.
+* All source code for Cloudflare Workers is visible in this repository for security audits.
 
 ---
 
@@ -150,8 +158,9 @@ Threading:       Kotlin Coroutines + Flow
 Networking:      OkHttp + Retrofit
 Background:      WorkManager + AlarmManager
 Parsers:         GSON, JSoup, Markwon
+AI Models:       GPT-OSS 20B & 120B (On-Device)
 Web Stack:       Next.js + React + TypeScript (Website & Tapashya Timer)
-AI Infrastructure: Cloudflare Workers (JIT Cryptography & Inference)
+Edge Inference:  Cloudflare Workers (JIT Cryptography & AI Acceleration)
 ```
 
 ### Key Libraries
@@ -168,6 +177,7 @@ AI Infrastructure: Cloudflare Workers (JIT Cryptography & Inference)
 * **GitHub Actions Workflow**: Automated APK builds and direct uploads to GitHub Releases.
 * **Website Hosting**: Next.js app deployed to Vercel.
 * **Cloudflare Workers**: Open-source AI inference and JIT cryptography endpoints.
+* **Subscription Management**: Transparent billing logic in repository.
 * **All workflows and scripts are visible in this repository**—zero hidden CI/CD magic.
 
 ---
@@ -176,17 +186,19 @@ AI Infrastructure: Cloudflare Workers (JIT Cryptography & Inference)
 
 Feel free to reach out for feature suggestions, feedback, or bug reports:
 
-* **Official Website**: [https://reality.neubofy.in](https://reality.neubofy.in)
-* **Privacy Policy**: [https://reality.neubofy.in/privacypolicy](https://reality.neubofy.in/privacypolicy)
-* **Terms of Service**: [https://reality.neubofy.in/termsofservice](https://reality.neubofy.in/termsofservice)
-* **Elite Membership**: [https://reality.neubofy.in/promembers](https://reality.neubofy.in/promembers)
-* **Tapashya Web Timer**: [https://reality.neubofy.in/tapashya](https://reality.neubofy.in/tapashya)
-* **Email**: [support@neubofy.in](mailto:support@neubofy.in)
-* **GitHub Issues**: [Report a Bug / Request a Feature](https://github.com/neubofy/Reality/issues)
-* **Telegram**: [@pawanwashudev](https://t.me/pawanwashudev)
-* **WhatsApp**: [@pawanwashudev](https://wa.me/pawanwashudev)
-* **Instagram**: [@pawanwashudev](https://instagram.com/pawanwashudev)
-* **LinkedIn**: [@pawanwashudev](https://linkedin.com/in/pawanwashudev)
+| Resource | Link |
+| :--- | :--- |
+| **Official Website** | [reality.neubofy.in](https://reality.neubofy.in) |
+| **Privacy Policy** | [reality.neubofy.in/privacypolicy](https://reality.neubofy.in/privacypolicy) |
+| **Terms of Service** | [reality.neubofy.in/termsofservice](https://reality.neubofy.in/termsofservice) |
+| **Elite Membership** | [reality.neubofy.in/promembers](https://reality.neubofy.in/promembers) |
+| **Tapashya Web Timer** | [reality.neubofy.in/tapashya](https://reality.neubofy.in/tapashya) |
+| **Email Support** | [support@neubofy.in](mailto:support@neubofy.in) |
+| **GitHub Issues** | [Report Bug / Request Feature](https://github.com/neubofy/Reality/issues) |
+| **Telegram** | [@pawanwashudev](https://t.me/pawanwashudev) |
+| **WhatsApp** | [@pawanwashudev](https://wa.me/pawanwashudev) |
+| **Instagram** | [@pawanwashudev](https://instagram.com/pawanwashudev) |
+| **LinkedIn** | [@pawanwashudev](https://linkedin.com/in/pawanwashudev) |
 
 ---
 
@@ -211,6 +223,7 @@ Reality represents a new standard for mobile productivity:
 * **Verifiable Privacy**: With source code available, security researchers and users can independently verify our privacy claims.
 * **True Local-First Architecture**: Unlike many "privacy-first" apps, Reality has zero backend servers analyzing your behavior.
 * **Transparent Monetization**: The optional Reality Elite Membership (https://reality.neubofy.in/promembers) is the only revenue model—no hidden data sales or premium feature paywalls.
+* **Open Infrastructure**: Every component—app, website, AI workers, CI/CD—is auditable and transparent.
 
 ---
 
