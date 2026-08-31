@@ -645,14 +645,14 @@ export default function TapashyaPage() {
     <div className="min-h-screen bg-[#05050A] text-white font-sans pb-24 pt-8">
       <main className="max-w-md mx-auto px-4">
         {/* Android-like Header */}
-        <div className="flex items-center justify-between pb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-8 gap-4">
           <div className="flex items-center gap-3">
             <Link href="/" className="p-2 -ml-2 rounded-full hover:bg-white/20 transition-colors text-gray-300">
               <ArrowLeft size={24} />
             </Link>
-            <h1 className="text-2xl font-bold tracking-tight text-[#00E5FF] font-mono">Neural Focus | <span className="text-sm">100% Source-Available Timer | Sync with Android App</span></h1>
+            <h1 className="text-2xl font-bold tracking-tight text-[#00E5FF] font-mono">Tapashya</h1>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {!calendarConnected ? (
               <button onClick={handleGoogleConnect} className="flex items-center gap-2 px-4 py-2 bg-[#00E5FF]/10 text-[#00E5FF] rounded-full text-sm font-bold hover:bg-[#B2DFDB] transition-colors">
                  <Calendar size={16} /> Connect
@@ -705,7 +705,7 @@ export default function TapashyaPage() {
             )}
 
             {/* Control Buttons */}
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center justify-center gap-4">
                 {(!activeState.isRunning && !activeState.isPaused) && (
                     <button
                         onClick={onStartClicked}
@@ -785,14 +785,6 @@ export default function TapashyaPage() {
                     })}
                 </div>
             )}
-
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 shadow-2xl shadow-black/80 border border-white/10 flex items-start gap-3 mt-6 mb-2">
-              <GitFork size={18} className="text-[#00E5FF] mt-0.5" />
-              <div>
-                <p className="text-sm text-gray-300 font-bold">100% Open Source</p>
-                <p className="text-xs text-gray-400">This timer and all sync features are auditable on GitHub. No external servers process your data.</p>
-              </div>
-            </div>
         </div>
 
         {/* Session History Section */}
