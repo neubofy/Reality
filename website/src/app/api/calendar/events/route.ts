@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getTokenCookie, setTokenCookie } from '@/lib/tokenCookie';
 
 export async function GET() {
-    let tokenData = await getTokenCookie();
+    const tokenData = await getTokenCookie();
 
     if (!tokenData || !tokenData.access_token) {
         return NextResponse.json({ error: 'Not connected' }, { status: 401 });
