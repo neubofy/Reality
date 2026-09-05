@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
+import { Outfit } from "next/font/google";
 import Link from 'next/link';
 import Image from 'next/image';
-import Script from 'next/script';
 import { Crown } from 'lucide-react';
 import { Analytics } from '@vercel/analytics/next';
 import MobileNav from './MobileNav';
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800", "900"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
@@ -146,18 +144,6 @@ export default function RootLayout({
             </div>
         </footer>
         <Analytics />
-        <Script
-          id="zoho-salesiq-inline"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `window.$zoho=window.$zoho || {};$zoho.salesiq=$zoho.salesiq||{ready:function(){}}`
-          }}
-        />
-        <Script
-          id="zsiqscript"
-          strategy="afterInteractive"
-          src="https://salesiq.zoho.in/widget?wc=siq9312488e4d8e0df500748f7a2fc1e8769385757ecd612b79f3d0afb943c616a1"
-        />
       </body>
     </html>
   );

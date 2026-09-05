@@ -65,7 +65,7 @@ export async function fetchSensitiveMemberData(
     }
 
     const data = await res.json();
-    let members = data?.members || [];
+    const members = data?.members || [];
 
     // Filter to build a dictionary of sensitive data
     const result: Record<string, { status: string | null, expiryDate: string | null, trial_plan: string | null }> = {};
