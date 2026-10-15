@@ -69,9 +69,13 @@ open class BaseActivity : AppCompatActivity() {
             androidx.core.view.ViewCompat.requestApplyInsets(rootView)
         }
 
+        val filter = android.content.IntentFilter().apply {
+            addAction("com.neubofy.reality.IDENTITY_UPDATED")
+            addAction(com.neubofy.reality.utils.FeatureManager.ACTION_SUBSCRIPTION_STATUS_CHANGED)
+        }
         androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).registerReceiver(
             identityUpdateReceiver,
-            android.content.IntentFilter("com.neubofy.reality.IDENTITY_UPDATED")
+            filter
         )
     }
 

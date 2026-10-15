@@ -11,7 +11,22 @@ import com.neubofy.reality.services.AppBlockerService
 
 object PermissionHelper {
 
-    fun checkAndPromptForCore(activity: Activity, checkAccessibility: Boolean = true) {
+    private const val PREFS_PERMISSIONS = "reality_permissions"
+    private const val KEY_SUPPRESS_PROMPTS = "suppress_core_perm_prompt"
+
+    fun isSuppressed(context: Context): Boolean {
+        return SecurePreferences.get(context, PREFS_PERMISSIONS).getBoolean(KEY_SUPPRESS_PROMPTS, false)
+    }
+
+    fun setSuppressed(context: Context, suppressed: Boolean) {
+        SecurePreferences.get(context, PREFS_PERMISSIONS).edit().putBoolean(KEY_SUPPRESS_PROMPTS, suppressed).apply()
+    }
+
+    fun checkAndPromptForCore(activity: Activity, checkAccessibility: Boolean = true, force: Boolean = false) {
+        if (!force && isSuppressed(activity)) {
+            return
+        }
+
         // 1. Accessibility Service
         if (checkAccessibility && !isAccessibilityServiceEnabled(activity, AppBlockerService::class.java)) {
             MaterialAlertDialogBuilder(activity)
@@ -21,7 +36,10 @@ object PermissionHelper {
                     val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                     activity.startActivity(intent)
                 }
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton("Not Now", null)
+                .setNeutralButton("Don't ask again") { _, _ ->
+                    setSuppressed(activity, true)
+                }
                 .show()
             return
         }
@@ -34,7 +52,10 @@ object PermissionHelper {
                 .setPositiveButton("Grant") { _, _ ->
                      activity.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
                 }
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton("Not Now", null)
+                .setNeutralButton("Don't ask again") { _, _ ->
+                    setSuppressed(activity, true)
+                }
                 .show()
             return
         }
@@ -47,7 +68,10 @@ object PermissionHelper {
                 .setPositiveButton("Grant") { _, _ ->
                      activity.startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, android.net.Uri.parse("package:${activity.packageName}")))
                 }
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton("Not Now", null)
+                .setNeutralButton("Don't ask again") { _, _ ->
+                    setSuppressed(activity, true)
+                }
                 .show()
             return
         }

@@ -55,7 +55,9 @@ class HealthDashboardActivity : BaseActivity() {
         ThemeManager.applyTheme(this)
         ThemeManager.applyAccentTheme(this)
         super.onCreate(savedInstanceState)
-        if (!com.neubofy.reality.utils.RealityProManager.checkVerification(this)) return
+        val isRationaleIntent = intent?.action == "androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" ||
+                intent?.action == "android.intent.action.VIEW_PERMISSION_USAGE"
+        if (!isRationaleIntent && !com.neubofy.reality.utils.RealityProManager.checkVerification(this)) return
         binding = ActivityHealthDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -202,7 +204,6 @@ class HealthDashboardActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        com.neubofy.reality.utils.PermissionHelper.checkAndPromptForCore(this)
         loadData() // Refresh on resume in case permissions granted
         checkAndShowSleepVerification()
     }

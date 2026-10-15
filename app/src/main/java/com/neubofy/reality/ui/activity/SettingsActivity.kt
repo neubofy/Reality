@@ -482,8 +482,9 @@ class SettingsActivity : BaseActivity() {
         val isTerminalLogEnabled = appPrefs.getBoolean("show_terminal_log", false) // Default OFF
         binding.switchTerminalLog.isChecked = isTerminalLogEnabled
     }
-    
 
-    
-
+    override fun onIdentityUpdated() {
+        super.onIdentityUpdated()
+        updateUI()
+    }
 }

@@ -5,6 +5,7 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const code = searchParams.get('code');
     const error = searchParams.get('error');
+    const incomingState = searchParams.get('state');
 
     const origin = req.nextUrl.origin;
     const tapashyaUrl = new URL('/tapashya', origin);
@@ -15,6 +16,13 @@ export async function GET(req: NextRequest) {
     }
 
     if (!code) {
+        return NextResponse.redirect(tapashyaUrl);
+    }
+
+    // Verify CSRF state token
+    const savedState = req.cookies.get('oauth_state')?.value;
+    if (!incomingState || !savedState || incomingState !== savedState) {
+        console.error('Google OAuth state mismatch: possible CSRF attempt');
         return NextResponse.redirect(tapashyaUrl);
     }
 
@@ -50,16 +58,18 @@ export async function GET(req: NextRequest) {
         }
 
         // Store the tokens securely in the encrypted HTTP-only cookie
-        // We only overwrite the refresh token if Google provided a new one.
         const payload = {
             access_token: tokenData.access_token,
-            refresh_token: tokenData.refresh_token, // This may be undefined on subsequent logins without prompt=consent, but we forced prompt=consent
+            refresh_token: tokenData.refresh_token,
             expires_at: Date.now() + tokenData.expires_in * 1000,
         };
 
         await setTokenCookie(payload);
 
-        return NextResponse.redirect(tapashyaUrl);
+        // Redirect back to Tapashya page and clean up state cookie
+        const response = NextResponse.redirect(tapashyaUrl);
+        response.cookies.delete('oauth_state');
+        return response;
     } catch (err) {
         console.error('OAuth Callback Exception:', err);
         return NextResponse.redirect(tapashyaUrl);

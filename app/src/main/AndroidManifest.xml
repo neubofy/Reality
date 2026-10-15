@@ -59,6 +59,11 @@
         android:theme="@style/Theme.Reality"
         tools:targetApi="34">
         
+        <!-- Completely disable Google / Firebase Analytics at the OS and framework level -->
+        <meta-data android:name="firebase_analytics_collection_deactivated" android:value="true" />
+        <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />
+        <meta-data android:name="google_analytics_default_allow_ad_personalization_signals" android:value="false" />
+        
         <activity
             android:name=".ui.activity.NightlyPlanActivity"
             android:exported="false" />
@@ -207,26 +212,10 @@
 
 
         <activity
-            android:name=".ui.activity.ReminderActivity"
-            android:exported="false"
-            android:theme="@style/Theme.Reality"
-            android:screenOrientation="portrait" />
-
-        <activity
             android:name=".ui.activity.BlockerDetailsActivity"
             android:exported="false"
             android:theme="@style/Theme.Reality"
             android:screenOrientation="portrait" />
-
-        <activity
-            android:name=".ui.activity.ReminderAlarmActivity"
-            android:exported="false"
-            android:launchMode="singleInstance"
-            android:excludeFromRecents="true"
-            android:showWhenLocked="true"
-            android:turnScreenOn="true"
-            android:taskAffinity=""
-            android:theme="@style/Theme.Reality" />
 
         <activity
             android:name=".ui.activity.AIChatActivity"
@@ -253,6 +242,13 @@
 
         <activity
             android:name=".ui.activity.AISettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Reality"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".ui.activity.HealthDashboardActivity"
             android:exported="true"
             android:theme="@style/Theme.Reality"
             android:screenOrientation="portrait"
@@ -267,13 +263,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name=".ui.activity.HealthDashboardActivity"
-            android:exported="false"
-            android:theme="@style/Theme.Reality"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".ui.activity.BackupRestoreActivity"
@@ -404,15 +393,6 @@
                 android:resource="@xml/app_blocker_service_config" />
         </service>
 
-        <!-- GeneralFeaturesService REMOVED - logic merged into AppBlockerService -->
-
-        <service
-            android:name=".services.ReminderAlarmService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="mediaPlayback" />
-
-        <!-- TapasyaService removed — replaced by stateless TapasyaManager (no background process) -->
 
         <!-- Firebase Cloud Messaging service — receives silent calendar sync pushes -->
         <service

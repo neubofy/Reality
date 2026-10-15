@@ -27,7 +27,7 @@ class RealityApp: Application() {
     
     // HeartbeatWorker completely removed. Replaced by Event-Driven Triggers (Screen-On + Reminders)
     
-    // Start Firebase Analytics passively in the background so it never blocks startup
+    // Initialize Firebase (FCM & Crashlytics) asynchronously without blocking startup
     kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
         try {
             com.google.firebase.FirebaseApp.initializeApp(this@RealityApp)
@@ -35,6 +35,9 @@ class RealityApp: Application() {
             // Fails silently if network is bad or blocked
         }
     }
+    
+    // Periodically validate subscription on app open with 24-hour TTL (runs offline-first, no schedulers)
+    com.neubofy.reality.utils.FeatureManager(this).validateSubscriptionOnAppOpen()
     
     super.onCreate()
     

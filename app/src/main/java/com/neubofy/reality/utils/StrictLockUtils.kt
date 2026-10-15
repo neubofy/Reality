@@ -16,7 +16,7 @@ object StrictLockUtils {
      */
     fun isMaintenanceWindow(context: Context? = null): Boolean {
         val cal = if (context != null) {
-            val secureMs = System.currentTimeMillis()
+            val secureMs = SecureTimeProvider.currentTimeMillis(context)
             Calendar.getInstance().apply { timeInMillis = secureMs }
         } else {
             Calendar.getInstance()
@@ -43,8 +43,8 @@ object StrictLockUtils {
         }
         
         if (data.modeType == Constants.StrictModeData.MODE_TIMER) {
-             // Active if time hasn't passed
-             return System.currentTimeMillis() < data.timerEndTime
+             // Active if time hasn't passed (clock-tamper proof)
+             return SecureTimeProvider.currentTimeMillis(context) < data.timerEndTime
         }
         
         if (data.modeType == Constants.StrictModeData.MODE_PASSWORD) {

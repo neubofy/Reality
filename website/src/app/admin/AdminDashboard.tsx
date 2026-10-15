@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Send, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Send, AlertCircle, CheckCircle2, LogOut } from 'lucide-react';
+import { logoutAction } from './actions';
 
 export default function AdminDashboard() {
   const [workerUrl, setWorkerUrl] = useState('https://reality.neubofy.in/api/send-notification');
@@ -46,11 +47,24 @@ export default function AdminDashboard() {
 
   return (
     <div className="w-full max-w-2xl mx-auto bg-neural-card/50 border border-gray-800 p-8 rounded-2xl shadow-xl backdrop-blur-sm mt-8">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-white mb-2">Send Push Notification</h2>
-        <p className="text-gray-400 font-mono text-sm">
-          Execute a direct POST request from your local browser to the Cloudflare Worker.
-        </p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-white mb-2">Send Push Notification</h2>
+          <p className="text-gray-400 font-mono text-sm">
+            Execute a direct POST request from your local browser to the Cloudflare Worker.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={async () => {
+            await logoutAction();
+            window.location.reload();
+          }}
+          className="flex items-center gap-2 px-3 py-2 bg-gray-800/80 hover:bg-red-500/20 text-gray-400 hover:text-red-400 border border-gray-700 hover:border-red-500/30 rounded-lg text-xs font-mono transition-all"
+        >
+          <LogOut size={14} />
+          Logout
+        </button>
       </div>
 
       <form onSubmit={handleSend} className="space-y-6">
@@ -63,7 +77,7 @@ export default function AdminDashboard() {
               type="url"
               required
               value={workerUrl}
-              onChange={(e) => setWorkerUrl(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setWorkerUrl(e.target.value)}
               className="w-full bg-black/40 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neural-cyan focus:ring-1 focus:ring-neural-cyan transition-all"
             />
           </div>
@@ -76,7 +90,7 @@ export default function AdminDashboard() {
               required
               autoComplete="off"
               value={secret}
-              onChange={(e) => setSecret(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSecret(e.target.value)}
               className="w-full bg-black/40 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neural-cyan focus:ring-1 focus:ring-neural-cyan transition-all"
             />
           </div>
@@ -91,7 +105,7 @@ export default function AdminDashboard() {
             required
             autoComplete="off"
             value={userId}
-            onChange={(e) => setUserId(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUserId(e.target.value)}
             placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
             className="w-full bg-black/40 border border-gray-700 rounded-lg px-4 py-3 text-white font-mono focus:outline-none focus:border-neural-cyan focus:ring-1 focus:ring-neural-cyan transition-all"
           />
@@ -106,7 +120,7 @@ export default function AdminDashboard() {
             required
             autoComplete="off"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
             placeholder="Reality Update"
             className="w-full bg-black/40 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neural-cyan focus:ring-1 focus:ring-neural-cyan transition-all"
           />
@@ -121,7 +135,7 @@ export default function AdminDashboard() {
             autoComplete="off"
             rows={4}
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMessage(e.target.value)}
             placeholder="Your custom report is now ready to view."
             className="w-full bg-black/40 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neural-cyan focus:ring-1 focus:ring-neural-cyan transition-all resize-none"
           />

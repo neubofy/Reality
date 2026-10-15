@@ -99,14 +99,14 @@ export default function PrivacyPolicy() {
 
             <section className="space-y-4">
               <h2 className="text-2xl font-bold text-white flex items-center gap-2 border-b border-gray-800 pb-2">
-                <Activity size={20} className="text-neural-cyan" /> 5. Third-Party Diagnostics
+                <Activity size={20} className="text-neural-cyan" /> 5. Zero Analytics & Open Source Diagnostics
               </h2>
               <p className="text-sm text-gray-400">
-                Reality employs Firebase strictly for debugging and message routing:
+                Reality contains <strong>zero tracking or behavioral analytics SDKs</strong>. Google Analytics has been completely removed from the application:
               </p>
               <ul className="list-disc pl-6 space-y-2 text-sm text-gray-400">
-                <li><strong className="text-white">Stability & Performance:</strong> Anonymous usage trends (crashes, session lengths) are tracked to monitor bug outbreaks.</li>
-                <li><strong className="text-white">Push Notifications (FCM):</strong> Firebase Cloud Messaging handles silent background triggers to synchronize calendar data changes. No payload content is parsed.</li>
+                <li><strong className="text-white">Zero Analytics:</strong> No user telemetry, event tracking, advertising identifiers, or session tracking SDKs are bundled into the application binary.</li>
+                <li><strong className="text-white">Push Notifications (FCM):</strong> Firebase Cloud Messaging is used exclusively for silent background triggers to synchronize calendar routines. No payload content is parsed or logged.</li>
               </ul>
             </section>
 

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Lock, LogIn } from 'lucide-react';
 import { loginAction } from './actions';
 
-export default function LoginClient({ onAuthenticated }: { onAuthenticated: () => void }) {
+export default function LoginClient({ onAuthenticated }: { onAuthenticated?: () => void }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -17,7 +17,10 @@ export default function LoginClient({ onAuthenticated }: { onAuthenticated: () =
     const result = await loginAction(formData);
 
     if (result.success) {
-      onAuthenticated();
+      if (onAuthenticated) {
+        onAuthenticated();
+      }
+      window.location.reload();
     } else {
       setError(result.error || 'Authentication failed');
       setLoading(false);

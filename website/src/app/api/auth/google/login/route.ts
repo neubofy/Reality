@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 
 export async function GET(req: NextRequest) {
     const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -10,6 +11,9 @@ export async function GET(req: NextRequest) {
     // This allows it to work seamlessly on localhost and production (reality.neubofy.in)
     const origin = req.nextUrl.origin;
     const redirectUri = `${origin}/api/auth/google/callback`;
+
+    // Generate cryptographic state for CSRF protection
+    const state = crypto.randomBytes(32).toString('hex');
 
     // Define the scopes needed. 
     // The Tapashya page only strictly needs calendar access.
@@ -24,12 +28,22 @@ export async function GET(req: NextRequest) {
         redirect_uri: redirectUri,
         response_type: 'code',
         scope: scopes,
+        state: state,
         access_type: 'offline',     // Critical: requests a refresh token
         prompt: 'consent',          // Critical: forces Google to issue the refresh token every time
     });
 
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 
-    // Redirect the user to Google's consent screen
-    return NextResponse.redirect(googleAuthUrl);
+    // Redirect the user to Google's consent screen and store CSRF state cookie
+    const response = NextResponse.redirect(googleAuthUrl);
+    response.cookies.set('oauth_state', state, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/api/auth/google',
+        maxAge: 600, // 10 minutes
+    });
+
+    return response;
 }

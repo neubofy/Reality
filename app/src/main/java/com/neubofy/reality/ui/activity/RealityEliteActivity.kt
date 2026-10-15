@@ -201,6 +201,10 @@ class RealityEliteActivity : BaseActivity() {
         val isProActive = featureManager.isRealityProVerified()
         val isTrialActive = featureManager.isTrialActive()
 
+        if (!isProActive && !isTrialActive) {
+            featureManager.downgradeToFreeTier()
+        }
+
         // Setup Enroll/Renew button text and visibility
         btnEnrollRenew.visibility = if (isSignedIn && userId != null) android.view.View.VISIBLE else android.view.View.GONE
         if (isProActive || isExpiredPaid) {
