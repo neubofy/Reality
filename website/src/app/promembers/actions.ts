@@ -1,42 +1,20 @@
 "use server";
 
-export async function fetchSensitiveMemberData(
-  userId?: string,
-  adminUserId?: string,
-  adminPassword?: string,
-  limit: number = 10,
-  offset: number = 0
-) {
+/**
+ * Fetches membership status and expiry details for a specific 16-character User ID.
+ * Purely user-facing and read-only; no administrative privileges or backdoors.
+ */
+export async function fetchSensitiveMemberData(userId?: string) {
+  if (!userId || userId.trim().length !== 16) {
+    return { error: "A valid 16-character User ID is required." };
+  }
+
   const baseUrl = process.env.Pro_Members_DB_URL;
   if (!baseUrl) {
     return { error: "Pro_Members_DB_URL not defined" };
   }
-  let dbUrl = baseUrl.replace(/\/+$/, '') + '/api/pro-members';
+  const dbUrl = `${baseUrl.replace(/\/+$/, '')}/api/pro-members?userId=${encodeURIComponent(userId.trim())}`;
   const workerSecret = process.env.WORKER_CONNECTION_SECRET || '';
-
-  let isAdmin = false;
-  
-  // 1. Check ADMIN environment variable (16-char ID + password)
-  const adminSecret = process.env.ADMIN || '';
-  if (adminSecret && adminUserId && adminPassword) {
-    const expectedAdminUserId = adminSecret.substring(0, 16);
-    const expectedAdminPassword = adminSecret.substring(16);
-    if (adminUserId === expectedAdminUserId && adminPassword === expectedAdminPassword) {
-      isAdmin = true;
-    }
-  }
-
-  // If not admin and no userId is provided, unauthorized
-  if (!isAdmin && !userId) {
-     return { error: "Unauthorized" };
-  }
-
-  // Append query params
-  if (userId && !isAdmin) {
-    dbUrl += `?userId=${encodeURIComponent(userId)}`;
-  } else if (isAdmin) {
-    dbUrl += `?limit=${limit}&offset=${offset}`;
-  }
 
   try {
     let res = await fetch(dbUrl, {
@@ -44,7 +22,7 @@ export async function fetchSensitiveMemberData(
       headers: {
         'x-worker-secret': workerSecret
       },
-      next: { revalidate: 60 } // Cache this fetch so we don't spam the DB worker
+      next: { revalidate: 60 } // Cache this fetch for 60 seconds
     });
 
     if (res.status === 302 || res.status === 303 || res.status === 307 || res.status === 308) {
@@ -61,30 +39,32 @@ export async function fetchSensitiveMemberData(
     }
 
     if (!res.ok) {
-      return { error: `Failed to fetch pro members: ${res.status}` };
+      return { error: `Failed to fetch pro member details: ${res.status}` };
     }
 
     const data = await res.json();
     const members = data?.members || [];
 
-    // Filter to build a dictionary of sensitive data
+    // Filter to build a dictionary of membership data
     const result: Record<string, { status: string | null, expiryDate: string | null, trial_plan: string | null }> = {};
 
     for (const m of members) {
-        result[m.userId] = {
-            status: m.status || null,
-            expiryDate: m.expiryDate || null,
-            trial_plan: m.trial_plan || null
-        };
+      result[m.userId] = {
+        status: m.status || null,
+        expiryDate: m.expiryDate || null,
+        trial_plan: m.trial_plan || null
+      };
     }
-    
-    return { isAdmin: isAdmin, data: result, members: members, totalMembers: data?.totalMembers || 0 };
 
+    return { data: result, members: members, totalMembers: data?.totalMembers || 0 };
   } catch (error: any) {
     return { error: error.message };
   }
 }
 
+/**
+ * Verifies if a user ID is registered as an Elite/Pro member and retrieves public certificate details.
+ */
 export async function verifyMemberId(userId: string) {
   if (!userId || userId.trim().length !== 16) {
     return { error: "User ID must be exactly 16 characters." };
@@ -94,7 +74,7 @@ export async function verifyMemberId(userId: string) {
   if (!baseUrl) {
     return { error: "Pro_Members_DB_URL not defined" };
   }
-  const dbUrl = baseUrl.replace(/\/+$/, '') + '/api/pro-members?userId=' + encodeURIComponent(userId.trim());
+  const dbUrl = `${baseUrl.replace(/\/+$/, '')}/api/pro-members?userId=${encodeURIComponent(userId.trim())}`;
   const workerSecret = process.env.WORKER_CONNECTION_SECRET || '';
 
   try {

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { Shield, User, Calendar, Sparkles, ChevronLeft, ChevronRight, Search, SlidersHorizontal, Share2, Lock, Clock, CreditCard, ShieldCheck, Crown } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Shield, Calendar, Sparkles, ChevronLeft, ChevronRight, Search, SlidersHorizontal, Share2, Clock, CreditCard, ShieldCheck, Crown } from 'lucide-react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import ShareCertificateModal from './ShareCertificateModal';
 import { fetchSensitiveMemberData } from './actions';
@@ -39,13 +39,6 @@ export default function ProMembersClient({
   // Search input state (local to input field)
   const [searchInput, setSearchInput] = useState(initialSearch);
 
-  // Admin login credentials states
-  const [adminUserIdInput, setAdminUserIdInput] = useState('');
-  const [adminPasswordInput, setAdminPasswordInput] = useState('');
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminError, setAdminError] = useState('');
-  const [isVerifyingAdmin, setIsVerifyingAdmin] = useState(false);
-
   const [members, setMembers] = useState<ProMember[]>(initialMembers);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedUserIdForCard, setSelectedUserIdForCard] = useState<string | null>(null);
@@ -56,12 +49,10 @@ export default function ProMembersClient({
     setSearchInput(initialSearch);
   }, [initialSearch]);
 
-  // Sync members for non-admins when initialMembers (page) changes
+  // Sync members when initialMembers (page) changes
   useEffect(() => {
-    if (!isAdmin) {
-      setMembers(initialMembers);
-    }
-  }, [initialMembers, isAdmin]);
+    setMembers(initialMembers);
+  }, [initialMembers]);
 
   // Fetch sensitive details for searched member ONLY when search query is exactly 16 characters (full ID)
   useEffect(() => {
@@ -71,7 +62,7 @@ export default function ProMembersClient({
         const exactMatch = initialMembers.find(m => m.userId.toLowerCase() === trimmedQuery.toLowerCase());
         if (exactMatch) {
           try {
-            const response = await fetchSensitiveMemberData(exactMatch.userId, undefined, undefined);
+            const response = await fetchSensitiveMemberData(exactMatch.userId);
             if (response && !response.error && response.data) {
               setSensitiveData(prev => ({ ...prev, ...response.data }));
             }
@@ -83,38 +74,6 @@ export default function ProMembersClient({
     };
     fetchSearchedDetail();
   }, [initialSearch, initialMembers]);
-
-  // Fetch admin data on page change if currently logged in as admin
-  useEffect(() => {
-    if (isAdmin && adminUserIdInput && adminPasswordInput) {
-      const fetchAdminData = async () => {
-        try {
-          const response = await fetchSensitiveMemberData(
-            undefined,
-            adminUserIdInput.trim(),
-            adminPasswordInput.trim(),
-            pageSize,
-            (initialPage - 1) * pageSize
-          );
-          if (response && !response.error && response.data && response.members) {
-            setSensitiveData(response.data);
-            const adminMembers = response.members.map((m: any) => ({
-              userId: m.userId,
-              dateJoined: m.date,
-              hasAccess: m.status === 'V' || (m.trial_plan && !m.status),
-              status: m.status || null,
-              expiryDate: m.expiryDate || null,
-              trial_plan: m.trial_plan || null
-            }));
-            setMembers(adminMembers);
-          }
-        } catch (err) {
-          console.error("Error fetching admin data on page change:", err);
-        }
-      };
-      fetchAdminData();
-    }
-  }, [initialPage, initialSearch, isAdmin]);
 
   // Search submit handler (updates URL)
   const handleSearchSubmit = (e?: React.FormEvent) => {
@@ -144,108 +103,10 @@ export default function ProMembersClient({
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  // Admin submit credentials handler (prevents keystroke requests, uses form submit)
-  const handleAdminSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAdminError('');
-    setIsVerifyingAdmin(true);
-
-    if (!adminUserIdInput.trim() || !adminPasswordInput.trim()) {
-      setAdminError('Please enter both Admin ID and Password.');
-      setIsVerifyingAdmin(false);
-      return;
-    }
-
-    try {
-      const response = await fetchSensitiveMemberData(
-        undefined,
-        adminUserIdInput.trim(),
-        adminPasswordInput.trim(),
-        pageSize,
-        (initialPage - 1) * pageSize
-      );
-      if (response && !response.error && response.data && response.members) {
-        setSensitiveData(response.data);
-        const adminMembers = response.members.map((m: any) => ({
-          userId: m.userId,
-          dateJoined: m.date,
-          hasAccess: m.status === 'V' || (m.trial_plan && !m.status),
-          status: m.status || null,
-          expiryDate: m.expiryDate || null,
-          trial_plan: m.trial_plan || null
-        }));
-        setMembers(adminMembers);
-        setIsAdmin(true);
-        setAdminError('');
-      } else {
-        setAdminError(response?.error || 'Invalid admin credentials.');
-        setIsAdmin(false);
-      }
-    } catch (err: any) {
-      setAdminError(err.message || 'An error occurred during verification.');
-      setIsAdmin(false);
-    } finally {
-      setIsVerifyingAdmin(false);
-    }
-  };
-
   const totalPages = Math.ceil(totalFiltered / pageSize);
 
   return (
     <>
-      {/* Admin Access Section */}
-      <section className="py-6 border-b border-gray-800 bg-neural-bg relative z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5 text-gray-400">
-            <Lock size={16} className="text-gray-500" />
-            <div className="flex flex-col">
-              <span className="text-sm font-bold font-mono text-gray-300">Neubofy Team Access</span>
-              <span className="text-xs text-gray-500 font-mono">Unlock full directory subscription info</span>
-            </div>
-          </div>
-          
-          <div className="w-full md:w-auto flex flex-col items-start gap-2">
-            <form onSubmit={handleAdminSubmit} className="flex flex-col sm:flex-row items-end gap-3 w-full sm:w-auto">
-              <div className="relative w-full sm:w-48">
-                <label htmlFor="admin-username" className="block text-[10px] text-gray-500 font-mono uppercase mb-1 font-bold tracking-wider">Admin ID</label>
-                <input
-                   id="admin-username"
-                   name="username"
-                   type="text"
-                   autoComplete="username"
-                   placeholder="Admin User ID..."
-                   value={adminUserIdInput}
-                   onChange={(e) => setAdminUserIdInput(e.target.value)}
-                   className="block w-full px-3 py-2 bg-black/50 border border-gray-700 focus:ring-neural-cyan focus:border-neural-cyan rounded-xl text-gray-300 placeholder-gray-600 focus:outline-none focus:ring-1 transition-colors font-mono text-sm"
-                />
-              </div>
-              <div className="relative w-full sm:w-48">
-                <label htmlFor="admin-password" className="block text-[10px] text-gray-500 font-mono uppercase mb-1 font-bold tracking-wider">Password</label>
-                <input
-                   id="admin-password"
-                   name="password"
-                   type="password"
-                   autoComplete="current-password"
-                   placeholder="Connection secret..."
-                   value={adminPasswordInput}
-                   onChange={(e) => setAdminPasswordInput(e.target.value)}
-                   className="block w-full px-3 py-2 bg-black/50 border border-gray-700 focus:ring-neural-cyan focus:border-neural-cyan rounded-xl text-gray-300 placeholder-gray-600 focus:outline-none focus:ring-1 transition-colors font-mono text-sm"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={isVerifyingAdmin}
-                className={`w-full sm:w-auto px-5 py-2 bg-neural-cyan/10 border border-neural-cyan/30 text-neural-cyan hover:bg-neural-cyan/20 hover:border-neural-cyan/50 font-bold rounded-xl transition-all text-sm h-[38px] shrink-0 font-mono flex items-center justify-center gap-1.5`}
-              >
-                {isVerifyingAdmin ? 'Unlocking...' : 'Unlock'}
-                {isAdmin && <Shield className="text-green-400" size={15} />}
-              </button>
-            </form>
-            {adminError && <p className="text-xs text-red-400 font-mono">{adminError}</p>}
-            {isAdmin && <p className="text-xs text-green-400 font-mono">Access granted. Full subscription details unlocked.</p>}
-          </div>
-        </div>
-      </section>
 
       {/* Control Bar: Search and Sort */}
       <section className="py-6 border-b border-gray-800 bg-neural-card/30 relative z-20">
@@ -310,7 +171,6 @@ export default function ProMembersClient({
                      key={`${member.userId}-${index}`}
                      member={{...member, ...sensitiveData[member.userId]}}
                      searchQuery={initialSearch}
-                     isAdmin={isAdmin}
                      onGenerateCard={() => {
                        setSelectedUserIdForCard(member.userId);
                        setIsShareModalOpen(true);
@@ -375,7 +235,7 @@ export default function ProMembersClient({
   );
 }
 
-function MemberCard({ member, searchQuery, isAdmin, onGenerateCard }: { member: ProMember, searchQuery: string, isAdmin: boolean, onGenerateCard: () => void }) {
+function MemberCard({ member, searchQuery, onGenerateCard }: { member: ProMember, searchQuery: string, onGenerateCard: () => void }) {
   // Format the date if it's a valid string
   let displayDate = member.dateJoined;
   try {
@@ -392,10 +252,10 @@ function MemberCard({ member, searchQuery, isAdmin, onGenerateCard }: { member: 
   }
 
   const isExactMatch = searchQuery.trim().toLowerCase() === member.userId.toLowerCase();
-  const showDetails = isExactMatch || isAdmin;
+  const showDetails = isExactMatch;
 
   let displayId = member.userId;
-  // If the user hasn't typed the exact ID and is not admin, hide the middle
+  // If the user hasn't typed the exact ID, hide the middle
   if (!showDetails && member.userId.length > 8) {
      const start = member.userId.substring(0, 4);
      const end = member.userId.substring(member.userId.length - 4);
@@ -598,7 +458,7 @@ function MemberCard({ member, searchQuery, isAdmin, onGenerateCard }: { member: 
         )}
       </div>
 
-      {/* Generate Card Button (Only for verified exact matches or admin) */}
+      {/* Generate Card Button (Only for verified exact matches) */}
       {showDetails && (
         <div className="mt-5 relative z-10 pt-4 border-t border-gray-900/60">
           <button
